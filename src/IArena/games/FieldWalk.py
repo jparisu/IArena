@@ -21,6 +21,13 @@ The player must reach the end with the minimum cost.
 Similar to BlindWalk but the player has access to the whole map from the beginning.
 """
 
+FieldWalkSquare = BlindWalk.BlindWalkSquare
+FieldWalkMovement = BlindWalk.BlindWalkMovement
+MovementDirection = BlindWalk.MovementDirection
+FieldWalkPosition = BlindWalk.BlindWalkPosition
+FieldWalkMap = BlindWalk.BlindWalkMap
+FieldWalkRules = BlindWalk.BlindWalkRules
+
 class FieldWalkRules(BlindWalk.BlindWalkRules):
 
     def __init__(
