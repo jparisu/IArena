@@ -19,7 +19,13 @@ The player must reach the end with the minimum cost.
 """
 
 class BlindWalkSquare:
+    """
+    Represents a square in the grid.
 
+    Attributes:
+        position: List[int] size(2): The position of the square in the grid.
+        weight: The cost to move to this square.
+    """
     def __init__(
             self,
             position: List[int],
@@ -32,6 +38,12 @@ class BlindWalkSquare:
 
 
 class BlindWalkMovement(IMovement):
+    """
+    Represents the movement of the player in the game.
+
+    Attributes:
+        direction: The direction of the movement.
+    """
 
     class MovementDirection(Enum):
         Up = 0
@@ -54,6 +66,14 @@ class BlindWalkMovement(IMovement):
 
 
 class BlindWalkPosition(IPosition):
+    """
+    Represents the position of the player in the game.
+
+    Attributes:
+        square: The square where the player is.
+        cost: The cost of the path to reach this position.
+        neighbors: The neighbors of the square.
+    """
 
     def __init__(
             self,
@@ -150,6 +170,13 @@ class BlindWalkRules(IGameRules):
             rows: int = 10,
             cols: int = 10,
             seed: int = 0):
+        """
+        Args:
+            initial_map: The map of the game. If none, it is generated randomly.
+            rows: The number of rows of the map. Only has effect if initial_map is None.
+            cols: The number of columns of the map. Only has effect if initial_map is None.
+            seed: The seed for the random generator of the map. Only has effect if initial_map is None.
+        """
         if initial_map:
             self.__map = initial_map
         else:

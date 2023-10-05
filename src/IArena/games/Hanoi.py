@@ -19,6 +19,15 @@ NOTE: Bigger pieces are the one with lower index.
 """
 
 class HanoiPosition(IPosition):
+    """
+    Represents the position of the game with the pieces in each tower.
+
+    Attributes:
+        towers: List[List[int]]: The pieces in each tower.
+        movements: The number of movements made so far.
+
+    NOTE: Bigger pieces are the one with lower index.
+    """
 
     def __init__(
             self,
@@ -66,6 +75,13 @@ class HanoiPosition(IPosition):
 
 
 class HanoiMovement(IMovement):
+    """
+    Represents the movement of the player in the game by moving a piece from the top of one tower to another.
+
+    Attributes:
+        tower_source: The tower from where the piece is removed.
+        tower_target: The tower to where the piece is moved.
+    """
 
     def __init__(
             self,
@@ -88,6 +104,10 @@ class HanoiRules(IGameRules):
     def __init__(
             self,
             initial_towers: List[List[int]] = [[1, 2, 3, 4], [], []]):
+        """
+        Args:
+            initial_towers: The initial position of the pieces in the towers.
+        """
         self.initial_towers = initial_towers
 
     @override

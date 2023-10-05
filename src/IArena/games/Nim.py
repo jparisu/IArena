@@ -15,6 +15,12 @@ The player that takes the last element loses.
 """
 
 class NimPosition(IPosition):
+    """
+    Represents the position of the game by counting the stick remaining in each line.
+
+    Attributes:
+        lines: List[int] The number of sticks in each line.
+    """
 
     def __init__(
             self,
@@ -43,21 +49,28 @@ class NimPosition(IPosition):
 
 
 class NimMovement(IMovement):
+    """
+    Represents the movement of the player in the game by counting the sticks removed from a specific line.
+
+    Attributes:
+        line_index: The index of the line from which the sticks are removed.
+        remove: The number of sticks to remove.
+    """
 
     def __init__(
             self,
             line_index: int,
-            Nim: int):
+            remove: int):
         self.line_index = line_index
-        self.Nim = Nim
+        self.remove = remove
 
     def __eq__(
             self,
             other: "NimMovement"):
-        return self.line_index == other.line_index and self.Nim == other.Nim
+        return self.line_index == other.line_index and self.remove == other.remove
 
     def __str__(self):
-        return f'{{line: {self.line_index}   remove: {self.Nim}}}'
+        return f'{{line: {self.line_index}   remove: {self.remove}}}'
 
 
 class NimRules(IGameRules):
@@ -65,6 +78,10 @@ class NimRules(IGameRules):
     def __init__(
             self,
             original_lines: List[int] = [1, 3, 5, 7]):
+        """
+        Args:
+            original_lines: The initial position of the lines.
+        """
         self.original_lines = original_lines
 
     @override

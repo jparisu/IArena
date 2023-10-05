@@ -16,6 +16,12 @@ The player with no valid moves loses.
 """
 
 class CoinsPosition(IPosition):
+    """
+    Represents the position of the game by counting the coins remaining.
+
+    Attributes:
+        n: The number of coins still in play.
+    """
 
     def __init__(
             self,
@@ -47,6 +53,12 @@ class CoinsPosition(IPosition):
 
 
 class CoinsMovement(IMovement):
+    """
+    Represents the movement of the player in the game by counting the coins removed.
+
+    Attributes:
+        n: The number of coins removed.
+    """
 
     def __init__(
             self,
@@ -69,6 +81,12 @@ class CoinsRules(IGameRules):
             initial_position: int = 15,
             min_play: int = 1,
             max_play: int = 3):
+        """
+        Args:
+            initial_position: The number of coins at the beginning of the game.
+            min_play: The minimum number of coins that can be removed.
+            max_play: The maximum number of coins that can be removed.
+        """
         self.initial_position = initial_position
         self.min_play = min_play
         self.max_play = max_play
