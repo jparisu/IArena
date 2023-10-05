@@ -2,7 +2,7 @@ from typing import List
 
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex
-from IArena.tournaments.GenericGame import GenericGame
+from IArena.arena.GenericGame import GenericGame
 from IArena.players.players import PlayablePlayer
 
 class PlayableGame(GenericGame):
