@@ -130,9 +130,6 @@ class NQueensRules(IGameRules):
         # Sum 1 for each queen that is attacking other
         attacks = 0
 
-        print(position)
-        print(position.positions)
-
         # For each queen
         for x, y in position.positions:
             # For each other

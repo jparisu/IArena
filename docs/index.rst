@@ -25,6 +25,7 @@
 
    /src/games/games
    /src/games/tutorials/hanoi
+   /src/games/tutorials/slicing
    /src/games/tutorials/nqueens
    /src/games/tutorials/coins
    /src/games/tutorials/mastermind

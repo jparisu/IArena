@@ -50,7 +50,7 @@ class CoinsPosition(IPosition):
         return self.n == other.n and self.next_player_ == other.next_player_
 
     def __str__(self):
-        st += f"Player: {self.next_player_}\n"
+        st = f"Player: {self.next_player_}\n"
         for i in range(self.n):
             st += (" {0:3d}   === \n".format(i))
         return st

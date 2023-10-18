@@ -48,3 +48,11 @@ There are some resources under `resources` folder with util information and impl
 
 - `play_hanoi.ipynb`: Jupyter notebook to play Towers of Hanoi. It installs and plays all along.
 - `create_player_coins.ipynb`: Jupyter notebook with everything set up to create a player and play against a random player `Coins` game.
+
+---
+
+## Installation
+
+### From source
+
+```bash

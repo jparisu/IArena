@@ -156,6 +156,15 @@ This is a list of all the games supported and its characteristics:
      - Perfect information
      -
 
+   * - **SlicingPuzzle**
+     - ``IArena.games.SlicingPuzzle``
+     - :ref:`slicing_tutorial`
+     - The classic Slicing Puzzle game.
+     - 1
+     - Deterministic
+     - Perfect information
+     -
+
    * - **NQueens**
      - ``IArena.games.NQueens``
      - :ref:`nqueens_tutorial`
