@@ -12,7 +12,7 @@
    :maxdepth: 2
    :hidden:
 
-   /src/project
+   /src/infrastructure
 
 
 .. toctree::
