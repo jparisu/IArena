@@ -4,6 +4,8 @@
 Installation
 ############
 
+.. _installation_googlecolab:
+
 ============
 Google Colab
 ============
@@ -20,6 +22,20 @@ Just add in the first cell of your notebook:
     !pip install --upgrade git+https://github.com/jparisu/IArena.git@v0.2
 
 This will install the specific version of the package and make it available in the rest of the cells of your notebook.
+
+===========================
+Install in Windows Anaconda
+===========================
+
+In order to install the package in Windows Anaconda, the steps are the same as for :ref:`installation_googlecolab`.
+The only detail is that ``git`` may not be installed by default in Anaconda.
+
+From a command prompt, you can install it in a conda environment inside Anaconda:
+
+.. code-block:: bash
+
+    conda install git
+    pip install --upgrade git+https://github.com/jparisu/IArena.git@v0.2
 
 
 ===========
