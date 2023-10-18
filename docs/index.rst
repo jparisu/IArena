@@ -21,3 +21,5 @@
    :hidden:
 
    /src/games
+   /src/tutorials/hanoi
+   /src/tutorials/nqueens

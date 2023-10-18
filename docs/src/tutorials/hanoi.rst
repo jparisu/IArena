@@ -84,22 +84,11 @@ Rules
 
 This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
-
-Position
-
-It has a *static* method ``generate_initial_position`` that returns the initial position of the game giving and ``int`` for number of disks.
-
-.. code-block:: python
-
-  HanoiRules.generate_initial_position(n=4) # initial position with 4 disks
-
-
 -----------
 Constructor
 -----------
 
-Can receive an argument ``initial_towers : List[List[int]]`` that represents the initial state of the disks in the initial position.
-
+Can receive an argument ``n : int`` that represents the number of disks.
 
 .. code-block:: python
 

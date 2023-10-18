@@ -21,7 +21,15 @@ This is a list of all the games supported and its characteristics:
    * - **Hanoi**
      - ``IArena.games.Hanoi``
      - :ref:`hanoi_tutorial`
-     - The classic Tower of Hanoi game.
+     - The classic Hanoi's Tower game.
+     - 1
+     - Deterministic
+     - Perfect information
+
+   * - **NQueens**
+     - ``IArena.games.NQueens``
+     - :ref:`nqueens_tutorial`
+     - The classic N-Queens game.
      - 1
      - Deterministic
      - Perfect information
