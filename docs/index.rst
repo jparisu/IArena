@@ -1,11 +1,5 @@
 
-.. toctree::
-   :caption: Introduction
-   :maxdepth: 2
-   :hidden:
-
-   /src/titlepage
-
+.. include:: src/titlepage.rst
 
 .. toctree::
    :caption: Project
@@ -23,3 +17,5 @@
    /src/games
    /src/tutorials/hanoi
    /src/tutorials/nqueens
+   /src/tutorials/coins
+   /src/tutorials/mastermind

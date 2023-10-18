@@ -32,6 +32,9 @@ class CoinsPosition(IPosition):
         # Last player that has played
         self.next_player_ = next_player
 
+    def __len__(self) -> int:
+        return self.n
+
     @override
     def next_player(
             self) -> PlayerIndex:
@@ -91,6 +94,14 @@ class CoinsRules(IGameRules):
         self.min_play = min_play
         self.max_play = max_play
 
+    def min_play(self) -> int:
+        """Minimum number of coins that can be removed in a turn."""
+        return self.min_play
+
+    def max_play(self) -> int:
+        """Maximum number of coins that can be removed in a turn."""
+        return self.max_play
+
     @override
     def n_players(self) -> int:
         return 2
@@ -108,7 +119,7 @@ class CoinsRules(IGameRules):
             position: CoinsPosition) -> CoinsPosition:
         return CoinsPosition(
             position.n - movement.n,
-            two_player_game_change_player(position.next_player))
+            two_player_game_change_player(position.next_player()))
 
     @override
     def possible_movements(
@@ -135,6 +146,6 @@ class CoinsRules(IGameRules):
             self,
             position: CoinsPosition) -> dict[PlayerIndex, float]:
         return {
-            position.next_player() : 0.0,
-            two_player_game_change_player(position.next_player()) : 1.0
+            position.next_player() : 1.0,
+            two_player_game_change_player(position.next_player()) : 0.0
         }

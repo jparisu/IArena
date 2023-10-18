@@ -17,6 +17,7 @@ This is a list of all the games supported and its characteristics:
      - **Number of players**
      - **Deterministic / Random**
      - **Perfect information / Hidden information**
+     - **Details**
 
    * - **Hanoi**
      - ``IArena.games.Hanoi``
@@ -25,6 +26,7 @@ This is a list of all the games supported and its characteristics:
      - 1
      - Deterministic
      - Perfect information
+     -
 
    * - **NQueens**
      - ``IArena.games.NQueens``
@@ -33,3 +35,22 @@ This is a list of all the games supported and its characteristics:
      - 1
      - Deterministic
      - Perfect information
+     - *Min score*: 0
+
+   * - **Coins**
+     - ``IArena.games.Coins``
+     - :ref:`coins_tutorial`
+     - Roman's coin game.
+     - 2
+     - Deterministic
+     - Perfect information
+     - **0 sum game**
+
+   * - **Mastermind**
+     - ``IArena.games.Mastermind``
+     - :ref:`mastermind_tutorial`
+     - The classic Mastermind game.
+     - 1
+     - Deterministic
+     - Hidden information
+     -
