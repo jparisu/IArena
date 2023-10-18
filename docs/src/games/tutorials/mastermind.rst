@@ -4,7 +4,7 @@
 Mastermind
 ##########
 
-.. figure:: /resources/images/mastermind.svg
+.. figure:: /resources/images/mastermind.png
 
 This game is the classical Mastermind game.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (color pegs) chosen from *M* numbers available ``[0,M)``.

@@ -96,27 +96,26 @@ class SlicingPuzzleRules(IGameRules):
         return squares
 
 
-    def generate_random_position(n: int, seed: int = None, random_moves: int = DefaultRandomShuffle):
+    def generate_random_position(self, seed: int = None, random_moves: int = DefaultRandomShuffle) -> List[List[int]]:
         """
         Generate a random position of the game by moving random_moves times a correct one
 
         Args:
-            n: Size of the board = n x n
             seed: Seed for the random generator
             random_moves: Number of random movements
         """
-        initial_position = SlicingPuzzleRules.generate_correct_position(n)
+        self.initial_position = SlicingPuzzlePosition(self, SlicingPuzzleRules.generate_correct_position(self.n), 0)
 
         # Move the squares randomly to generate a random position
         if seed is not None:
             random.seed(seed)
 
         for _ in range(random_moves):
-            possible_movements = SlicingPuzzleRules._possible_movements(n, initial_position)
+            possible_movements = self.possible_movements(self.initial_position)
             movement = random.choice(list(possible_movements))
-            initial_position = SlicingPuzzleRules._next_position(movement, initial_position)
-        initial_position.cost = 0
-        return initial_position
+            self.initial_position = self.next_position(movement, self.initial_position)
+
+        return self.initial_position.squares
 
 
     def __init__(
@@ -130,8 +129,8 @@ class SlicingPuzzleRules(IGameRules):
             n: Size of the board = nxn
         """
         if initial_position is None:
-            self.initial_position = SlicingPuzzleRules.generate_random_position(n, seed)
             self.n = n
+            self.initial_position = self.generate_random_position(seed=seed)
         else:
             self.initial_position = initial_position
             self.n = len(initial_position)
@@ -147,11 +146,12 @@ class SlicingPuzzleRules(IGameRules):
             squares=self.initial_position,
             cost=0)
 
-    def _next_position(
-            n: int,
+    @override
+    def next_position(
+            self,
             movement: SlicingPuzzleMovement,
-            position: SlicingPuzzlePosition) -> List[List[int]]:
-        # Find the empty space and move the square next to it to the empty space
+            position: SlicingPuzzlePosition) -> SlicingPuzzlePosition:
+                # Find the empty space and move the square next to it to the empty space
         empty_space = position.empty_space()
         new_space = None
 
@@ -167,24 +167,19 @@ class SlicingPuzzleRules(IGameRules):
         elif movement == SlicingPuzzleMovement.Values.Right:
             new_space = (empty_space[0], empty_space[1] - 1)
 
-        new_squares = [[position.squares[i][j] for j in range(n)] for i in range(n)]
+        new_squares = [[position.squares[i][j] for j in range(self.n)] for i in range(self.n)]
         new_squares[empty_space[0]][empty_space[1]] = new_squares[new_space[0]][new_space[1]]
         new_squares[new_space[0]][new_space[1]] = -1
 
-        return new_squares
-
-    @override
-    def next_position(
-            self,
-            movement: SlicingPuzzleMovement,
-            position: SlicingPuzzlePosition) -> SlicingPuzzlePosition:
         return SlicingPuzzlePosition(
             rules=self,
-            squares=SlicingPuzzleRules._next_position(self.n, movement, position),
+            squares=new_squares,
             cost=position.cost() + 1)
 
-    def _possible_movements(
-            n: int,
+
+    @override
+    def possible_movements(
+            self,
             position: SlicingPuzzlePosition) -> Iterator[SlicingPuzzleMovement]:
         # Find the empty space and return the possible movements depending on the borders of the game
         empty_space = position.empty_space()
@@ -192,20 +187,14 @@ class SlicingPuzzleRules(IGameRules):
         possible_movements = []
         if empty_space[0] > 0:
             possible_movements.append(SlicingPuzzleMovement.Values.Down)
-        if empty_space[0] < n - 1:
+        if empty_space[0] < self.n - 1:
             possible_movements.append(SlicingPuzzleMovement.Values.Up)
         if empty_space[1] > 0:
             possible_movements.append(SlicingPuzzleMovement.Values.Right)
-        if empty_space[1] < n - 1:
+        if empty_space[1] < self.n - 1:
             possible_movements.append(SlicingPuzzleMovement.Values.Left)
 
         return possible_movements
-
-    @override
-    def possible_movements(
-            self,
-            position: SlicingPuzzlePosition) -> Iterator[SlicingPuzzleMovement]:
-        return SlicingPuzzleRules._possible_movements(self.n, position)
 
 
     @override
