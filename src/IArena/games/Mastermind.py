@@ -1,4 +1,5 @@
 
+from copy import deepcopy
 from typing import Iterator, List
 import random
 from enum import Enum
@@ -9,6 +10,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the Mastermind game.
@@ -61,8 +63,10 @@ class MastermindPosition(IPosition):
 
     def __init__(
             self,
+            rules: "MastermindRules",
             guesses: List[MastermindMovement],
-            correctness: List[MastermindCorrectness]):
+            correctness: List[List[MastermindCorrectness]]):
+        super().__init__(rules)
         self.guesses = guesses
         self.correctness = correctness
 
@@ -78,7 +82,7 @@ class MastermindPosition(IPosition):
 
     def __str__(self):
         # Print each guess in a line together with the correctness
-        return "\n".join([f'{self.guesses[i]} : {self.correctness[i]}' for i in range(len(self.guesses))]) + "\n"
+        return "\n".join([f'{self.guesses[i]} : {[x.name for x in self.correctness[i]]}' for i in range(len(self.guesses))]) + "\n"
 
 
 class MastermindRules(IGameRules):
@@ -88,7 +92,7 @@ class MastermindRules(IGameRules):
 
     @staticmethod
     def get_secret(n: int, m: int, seed: int = None) -> List[int]:
-        if seed:
+        if seed is not None:
             random.seed(seed)
         return [random.randint(0, m-1) for _ in range(n)]
 
@@ -133,7 +137,7 @@ class MastermindRules(IGameRules):
 
     @override
     def first_position(self) -> MastermindPosition:
-        return MastermindPosition()
+        return MastermindPosition(self, [], [])
 
     @override
     def next_position(
@@ -148,7 +152,7 @@ class MastermindRules(IGameRules):
         possible_misplaced = []
         for i in range(self.n):
             if movement.guess[i] == self.__secret[i]:
-                correctness = MastermindPosition.MastermindCorrectness.Correct
+                correctness[i] = MastermindPosition.MastermindCorrectness.Correct
                 already_placed[i] = True
             elif movement.guess[i] in self.__secret:
                 possible_misplaced.append(i)
@@ -161,27 +165,33 @@ class MastermindRules(IGameRules):
                     correctness[i] = MastermindPosition.MastermindCorrectness.Misplaced
                     break
 
-        return MastermindPosition(guesses, position.correctness + [correctness])
+        new_correctness = deepcopy(position.correctness)
+        new_correctness.append(correctness)
+
+        return MastermindPosition(self, guesses, new_correctness)
 
     @override
     def possible_movements(
             self,
             position: MastermindPosition) -> Iterator[MastermindMovement]:
         # Every combination of n numbers from 0 to m-1 using itertools
-        return itertools.product(range(self.m), repeat=self.n)
+        return [MastermindMovement(guess = list(x))
+                for x
+                in itertools.product(range(self.m), repeat=self.n)]
 
     @override
     def finished(
             self,
             position: MastermindPosition) -> bool:
         # Game is finished if the last guess is equal the hidden secret
-        return position.guesses[-1] == self.__secret
+        if len(position.guesses) == 0:
+            return False
+        return position.guesses[-1].guess == self.__secret
 
     @override
     def score(
             self,
-            position: MastermindPosition) -> dict[PlayerIndex, float]:
-        # The score is the number of guesses to get the secret
-        return {
-            PlayerIndex.FirstPlayer : len(position.guesses)
-        }
+            position: MastermindPosition) -> ScoreBoard:
+        s = ScoreBoard()
+        s.add_score(PlayerIndex.FirstPlayer, len(position.guesses))
+        return s

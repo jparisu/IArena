@@ -6,7 +6,16 @@
    :maxdepth: 2
    :hidden:
 
-   /src/infrastructure
+   /src/getting_started
+
+
+.. toctree::
+   :caption: Players
+   :maxdepth: 2
+   :hidden:
+
+   /src/players/players
+   /src/players/random
 
 
 .. toctree::
@@ -14,8 +23,8 @@
    :maxdepth: 2
    :hidden:
 
-   /src/games
-   /src/tutorials/hanoi
-   /src/tutorials/nqueens
-   /src/tutorials/coins
-   /src/tutorials/mastermind
+   /src/games/games
+   /src/games/tutorials/hanoi
+   /src/games/tutorials/nqueens
+   /src/games/tutorials/coins
+   /src/games/tutorials/mastermind

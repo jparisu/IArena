@@ -6,6 +6,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the NQueens game.
@@ -20,8 +21,12 @@ class NQueensPosition(IPosition):
         n: Size of the board = nxn
         positions: List of (x,y) positions of the queens
     """
-    def __init__(self, n, positions: List[tuple[int, int]] = []) -> None:
-        self.n = n
+    def __init__(
+            self,
+            rules: "NQueensRules",
+            positions: List[tuple[int, int]] = []) -> None:
+        super().__init__(rules)
+        self.n = rules.get_size()
         self.positions = positions
 
     @override
@@ -84,20 +89,26 @@ class NQueensRules(IGameRules):
         """
         self.n = n
 
+    def __len__(self):
+        return self.n
+
+    def get_size(self):
+        return self.n
+
     @override
     def n_players(self) -> int:
         return 1
 
     @override
     def first_position(self) -> NQueensPosition:
-        return NQueensPosition(self.n)
+        return NQueensPosition(self)
 
     @override
     def next_position(
             self,
             movement: NQueensMovement,
             position: NQueensPosition) -> NQueensPosition:
-        return NQueensPosition(self.n, position.positions + [movement.new_position])
+        return NQueensPosition(self, position.positions + [movement.new_position])
 
     @override
     def possible_movements(
@@ -115,15 +126,18 @@ class NQueensRules(IGameRules):
     @override
     def score(
             self,
-            position: NQueensPosition) -> dict[PlayerIndex, float]:
+            position: NQueensPosition) -> ScoreBoard:
         # Sum 1 for each queen that is attacking other
         attacks = 0
+
+        print(position)
+        print(position.positions)
 
         # For each queen
         for x, y in position.positions:
             # For each other
             for x2, y2 in position.positions:
-                if x != x2 and y != y2:
+                if not (x == x2 and y == y2):
 
                     # Check if it not attacking other horizontally
                     if x == x2:
@@ -135,4 +149,6 @@ class NQueensRules(IGameRules):
                     if abs(x - x2) == abs(y - y2):
                         attacks += 1
 
-        return {PlayerIndex.FirstPlayer: attacks}
+        s = ScoreBoard()
+        s.add_score(PlayerIndex.FirstPlayer, attacks)
+        return s
