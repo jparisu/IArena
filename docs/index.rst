@@ -1,18 +1,21 @@
 
-.. toctree::
-   :caption: Introduction
-   :maxdepth: 2
-   :hidden:
-
-   /src/titlepage
-
+.. include:: src/titlepage.rst
 
 .. toctree::
    :caption: Project
    :maxdepth: 2
    :hidden:
 
-   /src/project
+   /src/getting_started
+
+
+.. toctree::
+   :caption: Players
+   :maxdepth: 2
+   :hidden:
+
+   /src/players/players
+   /src/players/random
 
 
 .. toctree::
@@ -20,4 +23,9 @@
    :maxdepth: 2
    :hidden:
 
-   /src/games
+   /src/games/games
+   /src/games/tutorials/hanoi
+   /src/games/tutorials/slicing
+   /src/games/tutorials/nqueens
+   /src/games/tutorials/coins
+   /src/games/tutorials/mastermind

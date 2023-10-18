@@ -6,6 +6,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the Roman coins game.
@@ -25,12 +26,17 @@ class CoinsPosition(IPosition):
 
     def __init__(
             self,
+            rules: "CoinsRules",
             n: int,
             next_player: PlayerIndex):
+        super().__init__(rules)
         # Number of coins
         self.n = n
         # Last player that has played
         self.next_player_ = next_player
+
+    def __len__(self) -> int:
+        return self.n
 
     @override
     def next_player(
@@ -44,11 +50,9 @@ class CoinsPosition(IPosition):
         return self.n == other.n and self.next_player_ == other.next_player_
 
     def __str__(self):
-        st = "----------------\n"
-        st += f"Player: {self.next_player_}\n"
+        st = f"Player: {self.next_player_}\n"
         for i in range(self.n):
             st += (" {0:3d}   === \n".format(i))
-        st += "----------------\n"
         return st
 
 
@@ -91,6 +95,14 @@ class CoinsRules(IGameRules):
         self.min_play = min_play
         self.max_play = max_play
 
+    def min_play(self) -> int:
+        """Minimum number of coins that can be removed in a turn."""
+        return self.min_play
+
+    def max_play(self) -> int:
+        """Maximum number of coins that can be removed in a turn."""
+        return self.max_play
+
     @override
     def n_players(self) -> int:
         return 2
@@ -98,6 +110,7 @@ class CoinsRules(IGameRules):
     @override
     def first_position(self) -> CoinsPosition:
         return CoinsPosition(
+            self,
             self.initial_position,
             PlayerIndex.FirstPlayer)
 
@@ -107,8 +120,9 @@ class CoinsRules(IGameRules):
             movement: CoinsMovement,
             position: CoinsPosition) -> CoinsPosition:
         return CoinsPosition(
+            self,
             position.n - movement.n,
-            two_player_game_change_player(position.next_player))
+            two_player_game_change_player(position.next_player()))
 
     @override
     def possible_movements(
@@ -133,8 +147,8 @@ class CoinsRules(IGameRules):
     @override
     def score(
             self,
-            position: CoinsPosition) -> dict[PlayerIndex, float]:
-        return {
-            position.next_player() : 0.0,
-            two_player_game_change_player(position.next_player()) : 1.0
-        }
+            position: CoinsPosition) -> ScoreBoard:
+        s = ScoreBoard()
+        s.add_score(position.next_player(), 1.0)
+        s.add_score(two_player_game_change_player(position.next_player()), 0.0)
+        return s

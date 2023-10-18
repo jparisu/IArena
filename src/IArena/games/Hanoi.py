@@ -2,10 +2,11 @@
 from typing import Iterator, List
 from queue import LifoQueue
 
-from IArena.interfaces.IPosition import IPosition
+from IArena.interfaces.IPosition import CostPosition, CostType
 from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
+from IArena.interfaces.Score import ScoreBoard
 from IArena.utils.decorators import override
 
 """
@@ -18,7 +19,7 @@ The end games when all the pieces are in the last tower.
 NOTE: Bigger pieces are the one with lower index.
 """
 
-class HanoiPosition(IPosition):
+class HanoiPosition(CostPosition):
     """
     Represents the position of the game with the pieces in each tower.
 
@@ -31,10 +32,11 @@ class HanoiPosition(IPosition):
 
     def __init__(
             self,
+            rules: "IGameRules",
             towers: List[List[int]],
-            movements: int):
+            cost: CostType):
+        super().__init__(rules, cost)
         self.towers = towers
-        self.movements = movements
 
     @override
     def next_player(
@@ -44,22 +46,21 @@ class HanoiPosition(IPosition):
     def __eq__(
             self,
             other: "HanoiPosition"):
-        return self.towers == other.towers and self.movements == other.movements
+        return self.towers == other.towers and self.cost() == other.cost()
 
     def __str__(self):
 
         max_height = max([len(tower) for tower in self.towers])
-        max_piece = max([max(tower, default=0) for tower in self.towers])
+        max_piece = max([max(tower, default=0) for tower in self.towers])+1
         max_width = max_piece * 2
 
         st = ""
-        st += "\n" + "=" * (max_width + 1) * len(self.towers) + "\n"
-        st += f"Movements: {self.movements}\n\n"
+        st += f"Cost: {self.cost()}\n\n"
 
         for level in reversed(range(max_height)):
             for tower in self.towers:
                 if level < len(tower):
-                    piece_width = (max_piece - tower[level] + 1) * 2
+                    piece_width = (max_piece - tower[level]) * 2
                     padding = (max_width - piece_width) // 2
                     st += " " * padding + "#" * piece_width + " " * padding + " "
                 else:
@@ -68,7 +69,7 @@ class HanoiPosition(IPosition):
 
         for i, _ in enumerate(self.towers):
             st += "=" * max_width + " "
-        st += "\n" + "=" * (max_width + 1) * len(self.towers) + "\n"
+
         st += "\n"
 
         return st
@@ -101,14 +102,20 @@ class HanoiMovement(IMovement):
 
 class HanoiRules(IGameRules):
 
+    DefaultPieces = 4
+
+    @staticmethod
+    def generate_initial_towers(n: int) -> List[List[int]]:
+        return [list(range(n)), [], []]
+
     def __init__(
             self,
-            initial_towers: List[List[int]] = [[1, 2, 3, 4], [], []]):
+            n: int = DefaultPieces):
         """
         Args:
-            initial_towers: The initial position of the pieces in the towers.
+            n: The number of pieces in the game.
         """
-        self.initial_towers = initial_towers
+        self.n = n
 
     @override
     def n_players(self) -> int:
@@ -117,8 +124,9 @@ class HanoiRules(IGameRules):
     @override
     def first_position(self) -> HanoiPosition:
         return HanoiPosition(
-            towers=self.initial_towers,
-            movements=0)
+            rules=self,
+            towers=HanoiRules.generate_initial_towers(self.n),
+            cost=0)
 
     @override
     def next_position(
@@ -127,8 +135,9 @@ class HanoiRules(IGameRules):
             position: HanoiPosition) -> HanoiPosition:
 
         new_position = HanoiPosition(
+            rules=self,
             towers=position.towers.copy(),
-            movements=position.movements + 1)
+            cost=position.cost() + 1)
 
         x = new_position.towers[movement.tower_source].pop()
         new_position.towers[movement.tower_target].append(x)
@@ -140,7 +149,7 @@ class HanoiRules(IGameRules):
             self,
             position: HanoiPosition) -> Iterator[HanoiMovement]:
         movements_result = []
-        top_towers = [tower[-1] if len(tower) > 0 else 0 for tower in position.towers]
+        top_towers = [tower[-1] if len(tower) > 0 else -1 for tower in position.towers]
 
         for i in range(len(position.towers)):
             for j in range(len(position.towers)):
@@ -164,5 +173,7 @@ class HanoiRules(IGameRules):
     @override
     def score(
             self,
-            position: HanoiPosition) -> dict[PlayerIndex, float]:
-        return {PlayerIndex.FirstPlayer : position.movements}
+            position: HanoiPosition) -> ScoreBoard:
+        s = ScoreBoard()
+        s.add_score(PlayerIndex.FirstPlayer, position.cost())
+        return s

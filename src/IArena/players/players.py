@@ -48,15 +48,29 @@ class RandomPlayer(DummyPlayer):
 
 class PlayablePlayer(DummyPlayer):
 
+    SeparatorN = 40
+
     @override
     def play(
             self,
             position: IPosition) -> IMovement:
-        possibilities = self.rules_.possible_movements(position)
-        print (f'{position}')
+
+        possibilities = list(self.rules_.possible_movements(position))
+
+        print ("=" * PlayablePlayer.SeparatorN)
+        print (f"Next player: {position.next_player()}")
+        print ("-" * PlayablePlayer.SeparatorN)
+        print (position)
+        print ("-" * PlayablePlayer.SeparatorN)
+        print ("Movements:")
+
         for i, p in enumerate(possibilities):
             print(f' {i}: {p}')
+
+        print ("=" * PlayablePlayer.SeparatorN)
+
         move = int(input())
+
         return possibilities[move]
 
 

@@ -3,7 +3,7 @@ from typing import Iterator
 
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
-from IArena.interfaces.PlayerIndex import PlayerIndex
+from IArena.interfaces.Score import ScoreBoard
 from IArena.utils.decorators import pure_virtual
 
 
@@ -42,7 +42,7 @@ class IGameRules:
     @pure_virtual
     def score(
             self,
-            position: IPosition) -> dict[PlayerIndex, float]:
+            position: IPosition) -> ScoreBoard:
         pass
 
     def is_movement_possible(

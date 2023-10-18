@@ -7,7 +7,7 @@ import math
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
-from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
+from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.utils.decorators import override
 
 """
@@ -16,71 +16,43 @@ There is a grid of NxN and the player must reach the position [N-1,N-1] from [0,
 The player can move in 4 directions: up, down, left and right.
 Each movement has a cost equal to the weight of the square.
 The player must reach the end with the minimum cost.
+The grid is not known a priori, and must be discovered by the player step by step.
 """
 
-class BlindWalkSquare:
+class BlindWalkMovement(Enum, IMovement):
     """
-    Represents a square in the grid.
+    Represents the movement of the player in the grid.
 
-    Attributes:
-        position: List[int] size(2): The position of the square in the grid.
-        weight: The cost to move to this square.
+    Values:
+        Up: 0 - Move up.
+        Down: 1 - Move down.
+        Left: 2 - Move left.
+        Right: 3 - Move right.
     """
-    def __init__(
-            self,
-            position: List[int],
-            weight: int):
-        self.position = position
-        self.weight = weight
-
-    def __str__(self) -> str:
-        return "| {0:4d} |".format(self.weight)
-
-
-class BlindWalkMovement(IMovement):
-    """
-    Represents the movement of the player in the game.
-
-    Attributes:
-        direction: The direction of the movement.
-    """
-
-    class MovementDirection(Enum):
-        Up = 0
-        Down = 1
-        Left = 2
-        Right = 3
-
-    def __init__(
-            self,
-            direction: MovementDirection):
-        self.direction = direction
-
-    def __eq__(
-            self,
-            other: "BlindWalkMovement"):
-        return self.direction == other.direction
-
-    def __str__(self):
-        return f'{{direction: {self.direction}}}'
+    Up = 0
+    Down = 1
+    Left = 2
+    Right = 3
 
 
 class BlindWalkPosition(IPosition):
     """
-    Represents the position of the player in the game.
+    Represents the position of the player in the grid.
 
     Attributes:
-        square: The square where the player is.
+        x: The row of the position (goal N-1)
+        y: The column of the position (goal N-1)
         cost: The cost of the path to reach this position.
-        neighbors: The neighbors of the square.
     """
 
     def __init__(
             self,
-            square: BlindWalkSquare,
+            x: int,
+            y: int,
             cost: int,
-            neighbors: Dict[BlindWalkMovement.MovementDirection, BlindWalkSquare]):
-        self.square = square
+            neighbors: Dict[BlindWalkMovement, int]):
+        self.x = x
+        self.y = y
         self.cost = cost
         self.neighbors = neighbors
 
@@ -92,33 +64,38 @@ class BlindWalkPosition(IPosition):
     def __eq__(
             self,
             other: "BlindWalkPosition"):
-        return self.square == other.square and self.cost == other.cost
+        return self.x == other.x and self.y == other.y and self.cost == other.cost and self.neighbors == other.neighbors
 
     def __str__(self):
-        st = "=============================================\n"
-        st += f"Square: {self.square.position}   Cost: {self.cost}\n\n"
-        for direction, neighbor in self.neighbors.items():
-            st += "  " + str(direction) + "  " + str(neighbor) + "\n"
-        st += "=============================================\n"
-        return st
+        return f'{{[x: {self.x}, y: {self.y}]  accumulated cost: {self.cost}  neighbors: {self.neighbors}}}'
 
 
 class BlindWalkMap:
 
     def __init__(
             self,
-            squares: List[List[BlindWalkSquare]]):
-        self.squares = squares
+            squares: List[List[int]]):
+        self.squares__ = squares
 
     def __str__(self):
-        st = ""
-        st += "-" * 8 * len(self.squares[0]) + "\n"
-        for row in self.squares:
-            for square in row:
-                st += str(square)
-            st += "\n" + "-" * 8 * len(self.squares[0]) + "\n"
-        return st
+        return '\n'.join([' '.join(["%0:4d".format(square) for square in row]) for row in self.squares])
 
+    def __len__(self):
+        return len(self.squares)
+
+    def __getitem__(self, i, j):
+        return self.squares[i][j]
+
+    def goal(self):
+        return (len(self)-1, len(self)-1)
+
+    def is_goal(self, position: BlindWalkPosition):
+        return position.x == len(self.squares) - 1 and position.y == len(self.squares[0]) - 1
+
+    def get_matrix(self) -> List[List[int]]:
+        return self.squares
+
+    @staticmethod
     def generate_random_map(rows: int, cols: int, seed: int = 0):
         random.seed(seed)
         lambda_parameter = 0.5  # You can adjust this to your preference
@@ -126,40 +103,30 @@ class BlindWalkMap:
         def exponential_random_number():
             return max(1, int(-1/lambda_parameter * math.log(1 - random.random())))
 
-        return BlindWalkMap([
-            [
-                BlindWalkSquare(
-                    position=[i, j],
-                    weight=exponential_random_number()
-                ) for j in range(cols)
-            ] for i in range(rows)
-        ])
+        return BlindWalkMap(
+            [[exponential_random_number() for j in range(cols)] for i in range(rows)])
 
-    def get_neigbhours(self, square: BlindWalkSquare) -> Dict[BlindWalkMovement.MovementDirection, BlindWalkSquare]:
-        row = square.position[0]
-        col = square.position[1]
-        result = {}
-        if row > 0:
-            result[BlindWalkMovement.MovementDirection.Up] = self.squares[row - 1][col]
-        if row < len(self.squares) - 1:
-            result[BlindWalkMovement.MovementDirection.Down] = self.squares[row + 1][col]
-        if col > 0:
-            result[BlindWalkMovement.MovementDirection.Left] = self.squares[row][col - 1]
-        if col < len(self.squares[row]) - 1:
-            result[BlindWalkMovement.MovementDirection.Right] = self.squares[row][col + 1]
+    def get_possible_movements(self, position: BlindWalkPosition) -> List[BlindWalkMovement]:
+        result = []
+        if position.x > 0:
+            result[BlindWalkMovement.Up] = self.squares[position.x - 1][position.y]
+        if position.x < len(self.squares) - 1:
+            result[BlindWalkMovement.Down] = self.squares[position.x + 1][position.y]
+        if position.y > 0:
+            result[BlindWalkMovement.Left] = self.squares[position.x][position.y - 1]
+        if position.y < len(self.squares[position.x]) - 1:
+            result[BlindWalkMovement.Right] = self.squares[position.x][position.y + 1]
         return result
 
-    def get_next_position(self, square: BlindWalkSquare, movement: BlindWalkMovement):
-        if movement == BlindWalkMovement.MovementDirection.Up:
-            return self.squares[square.position[0]-1][square.position[1]]
-        elif movement == BlindWalkMovement.MovementDirection.Down:
-            return self.squares[square.position[0]+1][square.position[1]]
-        elif movement == BlindWalkMovement.MovementDirection.Right:
-            return self.squares[square.position[0]][square.position[1]+1]
-        elif movement == BlindWalkMovement.MovementDirection.Left:
-            return self.squares[square.position[0]][square.position[1]-1]
-
-
+    def get_next_position(self, position: BlindWalkPosition, movement: BlindWalkMovement) -> BlindWalkPosition:
+        if movement == BlindWalkMovement.Up:
+            return BlindWalkPosition(position.x - 1, position.y, position.cost + self.squares[position.x - 1][position.y])
+        if movement == BlindWalkMovement.Down:
+            return BlindWalkPosition(position.x + 1, position.y, position.cost + self.squares[position.x + 1][position.y])
+        if movement == BlindWalkMovement.Left:
+            return BlindWalkPosition(position.x, position.y - 1, position.cost + self.squares[position.x][position.y - 1])
+        if movement == BlindWalkMovement.Right:
+            return BlindWalkPosition(position.x, position.y + 1, position.cost + self.squares[position.x][position.y + 1])
 
 
 class BlindWalkRules(IGameRules):
@@ -189,36 +156,31 @@ class BlindWalkRules(IGameRules):
     @override
     def first_position(self) -> BlindWalkPosition:
         return BlindWalkPosition(
-            square=self.__map.squares[0][0],
-            cost=0,
-            neighbors=self.__map.get_neigbhours(self.__map.squares[0][0]))
+            x=0,
+            y=0,
+            cost=0)
 
     @override
     def next_position(
             self,
             movement: BlindWalkMovement,
             position: BlindWalkPosition) -> BlindWalkPosition:
-        new_square = self.__map.get_next_position(position.square, movement)
-        return BlindWalkPosition(
-            new_square,
-            cost=position.cost + new_square.weight,
-            neighbors=self.__map.get_neigbhours(new_square))
+        return self.__map.get_next_position(position, movement)
 
     @override
     def possible_movements(
             self,
             position: BlindWalkPosition) -> Iterator[BlindWalkMovement]:
-        movements = self.__map.get_neigbhours(position.square)
-        return list(movements.keys())
+        return self.__map.get_possible_movements(position)
 
     @override
     def finished(
             self,
             position: BlindWalkPosition) -> bool:
-        return position.square.position[0] == len(self.__map.squares) - 1 and position.square.position[1] == len(self.__map.squares[0]) - 1
+        return position.map.is_goal(position)
 
     @override
     def score(
             self,
             position: BlindWalkPosition) -> dict[PlayerIndex, float]:
-        return position.cost
+        return {PlayerIndex.FirstPlayer : position.cost}

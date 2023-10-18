@@ -102,7 +102,7 @@ class NimRules(IGameRules):
 
         next_player = two_player_game_change_player(position.next_player())
         lines = list(position.lines)
-        lines[movement.line_index] -= movement.Nim
+        lines[movement.line_index] -= movement.remove
 
         return NimPosition(
             lines=lines,
@@ -121,7 +121,7 @@ class NimRules(IGameRules):
 
                 new_movement = NimMovement(
                     line_index=index,
-                    Nim=i+1
+                    remove=i+1
                 )
                 movements_result.append(new_movement)
 
@@ -138,6 +138,6 @@ class NimRules(IGameRules):
             self,
             position: NimPosition) -> dict[PlayerIndex, float]:
         return {
-            position.next_player() : 0.0,
-            two_player_game_change_player(position.next_player()) : 1.0
+            position.next_player() : 1.0,
+            two_player_game_change_player(position.next_player()) : 0.0
         }
