@@ -29,3 +29,11 @@
    /src/games/tutorials/nqueens
    /src/games/tutorials/coins
    /src/games/tutorials/mastermind
+
+
+.. toctree::
+   :caption: Arena
+   :maxdepth: 2
+   :hidden:
+
+   /src/arena/arena

@@ -57,3 +57,53 @@ The player can create its own movement or choose one from the list of possible m
         rules = position.get_rules()
         possible_movements = rules.possible_movements(position)
         movement = possible_movements[...]
+
+
+-----
+Arena
+-----
+
+In order to play a game with an autonomous player, an *arena* is required.
+An *Arena* is a class that implements the loop of the game, or the context in which the game is played.
+For further information, see the :ref:`arena` module.
+
+The easiest arena to use is ``GenericGame`` that implements a single loop over the game and make each player play in its turn.
+If you prefer to see step by step the game playing by the player, use ``BroadcastGame``.
+
+.. code-block:: python
+
+    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
+    from IArena.games.Hanoi import HanoiRules, HanoiMovement, HanoiPosition
+
+    rules = HanoiRules()
+    my_player = MyPlayer()
+
+    arena = GenericGame(
+        rules=rules,
+        players=[my_player]
+    )
+    score = arena.play()
+
+
+Multiplayer games
+^^^^^^^^^^^^^^^^^
+
+In games with more than 1 player, you would need another player to play against.
+There are several generic players implemented, please check :ref:`random_player`.
+
+
+.. code-block:: python
+
+    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
+    from IArena.games.Coins import CoinsRules, CoinsMovement, CoinsPosition
+    from IArena.players.players import RandomPlayer
+
+    rules = CoinsRules()
+    my_player = MyPlayer()
+    other_player = RandomPlayer()
+
+    arena = GenericGame(
+        rules=rules,
+        players=[my_player, other_player]
+    )
+    score = arena.play()
