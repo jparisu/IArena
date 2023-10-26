@@ -123,10 +123,10 @@ There are 2 ways to construct the rules:
   .. code-block:: python
 
     # Secret code with N=4 and M=6
-    rules = mastermindRules(secret=[0, 1, 2, 3], m=6)
+    rules = MastermindRules(secret=[0, 1, 2, 3], m=6)
 
     # Secret code with N=8 and M=8
-    rules = mastermindRules(secret=[0, 0, 0, 0, 0, 0, 0, 7], m=8)
+    rules = MastermindRules(secret=[0, 0, 0, 0, 0, 0, 0, 7], m=8)
 
 
 #. Setting arguments ``n: int`` and ``m: int`` in order to generate a random secret code.
@@ -135,7 +135,7 @@ There are 2 ways to construct the rules:
   .. code-block:: python
 
     # Random secret code with N=4 and M=6
-    rules = mastermindRules()
+    rules = MastermindRules()
 
     # Random secret code with N=8 and M=8 reproducible
-    rules = mastermindRules(n=8, m=8, seed=0)
+    rules = MastermindRules(n=8, m=8, seed=0)

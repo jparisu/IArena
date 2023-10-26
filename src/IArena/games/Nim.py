@@ -6,6 +6,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the Nim game.
@@ -24,8 +25,10 @@ class NimPosition(IPosition):
 
     def __init__(
             self,
+            rules: "NimRules",
             lines: List[int],
             next_player: PlayerIndex):
+        super().__init__(rules)
         self.lines = lines
         self.next_player_ = next_player
 
@@ -46,6 +49,12 @@ class NimPosition(IPosition):
             st += (f"  {i}: {'|' * num}\n")
         st += "----------------\n"
         return st
+
+    def __len__(self) -> int:
+        return sum(self.lines)
+
+    def __getitem__(self, item: int) -> int:
+        return self.lines[item]
 
 
 class NimMovement(IMovement):
@@ -91,6 +100,7 @@ class NimRules(IGameRules):
     @override
     def first_position(self) -> NimPosition:
         return NimPosition(
+            rules=self,
             lines=self.original_lines,
             next_player=PlayerIndex.FirstPlayer)
 
@@ -105,6 +115,7 @@ class NimRules(IGameRules):
         lines[movement.line_index] -= movement.remove
 
         return NimPosition(
+            rules=self,
             lines=lines,
             next_player=next_player
         )
@@ -131,13 +142,19 @@ class NimRules(IGameRules):
     def finished(
             self,
             position: NimPosition) -> bool:
-        return sum(position.lines) == 1
+        return sum(position.lines) <= 1
 
     @override
     def score(
             self,
-            position: NimPosition) -> dict[PlayerIndex, float]:
-        return {
-            position.next_player() : 1.0,
-            two_player_game_change_player(position.next_player()) : 0.0
-        }
+            position: NimPosition) -> ScoreBoard:
+        s = ScoreBoard()
+
+        if sum(position.lines) == 1:
+            s.add_score(position.next_player(), 1.0)
+            s.add_score(two_player_game_change_player(position.next_player()), 0.0)
+            return s
+        else:
+            s.add_score(position.next_player(), 0.0)
+            s.add_score(two_player_game_change_player(position.next_player()), 1.0)
+            return s

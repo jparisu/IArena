@@ -8,51 +8,81 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the Prisoner Dilemma game theory problem.
-Given 2 players, can decide whether to cooperate or betray.
+Given 2 players, can decide whether to cooperate or Defect.
 A score table will be given a priori with the score of each player depending on the decision of both.
 The goal is to minimize the score of the player.
 """
 
 
-class PrisonerDilemmaMovement(Enum, IMovement):
+class PrisonerDilemmaMovement(IMovement):
     """
     Represents the movement of one of the players.
 
     Values:
         Cooperate: 0 - Cooperate.
-        Betray: 1 - Betray.
+        Defect: 1 - Defect.
     """
     Cooperate = 0
-    Betray = 1
+    Defect = 1
+
+    def __init__(
+            self,
+            decision: int):
+        self.decision = decision
+
+        if decision != 0:
+            self.decision = PrisonerDilemmaMovement.Defect
+
+    def __eq__(
+            self,
+            other: "PrisonerDilemmaMovement"):
+        return self.decision == other.decision
+
+    def __str__(self):
+        return f'{self.decision}'
+
+    def cooperate() -> int:
+        return PrisonerDilemmaMovement.Cooperate
+
+    def defect() -> int:
+        return PrisonerDilemmaMovement.Defect
+
+    def is_cooperate(self) -> bool:
+        return self.decision == PrisonerDilemmaMovement.Cooperate
+
+    def is_defect(self) -> bool:
+        return self.decision == PrisonerDilemmaMovement.Defect
 
 
 class PrisonerDilemmaScoreTable:
 
-    def __init__(self, score_table: Dict[Dict[PrisonerDilemmaMovement, float]]):
+    def __init__(self, score_table: Dict[PrisonerDilemmaMovement, Dict[PrisonerDilemmaMovement, float]]):
         self.score_table = score_table
 
     def __str__(self):
         return str(self.score_table)
 
-    def generate_random_table(self, seed: int = 0) -> "PrisonerDilemmaScoreTable":
+    def generate_random_table(seed: int = 0) -> "PrisonerDilemmaScoreTable":
         random.seed(seed)
         scores = sorted([random.random() for _ in range(4)])
-        return {
+        return PrisonerDilemmaScoreTable({
             PrisonerDilemmaMovement.Cooperate: {
                 PrisonerDilemmaMovement.Cooperate: scores[1],
-                PrisonerDilemmaMovement.Betray: scores[3]
+                PrisonerDilemmaMovement.Defect: scores[3]
             },
-            PrisonerDilemmaMovement.Betray: {
+            PrisonerDilemmaMovement.Defect: {
                 PrisonerDilemmaMovement.Cooperate: scores[0],
-                PrisonerDilemmaMovement.Betray: scores[2]
+                PrisonerDilemmaMovement.Defect: scores[2]
             }
-        }
+        })
 
     def score(self, player_movement: PrisonerDilemmaMovement, opponent_movement: PrisonerDilemmaMovement) -> float:
         return self.score_table[player_movement][opponent_movement]
+
 
 class PrisonerDilemmaPosition(IPosition):
     """
@@ -62,20 +92,25 @@ class PrisonerDilemmaPosition(IPosition):
     """
     def __init__(
             self,
-            first_player_position: "PrisonerDilemmaPosition" = None,
+            rules: "PrisonerDilemmaRules",
+            last_position: "PrisonerDilemmaPosition" = None,
             new_movement: PrisonerDilemmaMovement = None):
-        if first_player_position:
-            self.__first_player_movement = first_player_position.__new_movement
-            self.__new_movement = new_movement
+        super().__init__(rules)
+        if last_position is None:
+            self.__first_player_movement = None
+            self.__second_player_movement = None
+        elif last_position.first_player_already_played():
+            self.__first_player_movement = last_position.__first_player_movement
+            self.__second_player_movement = new_movement
         else:
             self.__first_player_movement = new_movement
-            self.__new_movement = None
+            self.__second_player_movement = None
 
     def first_player_already_played(self) -> bool:
         return self.__first_player_movement is not None
 
     def second_player_already_played(self) -> bool:
-        return self.__new_movement is not None
+        return self.__second_player_movement is not None
 
     @override
     def next_player(
@@ -88,18 +123,18 @@ class PrisonerDilemmaPosition(IPosition):
     def __eq__(
             self,
             other: "PrisonerDilemmaPosition"):
-        return self.__first_player_movement == other.__first_player_movement and self.__new_movement == other.__new_movement
+        return self.__first_player_movement == other.__first_player_movement and self.__second_player_movement == other.__second_player_movement
 
     def __str__(self):
-        return f"Player: {self.next_player()}"
+        return f"Player: {self.next_player()}\nScore Table: {self.rules.get_score_table()}\n"
 
     def score(self, score_table: PrisonerDilemmaScoreTable) -> dict[PlayerIndex, float]:
-        if self.__first_player_movement is None or self.__new_movement is None:
+        if self.__first_player_movement is None or self.__second_player_movement is None:
             return None
 
         return {
-            PlayerIndex.FirstPlayer: score_table.score_table(self.__first_player_movement, self.__new_movement),
-            two_player_game_change_player(PlayerIndex.FirstPlayer): score_table.score_table(self.__new_movement, self.__first_player_movement)
+            PlayerIndex.FirstPlayer: score_table.score(self.__first_player_movement, self.__second_player_movement),
+            two_player_game_change_player(PlayerIndex.FirstPlayer): score_table.score(self.__second_player_movement, self.__first_player_movement)
         }
 
 
@@ -121,7 +156,12 @@ class PrisonerDilemmaRules(IGameRules):
             max_play: The maximum number of PrisonerDilemma that can be removed.
         """
         if score_table is None:
-            score_table = PrisonerDilemmaScoreTable.generate_random_table(seed)
+            self.score_table = PrisonerDilemmaScoreTable.generate_random_table(seed)
+        else:
+            self.score_table = score_table
+
+    def get_score_table(self) -> PrisonerDilemmaScoreTable:
+        return self.score_table
 
     @override
     def n_players(self) -> int:
@@ -129,17 +169,17 @@ class PrisonerDilemmaRules(IGameRules):
 
     @override
     def first_position(self) -> PrisonerDilemmaPosition:
-        return PrisonerDilemmaPosition()
+        return PrisonerDilemmaPosition(rules=self)
 
     @override
     def next_position(
             self,
             movement: PrisonerDilemmaMovement,
             position: PrisonerDilemmaPosition) -> PrisonerDilemmaPosition:
-        if position.first_player_already_played():
-            return PrisonerDilemmaPosition(
-                first_player_position=position,
-                new_movement=movement)
+        return PrisonerDilemmaPosition(
+            rules=self,
+            last_position=position,
+            new_movement=movement)
 
     @override
     def possible_movements(
@@ -147,7 +187,7 @@ class PrisonerDilemmaRules(IGameRules):
             position: PrisonerDilemmaPosition) -> Iterator[PrisonerDilemmaMovement]:
         return [
             PrisonerDilemmaMovement.Cooperate,
-            PrisonerDilemmaMovement.Betray
+            PrisonerDilemmaMovement.Defect
         ]
 
     @override
@@ -159,5 +199,10 @@ class PrisonerDilemmaRules(IGameRules):
     @override
     def score(
             self,
-            position: PrisonerDilemmaPosition) -> dict[PlayerIndex, float]:
-        return position.score()
+            position: PrisonerDilemmaPosition) -> ScoreBoard:
+        scores = position.score(self.score_table)
+        s = ScoreBoard()
+        s.add_score(PlayerIndex.FirstPlayer, scores[PlayerIndex.FirstPlayer])
+        s.add_score(PlayerIndex.SecondPlayer, scores[PlayerIndex.SecondPlayer])
+
+        return s

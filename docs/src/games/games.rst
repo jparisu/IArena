@@ -183,11 +183,38 @@ This is a list of all the games supported and its characteristics:
      - Perfect information
      - **0 sum game**
 
+   * - **Nim**
+     - ``IArena.games.Nim``
+     - :ref:`nim_tutorial`
+     - Nim game.
+     - 2
+     - Deterministic
+     - Perfect information
+     - **0 sum game**
+
+   * - **Tic-Tac-Toe**
+     - ``IArena.games.Tic-Tac-Toe``
+     - :ref:`tictactoe_tutorial`
+     - Tic-Tac-Toe game (3 in a row).
+     - 2
+     - Deterministic
+     - Perfect information
+     - **0 sum game**
+
    * - **Mastermind**
      - ``IArena.games.Mastermind``
      - :ref:`mastermind_tutorial`
      - The classic Mastermind game.
      - 1
+     - Deterministic
+     - Hidden information
+     -
+
+   * - **Prisoner**
+     - ``IArena.games.Prisoner``
+     - :ref:`prisoner_tutorial`
+     - Prisoner Dilemma 2 player game.
+     - 2
      - Deterministic
      - Hidden information
      -
