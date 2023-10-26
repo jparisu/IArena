@@ -5,6 +5,7 @@ Tic-Tac-Toe
 ###########
 
 .. figure:: /resources/images/tictactoe.png
+    :scale: 40%
 
 This game is a classical 2 players game called *Tic-Tac-Toe* or 3 in a row.
 In a board of 3x3 each player plays each turn by putting a piece of his color in an empty cell.

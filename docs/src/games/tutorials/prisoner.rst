@@ -4,7 +4,8 @@
 Prisoner Dilemma
 ################
 
-.. figure:: /resources/images/prisoner.png
+.. figure:: /resources/images/prisoner.gif
+    :scale: 80%
 
 This game is the classical Prisoner Dilemma.
 The objective of the game is minimize your value.

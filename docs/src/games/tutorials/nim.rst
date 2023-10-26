@@ -5,6 +5,7 @@ Nim
 ###
 
 .. figure:: /resources/images/nim.svg
+    :scale: 40%
 
 This game is a classical 2 players game called *Nim*.
 There are ``N`` rows with ``Ni`` sticks in each row.
