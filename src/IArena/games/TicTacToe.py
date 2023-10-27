@@ -8,6 +8,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the Tic Tac Toe or 3 in a row game.
@@ -57,7 +58,9 @@ class TicTacToePosition(IPosition):
 
     def __init__(
             self,
+            rules: "TicTacToeRules",
             board: List[List[PlayerIndex]]):
+        super().__init__(rules)
         self.board = board
 
     @override
@@ -88,6 +91,9 @@ class TicTacToePosition(IPosition):
         st += "----------------\n"
         return st
 
+    def __getitem__(self, item: int) -> int:
+        return self.board[item]
+
 
 class TicTacToeRules(IGameRules):
 
@@ -97,12 +103,11 @@ class TicTacToeRules(IGameRules):
         """
         Args:
             initial_position: The number of TicTacToe at the beginning of the game.
-            min_play: The minimum number of TicTacToe that can be removed.
-            max_play: The maximum number of TicTacToe that can be removed.
         """
         if initial_position is None:
             initial_position = TicTacToePosition(
-                [
+                rules=self,
+                board=[
                     [TicTacToePosition.TicTacToePiece.Empty for _ in range(3)] for _ in range(3)
                 ]
             )
@@ -128,7 +133,7 @@ class TicTacToeRules(IGameRules):
         else:
             board[movement.row][movement.column] = TicTacToePosition.TicTacToePiece.SecondPlayer
 
-        return TicTacToePosition(board=board)
+        return TicTacToePosition(rules=self, board=board)
 
     @override
     def possible_movements(
@@ -184,23 +189,20 @@ class TicTacToeRules(IGameRules):
     @override
     def score(
             self,
-            position: TicTacToePosition) -> dict[PlayerIndex, float]:
+            position: TicTacToePosition) -> ScoreBoard:
+        s = ScoreBoard()
         winner = TicTacToeRules.check_winner(position)
 
         if winner == TicTacToePosition.TicTacToePiece.FirstPlayer:
-            return {
-                PlayerIndex.FirstPlayer: 0.0,
-                PlayerIndex.SecondPlayer: 3.0
-            }
+            s.add_score(PlayerIndex.FirstPlayer, 0.0)
+            s.add_score(PlayerIndex.SecondPlayer, 3.0)
 
-        if winner == TicTacToePosition.TicTacToePiece.SecondPlayer:
-            return {
-                PlayerIndex.FirstPlayer: 3.0,
-                PlayerIndex.SecondPlayer: 0.0
-            }
+        elif winner == TicTacToePosition.TicTacToePiece.SecondPlayer:
+            s.add_score(PlayerIndex.FirstPlayer, 3.0)
+            s.add_score(PlayerIndex.SecondPlayer, 0.0)
 
-        # If there is no winner, it is a draw
-        return {
-            PlayerIndex.FirstPlayer: 1.0,
-            PlayerIndex.SecondPlayer: 1.0
-        }
+        else:
+            s.add_score(PlayerIndex.FirstPlayer, 1.0)
+            s.add_score(PlayerIndex.SecondPlayer, 1.0)
+
+        return s

@@ -5,6 +5,7 @@ Hanoi
 #####
 
 .. figure:: /resources/images/hanoi.png
+    :scale: 80%
 
 This game is the classical Tower of Hanoi puzzle.
 The objective of the game is to move the entire stack of disks from the leftmost to the rightmost rod.

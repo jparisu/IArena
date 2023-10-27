@@ -4,7 +4,8 @@
 Coins
 #####
 
-.. figure:: /resources/images/coins.svg
+.. figure:: /resources/images/coins.png
+    :scale: 30%
 
 This game is a classical 2 players game called *Roman Coins*.
 By turns, each player takes between ``A`` and ``B`` coins from a pile of ``N`` coins.

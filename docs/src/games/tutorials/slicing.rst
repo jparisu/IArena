@@ -5,6 +5,7 @@ Slicing Puzzle
 ##############
 
 .. figure:: /resources/images/slicing.jpg
+    :scale: 60%
 
 This game is the classical Slicing puzzle.
 In a board of ``N x N`` squares, where every square has a number between ``[0, N-2]``, there is one of the squares that is *empty* (``-1``).

@@ -28,7 +28,10 @@
    /src/games/tutorials/slicing
    /src/games/tutorials/nqueens
    /src/games/tutorials/coins
+   /src/games/tutorials/nim
+   /src/games/tutorials/tictactoe
    /src/games/tutorials/mastermind
+   /src/games/tutorials/prisoner
 
 
 .. toctree::

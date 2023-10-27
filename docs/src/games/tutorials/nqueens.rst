@@ -5,6 +5,7 @@ NQueens
 #######
 
 .. figure:: /resources/images/nqueens.svg
+    :scale: 80%
 
 This game is the classical N-Queens puzzle.
 The objective of the game is to place ``N`` queens on a ``N x N`` chessboard so that no two queens attack each other.
