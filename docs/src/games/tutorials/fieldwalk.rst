@@ -1,8 +1,8 @@
-.. _hanoi_tutorial:
+.. _fieldwalk_tutorial:
 
-#####
-Hanoi
-#####
+#########
+FieldWalk
+#########
 
 .. figure:: /resources/images/fieldwalk.png
     :scale: 60%
