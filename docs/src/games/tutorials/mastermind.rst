@@ -5,7 +5,7 @@ Mastermind
 ##########
 
 .. figure:: /resources/images/mastermind.png
-    :scale: 40%
+    :scale: 2%
 
 This game is the classical Mastermind game.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (color pegs) chosen from *M* numbers available ``[0,M)``.
@@ -119,7 +119,7 @@ Constructor
 
 There are 2 ways to construct the rules:
 
-#. Using a secret code already defined.
+1. Using a secret code already defined.
 
   .. code-block:: python
 
@@ -130,7 +130,7 @@ There are 2 ways to construct the rules:
     rules = MastermindRules(secret=[0, 0, 0, 0, 0, 0, 0, 7], m=8)
 
 
-#. Setting arguments ``n: int`` and ``m: int`` in order to generate a random secret code.
+2. Setting arguments ``n: int`` and ``m: int`` in order to generate a random secret code.
    Using argument ``seed: int`` the random generation can be reproduced.
 
   .. code-block:: python
