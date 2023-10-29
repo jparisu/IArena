@@ -8,6 +8,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.utils.decorators import override
+from IArena.interfaces.Score import ScoreBoard
 
 """
 This game represents the HighestCard game.
@@ -61,7 +62,7 @@ class HighestCardPosition(IPosition):
         else:
             self.__cards = deepcopy(previous.__cards)
             self.__bet = deepcopy(previous.__bet)
-            self.__bet[self.next_player()](next_bet)
+            self.__bet[self.next_player()] = next_bet
 
     @override
     def next_player(
@@ -89,7 +90,7 @@ class HighestCardPosition(IPosition):
         # Print each guess in a line together with the correctness
         return f'{{ Next player: {self.next_player()} | Cards: {self.__cards[self.next_player()]}}}'
 
-    def calculate_score(self):
+    def _calculate_score(self) -> ScoreBoard:
         # Calculate how many rounds each player has won
         round_win = [0 for _ in range(self.number_players())]
         for i in range(self.number_cards()):
@@ -103,13 +104,16 @@ class HighestCardPosition(IPosition):
 
         # Calculate the score of each player depending on its bet
         score = {}
+        score = ScoreBoard()
         for i in range(self.number_players()):
-            if self.__bet[i] == round_win[i]:
-                score[i] = -5
-            elif self.__bet[i] < round_win[i]:
-                score[i] = 1 * (round_win[i] - self.__bet[i])
+            if self.__bet[i].bet == round_win[i]:
+                score.add_score(i, -5)
+            elif self.__bet[i].bet < round_win[i]:
+                score.add_score(i, 1 * (round_win[i] - self.__bet[i].bet))
             else:
-                score[i] = 2 * (round_win[i] - self.__bet[i])
+                score.add_score(i, 2 * (self.__bet[i].bet - round_win[i]))
+
+        return score
 
 
 class HighestCardRules(IGameRules):
@@ -119,11 +123,14 @@ class HighestCardRules(IGameRules):
             cards_distribution: Dict[PlayerIndex, List[int]] = None,
             n_players: int = 3,
             m_cards: int = 4,
-            seed: int = 0):
+            seed: int = None):
 
         if cards_distribution is None:
             cards = [i for i in range(n_players*m_cards)]
-            random.seed(seed)
+
+            if seed is not None:
+                random.seed(seed)
+
             random.shuffle(cards)
 
             self.__cards = {}
@@ -147,6 +154,9 @@ class HighestCardRules(IGameRules):
     @override
     def n_players(self) -> int:
         return self.n
+
+    def m_cards(self) -> int:
+        return self.m
 
     @override
     def first_position(self) -> HighestCardPosition:
@@ -181,5 +191,5 @@ class HighestCardRules(IGameRules):
     @override
     def score(
             self,
-            position: HighestCardPosition) -> dict[PlayerIndex, float]:
-        return position.calculate_score()
+            position: HighestCardPosition) -> ScoreBoard:
+        return position._calculate_score()

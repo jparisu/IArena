@@ -43,7 +43,10 @@ class PrisonerDilemmaMovement(IMovement):
         return self.decision == other.decision
 
     def __str__(self):
-        return f'{self.decision}'
+        if self.decision == PrisonerDilemmaMovement.Cooperate:
+            return "<Cooperate>"
+        else:
+            return "<Defect>"
 
     def cooperate() -> int:
         return PrisonerDilemmaMovement.Cooperate
@@ -66,8 +69,11 @@ class PrisonerDilemmaScoreTable:
     def __str__(self):
         return str(self.score_table)
 
-    def generate_random_table(seed: int = 0) -> "PrisonerDilemmaScoreTable":
-        random.seed(seed)
+    def generate_random_table(seed: int = None) -> "PrisonerDilemmaScoreTable":
+
+        if seed is not None:
+            random.seed(seed)
+
         scores = sorted([random.random() for _ in range(4)])
         return PrisonerDilemmaScoreTable({
             PrisonerDilemmaMovement.Cooperate: {
@@ -81,7 +87,7 @@ class PrisonerDilemmaScoreTable:
         })
 
     def score(self, player_movement: PrisonerDilemmaMovement, opponent_movement: PrisonerDilemmaMovement) -> float:
-        return self.score_table[player_movement][opponent_movement]
+        return self.score_table[player_movement.decision][opponent_movement.decision]
 
 
 class PrisonerDilemmaPosition(IPosition):
@@ -148,7 +154,7 @@ class PrisonerDilemmaRules(IGameRules):
     def __init__(
             self,
             score_table: PrisonerDilemmaScoreTable = None,
-            seed: int = 0):
+            seed: int = None):
         """
         Args:
             initial_position: The number of PrisonerDilemma at the beginning of the game.
@@ -186,8 +192,8 @@ class PrisonerDilemmaRules(IGameRules):
             self,
             position: PrisonerDilemmaPosition) -> Iterator[PrisonerDilemmaMovement]:
         return [
-            PrisonerDilemmaMovement.Cooperate,
-            PrisonerDilemmaMovement.Defect
+            PrisonerDilemmaMovement(PrisonerDilemmaMovement.Cooperate),
+            PrisonerDilemmaMovement(PrisonerDilemmaMovement.Defect)
         ]
 
     @override

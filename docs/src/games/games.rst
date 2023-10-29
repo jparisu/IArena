@@ -174,6 +174,15 @@ This is a list of all the games supported and its characteristics:
      - Perfect information
      - *Min score*: 0
 
+   * - **FieldWalk**
+     - ``IArena.games.FieldWalk``
+     - :ref:`fieldwalk_tutorial`
+     - Minimum cost path search.
+     - 1
+     - Deterministic
+     - Perfect information
+     -
+
    * - **Coins**
      - ``IArena.games.Coins``
      - :ref:`coins_tutorial`
@@ -216,5 +225,14 @@ This is a list of all the games supported and its characteristics:
      - Prisoner Dilemma 2 player game.
      - 2
      - Deterministic
+     - Hidden information
+     -
+
+   * - **Highest card**
+     - ``IArena.games.HighestCard``
+     - :ref:`highestcard_tutorial`
+     - Highest card N player game.
+     - N
+     - Random
      - Hidden information
      -
