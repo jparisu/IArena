@@ -46,17 +46,21 @@ The player can create its own movement or choose one from the list of possible m
 
 .. code-block:: python
 
-    def play(
-            self,
-            position: IPosition) -> IMovement:
+    from IArena.interfaces.IPlayer import IPlayer
 
-        # Create next movement from scratch
-        movement = IMovement(...)
+    class MyPlayer(IPlayer):
 
-        # Choose one from the list of possible movements
-        rules = position.get_rules()
-        possible_movements = rules.possible_movements(position)
-        movement = possible_movements[...]
+        def play(
+                self,
+                position: IPosition) -> IMovement:
+
+            # Create next movement from scratch
+            movement = IMovement(...)
+
+            # Choose one from the list of possible movements
+            rules = position.get_rules()
+            possible_movements = rules.possible_movements(position)
+            movement = possible_movements[...]
 
 
 -----

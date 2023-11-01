@@ -7,6 +7,7 @@
    :hidden:
 
    /src/getting_started
+   /src/installation
 
 
 .. toctree::
