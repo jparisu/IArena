@@ -39,9 +39,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.Mastermind.MastermindPosition as MastermindPosition
-  import IArena.games.Mastermind.MastermindMovement as MastermindMovement
-  import IArena.games.Mastermind.MastermindRules as MastermindRules
+  from IArena.games.Mastermind import MastermindPosition
+  from IArena.games.Mastermind import MastermindMovement
+  from IArena.games.Mastermind import MastermindRules
 
 
 ========

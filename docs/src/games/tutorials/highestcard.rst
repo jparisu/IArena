@@ -37,9 +37,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.HighestCard.HighestCardPosition as HighestCardPosition
-  import IArena.games.HighestCard.HighestCardMovement as HighestCardMovement
-  import IArena.games.HighestCard.HighestCardRules as HighestCardRules
+  from IArena.games.HighestCard import HighestCardPosition
+  from IArena.games.HighestCard import HighestCardMovement
+  from IArena.games.HighestCard import HighestCardRules
 
 
 ========

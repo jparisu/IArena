@@ -35,9 +35,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.Nim.NimPosition as NimPosition
-  import IArena.games.Nim.NimMovement as NimMovement
-  import IArena.games.Nim.NimRules as NimRules
+  from IArena.games.Nim import NimPosition
+  from IArena.games.Nim import NimMovement
+  from IArena.games.Nim import NimRules
 
 
 ========

@@ -35,9 +35,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.NQueens.NQueensPosition as NQueensPosition
-  import IArena.games.NQueens.NQueensMovement as NQueensMovement
-  import IArena.games.NQueens.NQueensRules as NQueensRules
+  from IArena.games.NQueens import NQueensPosition
+  from IArena.games.NQueens import NQueensMovement
+  from IArena.games.NQueens import NQueensRules
 
 
 ========

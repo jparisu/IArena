@@ -34,9 +34,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.Coins.CoinsPosition as CoinsPosition
-  import IArena.games.Coins.CoinsMovement as CoinsMovement
-  import IArena.games.Coins.CoinsRules as CoinsRules
+  from IArena.games.Coins import CoinsPosition
+  from IArena.games.Coins import CoinsMovement
+  from IArena.games.Coins import CoinsRules
 
 
 ========

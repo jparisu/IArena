@@ -32,9 +32,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.PrisonerDilemma.PrisonerDilemmaPosition as PrisonerDilemmaPosition
-  import IArena.games.PrisonerDilemma.PrisonerDilemmaMovement as PrisonerDilemmaMovement
-  import IArena.games.PrisonerDilemma.PrisonerDilemmaRules as PrisonerDilemmaRules
+  from IArena.games.PrisonerDilemma import PrisonerDilemmaPosition
+  from IArena.games.PrisonerDilemma import PrisonerDilemmaMovement
+  from IArena.games.PrisonerDilemma import PrisonerDilemmaRules
 
 
 ========

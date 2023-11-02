@@ -31,9 +31,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.FieldWalk.FieldWalkPosition as FieldWalkPosition
-  import IArena.games.FieldWalk.FieldWalkMovement as FieldWalkMovement
-  import IArena.games.FieldWalk.FieldWalkRules as FieldWalkRules
+  from IArena.games.FieldWalk import FieldWalkPosition
+  from IArena.games.FieldWalk import FieldWalkMovement
+  from IArena.games.FieldWalk import FieldWalkRules
 
 
 ========

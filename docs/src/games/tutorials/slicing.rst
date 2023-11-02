@@ -33,9 +33,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.SlicingPuzzle.SlicingPuzzlePosition as SlicingPuzzlePosition
-  import IArena.games.SlicingPuzzle.SlicingPuzzleMovement as SlicingPuzzleMovement
-  import IArena.games.SlicingPuzzle.SlicingPuzzleRules as SlicingPuzzleRules
+  from IArena.games.SlicingPuzzle import SlicingPuzzlePosition
+  from IArena.games.SlicingPuzzle import SlicingPuzzleMovement
+  from IArena.games.SlicingPuzzle import SlicingPuzzleRules
 
 
 ========

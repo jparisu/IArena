@@ -36,9 +36,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.TicTacToe.TicTacToePosition as TicTacToePosition
-  import IArena.games.TicTacToe.TicTacToeMovement as TicTacToeMovement
-  import IArena.games.TicTacToe.TicTacToeRules as TicTacToeRules
+  from IArena.games.TicTacToe import TicTacToePosition
+  from IArena.games.TicTacToe import TicTacToeMovement
+  from IArena.games.TicTacToe import TicTacToeRules
 
 
 ========

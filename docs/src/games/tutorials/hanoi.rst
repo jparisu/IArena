@@ -34,9 +34,9 @@ Import
 
 .. code-block:: python
 
-  import IArena.games.Hanoi.HanoiPosition as HanoiPosition
-  import IArena.games.Hanoi.HanoiMovement as HanoiMovement
-  import IArena.games.Hanoi.HanoiRules as HanoiRules
+  from IArena.games.Hanoi import HanoiPosition
+  from IArena.games.Hanoi import HanoiMovement
+  from IArena.games.Hanoi import HanoiRules
 
 
 ========
