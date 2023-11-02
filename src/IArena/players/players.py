@@ -1,52 +1,40 @@
 
 import random
-# from typing import override
 
 from IArena.interfaces.IPosition import IPosition
-from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.IMovement import IMovement
-from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.utils.decorators import override
 
-class DummyPlayer(IPlayer):
 
-    def __init__(
-            self,
-            rules: IGameRules,
-            player_index: PlayerIndex):
-        self.rules_ = rules
-        self.player_index_ = player_index
-
-
-class FirstPlayer(DummyPlayer):
+class FirstPlayer(IPlayer):
 
     @override
     def play(
             self,
             position: IPosition) -> IMovement:
-        return self.rules_.possible_movements(position)[0]
+        return position.get_rules().possible_movements(position)[0]
 
 
-class LastPlayer(DummyPlayer):
-
-    @override
-    def play(
-            self,
-            position: IPosition) -> IMovement:
-        return self.rules_.possible_movements(position)[-1]
-
-
-class RandomPlayer(DummyPlayer):
+class LastPlayer(IPlayer):
 
     @override
     def play(
             self,
             position: IPosition) -> IMovement:
-        return random.choice(self.rules_.possible_movements(position))
+        return position.get_rules().possible_movements(position)[-1]
 
 
-class PlayablePlayer(DummyPlayer):
+class RandomPlayer(IPlayer):
+
+    @override
+    def play(
+            self,
+            position: IPosition) -> IMovement:
+        return random.choice(position.get_rules().possible_movements(position))
+
+
+class PlayablePlayer(IPlayer):
 
     SeparatorN = 40
 
@@ -55,7 +43,7 @@ class PlayablePlayer(DummyPlayer):
             self,
             position: IPosition) -> IMovement:
 
-        possibilities = list(self.rules_.possible_movements(position))
+        possibilities = list(position.get_rules().possible_movements(position))
 
         print ("=" * PlayablePlayer.SeparatorN)
         print (f"Next player: {position.next_player()}")

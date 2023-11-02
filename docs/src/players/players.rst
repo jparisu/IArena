@@ -46,17 +46,25 @@ The player can create its own movement or choose one from the list of possible m
 
 .. code-block:: python
 
-    def play(
-            self,
-            position: IPosition) -> IMovement:
+    from IArena.interfaces.IPlayer import IPlayer
+    from IArena.games.Hanoi import HanoiRules, HanoiMovement, HanoiPosition
 
-        # Create next movement from scratch
-        movement = IMovement(...)
+    class MyPlayer(IPlayer):
 
-        # Choose one from the list of possible movements
-        rules = position.get_rules()
-        possible_movements = rules.possible_movements(position)
-        movement = possible_movements[...]
+        def play(
+                self,
+                position: HanoiPosition) -> HanoiMovement:
+
+            # Create next movement from scratch
+            movement = IMovement(...)
+
+            # Choose one from the list of possible movements
+            rules = position.get_rules()
+            possible_movements = rules.possible_movements(position)
+            movement = possible_movements[...]
+
+            # Return the movement
+            return movement
 
 
 -----
@@ -73,7 +81,7 @@ If you prefer to see step by step the game playing by the player, use ``Broadcas
 .. code-block:: python
 
     from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
-    from IArena.games.Hanoi import HanoiRules, HanoiMovement, HanoiPosition
+    from IArena.games.Hanoi import HanoiRules
 
     rules = HanoiRules()
     my_player = MyPlayer()
@@ -85,8 +93,9 @@ If you prefer to see step by step the game playing by the player, use ``Broadcas
     score = arena.play()
 
 
+=================
 Multiplayer games
-^^^^^^^^^^^^^^^^^
+=================
 
 In games with more than 1 player, you would need another player to play against.
 There are several generic players implemented, please check :ref:`random_player`.
@@ -107,3 +116,76 @@ There are several generic players implemented, please check :ref:`random_player`
         players=[my_player, other_player]
     )
     score = arena.play()
+
+You may want to repeat the game several times to get a better score.
+For this purpose just use a loop and accumulate the score.
+
+.. code-block:: python
+
+    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
+    from IArena.games.Coins import CoinsRules, CoinsMovement, CoinsPosition
+    from IArena.players.players import RandomPlayer
+
+    rules = CoinsRules()
+    my_player = MyPlayer()
+    other_player = RandomPlayer()
+
+    score = 0
+    for _ in range(50):
+        arena = GenericGame(
+            rules=rules,
+            players=[my_player, other_player]
+        )
+        score += arena.play()
+
+    for _ in range(50):
+        arena = GenericGame(
+            rules=rules,
+            players=[other_player, my_player]
+        )
+        score += arena.play()
+
+    print(score)
+
+
+================
+Heuristic Player
+================
+
+Other way to create a player is to give a heuristic for a position, rather than a movement.
+The already implement player ``HeuristicPlayer`` does check every possible future position,
+by trying every possible movement in a position,
+and calculates the score of the position by the method ``heuristic``.
+Then, it decides the movement with the lower heuristic.
+
+.. code-block:: python
+
+    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
+    from IArena.games.Hanoi import HanoiRules, HanoiMovement, HanoiPosition
+    from IArena.players.HeuristicPlayer import HeuristicPlayer
+
+    class MyPlayer(HeuristicPlayer):
+
+        def heuristic(self, position: HanoiPosition) -> float:
+            # Add code to calculate the heuristic of the position
+            return 0.0
+
+    rules = HanoiRules()
+    my_player = MyPlayer()
+
+    arena = GenericGame(
+        rules=rules,
+        players=[my_player]
+    )
+
+
+.. note::
+
+    Remember that the best movement is the one with the lowest heuristic.
+
+Multiplayer game heuristic player
+---------------------------------
+
+One thing to take into account is that creating an heuristic for a multiplayer game,
+the heuristic must be calculated as the position given is the one that the opponent will play.
+Because the positions in which it applies are the next ones, and not the current ones.

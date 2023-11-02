@@ -4,6 +4,11 @@
 
 **Framework** for testing **AI** system in basic or logic games.
 
+## Documentation
+
+The documentation is available at [Read the Docs](https://iarena.readthedocs.io/en/latest/).
+
+
 ## Architecture
 
 ### Interfaces
