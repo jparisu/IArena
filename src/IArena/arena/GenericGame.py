@@ -4,7 +4,7 @@ from IArena.interfaces.IPlayer import IPlayer
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.interfaces.IMovement import IMovement
 from IArena.utils.decorators import override
 
@@ -25,6 +25,11 @@ class GenericGame:
 
 
     def play(self) -> ScoreBoard:
+
+        # Initialize the players in the game
+        for i, player in enumerate(self.players):
+            player.starting_game(self.rules, i)
+
         current_position = self.rules.first_position()
         finished = self.rules.finished(current_position)
         while not finished:

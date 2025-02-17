@@ -15,3 +15,9 @@ class IPlayer:
             self,
             position: IPosition) -> IMovement:
         pass
+
+    def starting_game(
+            self,
+            rules: IGameRules,
+            player_index: int):
+        pass

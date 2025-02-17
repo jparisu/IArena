@@ -7,33 +7,6 @@ from IArena.interfaces.IPlayer import IPlayer
 from IArena.utils.decorators import override
 
 
-class FirstPlayer(IPlayer):
-
-    @override
-    def play(
-            self,
-            position: IPosition) -> IMovement:
-        return position.get_rules().possible_movements(position)[0]
-
-
-class LastPlayer(IPlayer):
-
-    @override
-    def play(
-            self,
-            position: IPosition) -> IMovement:
-        return position.get_rules().possible_movements(position)[-1]
-
-
-class RandomPlayer(IPlayer):
-
-    @override
-    def play(
-            self,
-            position: IPosition) -> IMovement:
-        return random.choice(position.get_rules().possible_movements(position))
-
-
 class PlayablePlayer(IPlayer):
 
     SeparatorN = 40

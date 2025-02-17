@@ -14,7 +14,7 @@ class PlayableGame(GenericGame):
         super().__init__(
             rules=rules,
             players=[
-                PlayablePlayer(rules, i) for i in range(rules.n_players())])
+                PlayablePlayer() for i in range(rules.n_players())])
 
     def play(self) -> ScoreBoard:
         score = super().play()
