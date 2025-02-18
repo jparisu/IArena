@@ -11,6 +11,46 @@ from IArena.arena.GenericGame import GenericGame
 from IArena.utils.decorators import override
 from IArena.utils.Timer import Timer
 
+
+class RepeatedGame():
+
+    def __init__(
+            self,
+            rules: IGameRules,
+            players: Dict[str, IPlayer],
+            matches: int = 10):
+
+        if rules.n_players() != len(players):
+            raise ValueError("Number of players and game rules do not match.")
+
+        self.rules = rules
+        self.players = players
+        self.matches = matches
+
+
+    def play(self) -> PlayerIndex:
+
+        players_names = list(self.players.keys())
+        game_players = self.rules.n_players()
+
+        score_board = TournamentScoreBoard()
+
+        matching = players_names
+        # Set all possible games
+        for _ in range(self.matches):
+            match_score = self._next_match(matching)
+            score_board.add_match(match_score, matching)
+
+        return score_board
+
+
+    def _next_match(self, players: List[PlayerIndex]) -> ScoreBoard:
+
+        to_play = [self.players[p] for p in players]
+        game = GenericGame(self.rules, to_play)
+        return game.play()
+
+
 class TournamentGame():
 
     def __init__(
@@ -29,15 +69,15 @@ class TournamentGame():
         players_names = list(self.players.keys())
         game_players = self.rules.n_players()
 
-        board = TournamentScoreBoard()
+        score_board = TournamentScoreBoard()
 
         # Set all possible games
         for matching in itertools.permutations(players_names, game_players):
             for _ in range(self.matches):
                 match_score = self._next_match(matching)
-                board.add_match(match_score, matching)
+                score_board.add_match(match_score, matching)
 
-        return board
+        return score_board
 
 
     def _next_match(self, players: List[PlayerIndex]) -> ScoreBoard:
