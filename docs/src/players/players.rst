@@ -125,7 +125,7 @@ For this purpose just use a loop and accumulate the score.
     from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
     from IArena.games.Coins import CoinsRules, CoinsMovement, CoinsPosition
     from IArena.players.players import RandomPlayer
-    from IArena.interfaces.Score import ScoreBoard
+    from IArena.interfaces.ScoreBoard import ScoreBoard
 
     rules = CoinsRules()
     my_player = MyPlayer()

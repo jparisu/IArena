@@ -4,6 +4,7 @@ import math
 
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
+from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.utils.decorators import override
 from IArena.utils.RandomGenerator import RandomGenerator
@@ -49,3 +50,13 @@ class ConsistentRandomPlayer(IPlayer):
         movements = position.get_rules().possible_movements(position)
         selection = self.rg.randint(0, len(movements) - 1)
         return movements[selection]
+
+
+class MatchConsistentRandomPlayer(ConsistentRandomPlayer):
+
+    @override
+    def starting_game(
+            self,
+            rules: IGameRules,
+            player_index: int):
+        self.rg.reset_seed()

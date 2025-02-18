@@ -3,7 +3,7 @@ from typing import Iterator
 
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.utils.decorators import pure_virtual
 
 

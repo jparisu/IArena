@@ -8,11 +8,76 @@ from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 
 """
 This game represents the wide known connect 4 game.
 """
+
+class Connect4Matrix:
+
+    EMPTY_CELL = -1
+
+    def __init__(
+            self,
+            matrix: List[List[int]],
+            next_player: PlayerIndex):
+        self.matrix = matrix
+        self.next_player = next_player
+
+    def n_rows(self) -> int:
+        return len(self.matrix)
+
+    def n_columns(self) -> int:
+        return len(self.matrix[0])
+
+    def __hash__(self):
+        return hash(str(self))
+
+    # @classmethod
+    # def from_file(cls, file) -> "Connect4Matrix":
+    #     """
+    #     Reads a file and returns a Connect4Position object.
+    #     The file must contains a square matrix with 0s, 1s and '.'.
+    #     """
+    #     with open(file, 'r') as f:
+
+    #         lines = f.readlines()
+    #         next_player = int(lines[0])
+    #         matrix = []
+    #         for line in lines[1:]:
+    #             # Convert '.' to -1
+    #             matrix.append([int(x) if x != '.' else Connect4Matrix.EMPTY_CELL for x in line.strip()])
+
+    #         return cls(matrix, next_player)
+
+    def __str__(self) -> str:
+        n_rows = len(self.matrix)
+        n_cols = len(self.matrix[0])
+        st = str(self.next_player) + "|" + str(n_rows) + "|"
+        for c in range(n_cols):
+            for r in range(n_rows-1, -1, -1):
+                if self.matrix[r][c] == Connect4Matrix.EMPTY_CELL:
+                    break
+                st += str(self.matrix[r][c])
+            st += "|"
+        return st
+
+    def from_str(st: str):
+        """
+        Creates a Connect4Matrix object from a string.
+        """
+        parts = st.split("|")
+        next_player = int(parts[0])
+        n_rows = int(parts[1])
+        n_cols = len(parts) - 3
+        matrix = [[Connect4Matrix.EMPTY_CELL for _ in range(n_cols)] for _ in range(n_rows)]
+        for c, part in enumerate(parts[2:]):
+            for r in range(len(part)):
+                matrix[n_rows - 1 - r][c] = int(part[r])
+
+        return Connect4Matrix(matrix, next_player)
+
 
 class Connect4Position(IPosition):
     """
@@ -23,61 +88,40 @@ class Connect4Position(IPosition):
         m: The number of columns of the board [default=7].
     """
 
-    EMPTY_CELL = -1
-
     def __init__(
             self,
             rules: "Connect4Rules",
-            matrix: List[List[int]],
-            next_player: PlayerIndex):
-        super().__init__(rules)
-        self.matrix = matrix
-        self.next_player_ = next_player
+            position: Connect4Matrix):
+        IPosition.__init__(self, rules)
+        self.position = position
 
     @override
     def next_player(
             self) -> PlayerIndex:
-        return self.next_player_
+        return self.position.next_player
+
+    def get_matrix(self) -> List[List[int]]:
+        return self.position.matrix
 
     def n_rows(self) -> int:
-        return len(self.matrix)
+        return self.position.n_rows()
 
     def n_columns(self) -> int:
-        return len(self.matrix[0])
-
-    def read_file(file):
-        """
-        Reads a file and returns a Connect4Position object.
-        The file must contains a square matrix with 0s, 1s and '.'.
-        """
-        with open(file, 'r') as f:
-
-            lines = f.readlines()
-            matrix = []
-            for line in lines:
-                # Convert '.' to -1
-                matrix.append([int(x) if x != '.' else Connect4Position.EMPTY_CELL for x in line.strip()])
-
-            return matrix
+        return self.position.n_columns()
 
     def __eq__(
             self,
             other: "Connect4Position"):
-        # Compare matrix
-        if self.matrix != other.matrix:
-            return False
-        # Compare next player
-        if self.next_player_ != other.next_player_:
-            return False
-        return True
+        return str(self.position) == str(other.position)
 
     def __str__(self):
 
-        st = f"Player: {self.next_player_}\n"
+        st = f"Player: {self.next_player()}\n"
 
         # PRINT MATRIX
-        r = len(self.matrix)
-        c = len(self.matrix[0])
+        matrix = self.position.matrix
+        r = len(matrix)
+        c = len(matrix[0])
 
         st += "  " + "   ".join(map(str, range(c))) + "  \n"
         h_line = "+" + "---+" * c + "\n"
@@ -86,28 +130,20 @@ class Connect4Position(IPosition):
         for i in range(r):
             st += "|"
             for j in range(c):
-                if self.matrix[i][j] == Connect4Position.EMPTY_CELL:
+                if matrix[i][j] == Connect4Matrix.EMPTY_CELL:
                     st += "   |"
                 else:
-                    st += f" {self.matrix[i][j]} |"
+                    st += f" {matrix[i][j]} |"
             st += "\n"
             st += h_line
 
-
-        return st
-
-    def short_str(self):
-        st = str(self.next_player_) + "|"
-        for c in range(self.n_columns()):
-            for r in range(self.n_rows()-1, -1, -1):
-                if self.matrix[r][c] == Connect4Position.EMPTY_CELL:
-                    break
-                st += str(self.matrix[r][c])
-            st += "|"
         return st
 
     def __hash__(self):
-        return hash(self.short_str())
+        return hash(self.position)
+
+    def from_str(rules: "Connect4Rules", st: str) -> "Connect4Position":
+        return Connect4Position(rules, Connect4Matrix.from_str(st))
 
 
 class Connect4Movement(IMovement):
@@ -138,24 +174,22 @@ class Connect4Rules(IGameRules):
             self,
             initial_player: PlayerIndex = PlayerIndex.FirstPlayer,
             initial_matrix: List[List[int]] = None,
-            initial_matrix_file: str = None):
+            initial_matrix_str: str = None):
         """
         Args:
             initial_matrix: The initial matrix of the game.
             initial_matrix_file: The file with the initial matrix.
         """
-        if not initial_matrix and not initial_matrix_file:
-            # Use default initial matrix
-            self.initial_matrix = [
-                [Connect4Position.EMPTY_CELL for _ in range(7)] for _ in range(6)]
-        elif initial_matrix:
-            self.initial_matrix = initial_matrix
+        if initial_matrix:
+            self.initial_position = initial_matrix
+        elif initial_matrix_str:
+            self.initial_position = Connect4Position.from_str(self, initial_matrix_str)
         else:
-            self.initial_matrix = Connect4Position.read_file(initial_matrix_file)
+            self.initial_position = [
+                [Connect4Matrix.EMPTY_CELL for _ in range(7)] for _ in range(6)]
 
-        self.initial_player = initial_player
-        self.n_rows = len(self.initial_matrix)
-        self.n_cols = len(self.initial_matrix[0])
+        self.n_rows = self.initial_position.n_rows()
+        self.n_cols = self.initial_position.n_columns()
 
     def n_rows(self) -> int:
         """Number of rows of the board."""
@@ -171,10 +205,7 @@ class Connect4Rules(IGameRules):
 
     @override
     def first_position(self) -> Connect4Position:
-        return Connect4Position(
-            self,
-            self.initial_matrix,
-            PlayerIndex.FirstPlayer)
+        return self.initial_position
 
     @override
     def next_position(
@@ -182,27 +213,32 @@ class Connect4Rules(IGameRules):
             movement: Connect4Movement,
             position: Connect4Position) -> Connect4Position:
 
+        matrix = position.get_matrix()
+
         # Check if the movement is valid
         if movement.n < 0 or movement.n >= self.n_cols:
             raise Exception(f"Invalid movement: invalid column: {movement.n}")
         # Check if the column is not full
-        if position.matrix[0][movement.n] != Connect4Position.EMPTY_CELL:
+        if matrix[0][movement.n] != Connect4Matrix.EMPTY_CELL:
             raise Exception(f"Invalid movement: full column: {movement.n}")
 
         # Copy matrix
-        matrix = copy.deepcopy(position.matrix)
+        matrix = copy.deepcopy(matrix)
 
         # Find the first empty cell in the column
         i = self.n_rows - 1
-        while i >= 0 and matrix[i][movement.n] != Connect4Position.EMPTY_CELL:
+        while i >= 0 and matrix[i][movement.n] != Connect4Matrix.EMPTY_CELL:
             i -= 1
 
         matrix[i][movement.n] = position.next_player()
 
         return Connect4Position(
             self,
-            matrix,
-            two_player_game_change_player(position.next_player()))
+            Connect4Matrix(
+                matrix=matrix,
+                next_player=two_player_game_change_player(position.next_player())
+            )
+        )
 
 
     @override
@@ -212,7 +248,7 @@ class Connect4Rules(IGameRules):
         # Check if the column is not full
         movements = []
         for i in range(self.n_cols):
-            if position.matrix[0][i] == Connect4Position.EMPTY_CELL:
+            if position.get_matrix()[0][i] == Connect4Matrix.EMPTY_CELL:
                 movements.append(Connect4Movement(i))
         return movements
 
@@ -251,26 +287,27 @@ class Connect4Rules(IGameRules):
         """
         Look for 4 connected coins in the board.
         """
+        matrix = position.get_matrix()
         for r in range(self.n_rows):
             for c in range(self.n_cols):
-                if position.matrix[r][c] == Connect4Position.EMPTY_CELL:
+                if matrix[r][c] == Connect4Matrix.EMPTY_CELL:
                     continue
-                player = position.matrix[r][c]
+                player = matrix[r][c]
                 # Check horizontal
-                if c + 3 < self.n_cols and all(position.matrix[r][c + i] == player for i in range(4)):
+                if c + 3 < self.n_cols and all(matrix[r][c + i] == player for i in range(4)):
                     return player
                 # Check vertical
-                if r + 3 < self.n_rows and all(position.matrix[r + i][c] == player for i in range(4)):
+                if r + 3 < self.n_rows and all(matrix[r + i][c] == player for i in range(4)):
                     return player
                 # Check diagonal (down-right)
-                if r + 3 < self.n_rows and c + 3 < self.n_cols and all(position.matrix[r + i][c + i] == player for i in range(4)):
+                if r + 3 < self.n_rows and c + 3 < self.n_cols and all(matrix[r + i][c + i] == player for i in range(4)):
                     return player
                 # Check diagonal (down-left)
-                if r + 3 < self.n_rows and c - 3 >= 0 and all(position.matrix[r + i][c - i] == player for i in range(4)):
+                if r + 3 < self.n_rows and c - 3 >= 0 and all(matrix[r + i][c - i] == player for i in range(4)):
                     return player
 
         # If the board is full, return a draw
-        if all(position.matrix[r][c] != Connect4Position.EMPTY_CELL for r in range(self.n_rows) for c in range(self.n_cols)):
+        if all(matrix[r][c] != Connect4Matrix.EMPTY_CELL for r in range(self.n_rows) for c in range(self.n_cols)):
             return PlayerIndex.Draw
 
         return None  # No win found

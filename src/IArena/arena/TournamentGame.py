@@ -6,7 +6,7 @@ from IArena.interfaces.IPlayer import IPlayer
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.arena.GenericGame import GenericGame
 from IArena.utils.decorators import override
 from IArena.utils.Timer import Timer

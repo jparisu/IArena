@@ -6,7 +6,7 @@ from IArena.interfaces.IPosition import CostPosition, CostType
 from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.utils.decorators import override
 
 """

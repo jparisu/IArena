@@ -6,7 +6,7 @@ from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
 from IArena.utils.decorators import override
-from IArena.interfaces.Score import ScoreBoard
+from IArena.interfaces.ScoreBoard import ScoreBoard
 
 """
 This game represents the Nim game.
