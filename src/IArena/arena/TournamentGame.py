@@ -18,6 +18,7 @@ class RepeatedGame():
             self,
             rules: IGameRules,
             players: Dict[str, IPlayer],
+            player_order: List[str],
             matches: int = 10):
 
         if rules.n_players() != len(players):
@@ -26,11 +27,12 @@ class RepeatedGame():
         self.rules = rules
         self.players = players
         self.matches = matches
+        self.player_order = player_order
 
 
     def play(self) -> PlayerIndex:
 
-        players_names = list(self.players.keys())
+        players_names = self.player_order
         game_players = self.rules.n_players()
 
         score_board = TournamentScoreBoard()
@@ -57,11 +59,13 @@ class TournamentGame():
             self,
             rules: IGameRules,
             players: Dict[str, IPlayer],
-            matches: int = 10):
+            matches: int = 10,
+            game_ctor = GenericGame):
 
         self.rules = rules
         self.players = players
         self.matches = matches
+        self.game_ctor = game_ctor
 
 
     def play(self) -> PlayerIndex:
@@ -83,7 +87,7 @@ class TournamentGame():
     def _next_match(self, players: List[PlayerIndex]) -> ScoreBoard:
 
         to_play = [self.players[p] for p in players]
-        game = GenericGame(self.rules, to_play)
+        game = self.game_ctor(self.rules, to_play)
         return game.play()
 
 
@@ -134,20 +138,19 @@ class TournamentScoreBoard:
                 "min": min(self.players[player]),
                 "average": np.mean(self.players[player]),
                 "std": np.std(self.players[player]),
-                "won": sum([1 for s in self.players[player] if s > 0])
+                "won": sum([1 for s in self.players[player] if s > 0]),
+                "tie": sum([1 for s in self.players[player] if s == 0]),
+                "lost": sum([1 for s in self.players[player] if s < 0]),
             }
         return table
 
-
-    def __str__(self) -> str:
-        """Print the table."""
-
+    def print_players_table(self) -> str:
         if not self.players:
             return "No data"
 
         table = self.get_players_table()
 
-        players = list(table.keys())
+        players = list(sorted(table.keys()))
         columns = table[players[0]].keys()
 
         # Format each value: use 2 decimals for floats, simple string conversion for ints.
@@ -183,3 +186,25 @@ class TournamentScoreBoard:
             rows.append(row)
 
         return "\n".join(rows)
+
+    def print_matches(self) -> str:
+        if not self.matches:
+            return "No data"
+
+        rows = []
+        for match, score in self.matches.items():
+            rows.append(f"{match}: {str(score)}")
+
+        return "\n".join(rows)
+
+    def __str__(self) -> str:
+        line = "-"*70
+        st = ""
+        st += line
+        st += "Results:\n"
+        st += self.print_players_table() + "\n"
+        st += "\n"
+        st += "Matches:\n"
+        st += self.print_matches() + "\n"
+        st += line
+        return st

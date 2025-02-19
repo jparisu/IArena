@@ -7,6 +7,8 @@ from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.interfaces.IMovement import IMovement
 from IArena.utils.decorators import override
+from IArena.utils.time_limit_run import time_limit_run
+from IArena.players.playable_players import PlayablePlayer
 
 class GenericGame:
 
@@ -75,3 +77,45 @@ class BroadcastGame(GenericGame):
         print(f'Player <{next_player}>  move: <{movement}> ->\n {next_position}')
 
         return next_position
+
+
+class ClockGame(GenericGame):
+
+    def __init__(
+            self,
+            rules: IGameRules,
+            players: List[IPlayer],
+            timeout_s: float = 10.0):
+        super().__init__(rules, players)
+
+        self.timeout_s = timeout_s
+
+    @override
+    def next_player_move_(self, current_position: IPosition) -> IMovement:
+
+        next_player = current_position.next_player()
+
+        # Run such function in a new thread that shuts down after timeout_s
+        move = time_limit_run(
+            self.timeout_s,
+            self.players[next_player].play,
+            current_position)
+        return move
+
+
+
+class PlayableGame(GenericGame):
+
+    def __init__(
+            self,
+            rules: IGameRules):
+        super().__init__(
+            rules=rules,
+            players=[
+                PlayablePlayer() for i in range(rules.n_players())])
+
+    def play(self) -> ScoreBoard:
+        score = super().play()
+        print(f'SCORE: {score}')
+        print(f'WINNER: Player <{score.winner()}>')
+        return score

@@ -48,9 +48,18 @@ class AbstractMinimaxPlayer():
 
 class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
-    def __init__(self, player: PlayerIndex = None):
+    def __init__(self, player: PlayerIndex = None, depth: int = -1):
         self.player = player
+        self.depth = depth
 
+    @override
+    def starting_game(
+            self,
+            rules: IGameRules,
+            player_index: int):
+        self.player = player_index
+
+    @override
     def play(
             self,
             position: IPosition) -> IMovement:
@@ -58,12 +67,9 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         scores = []
         movements = position.get_rules().possible_movements(position)
 
-        # This is the only way I found to get this player index
-        self.player = position.next_player()
-
         for move in movements:
             next_position = position.get_rules().next_position(move, position)
-            scores.append(self.minimax(next_position))
+            scores.append(self.minimax(next_position, self.depth))
 
         return self.select_move(movements, scores)
 
@@ -74,7 +80,7 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         rules = position.get_rules()
 
         # Check if the score is already in the cache
-        cache_score = self.cache_get(position, self.depth)
+        cache_score = self.cache_get(position, depth)
         if cache_score is not None:
             return cache_score
 
@@ -92,11 +98,11 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         scores = []
         for move in movements:
             next_position = rules.next_position(move, position)
-            next_score = self.minimax(next_position)
+            next_score = self.minimax(next_position, depth - 1)
             scores.append(next_score)
 
         # Calculate the score of the position
-        final_score = self.select_score(scores)
+        final_score = self.select_score(self.player == position.next_player(), scores)
         self.cache_store(position, depth, final_score)
 
         return final_score
@@ -130,9 +136,10 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
 
 
-class MinimaxRandomConsistentPlayer(AbstractMinimaxPlayer):
+class MinimaxRandomMatchConsistentPlayer(StdMinimaxPlayer):
 
     def __init__(self, seed: int = 0):
+        super().__init__()
         self.rg = RandomGenerator(seed)
 
     @override
@@ -152,4 +159,5 @@ class MinimaxRandomConsistentPlayer(AbstractMinimaxPlayer):
             self,
             rules: IGameRules,
             player_index: int):
+        super().starting_game(rules, player_index)
         self.rg.reset_seed()

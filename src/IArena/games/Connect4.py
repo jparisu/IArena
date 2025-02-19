@@ -21,7 +21,7 @@ class Connect4Matrix:
     def __init__(
             self,
             matrix: List[List[int]],
-            next_player: PlayerIndex):
+            next_player: PlayerIndex = PlayerIndex.FirstPlayer):
         self.matrix = matrix
         self.next_player = next_player
 
@@ -145,6 +145,11 @@ class Connect4Position(IPosition):
     def from_str(rules: "Connect4Rules", st: str) -> "Connect4Position":
         return Connect4Position(rules, Connect4Matrix.from_str(st))
 
+    def convert_short_str_to_matrix_str(short_str: str) -> str:
+        return str(Connect4Position(None, Connect4Matrix.from_str(short_str)))
+
+    def convert_matrix_to_short_str(matrix: List[List[int]]) -> str:
+        return str(Connect4Matrix(matrix=matrix))
 
 class Connect4Movement(IMovement):
     """
@@ -170,6 +175,8 @@ class Connect4Movement(IMovement):
 
 class Connect4Rules(IGameRules):
 
+    DEFAULT_MATRIX = [[Connect4Matrix.EMPTY_CELL for _ in range(7)] for _ in range(6)]
+
     def __init__(
             self,
             initial_player: PlayerIndex = PlayerIndex.FirstPlayer,
@@ -181,12 +188,22 @@ class Connect4Rules(IGameRules):
             initial_matrix_file: The file with the initial matrix.
         """
         if initial_matrix:
-            self.initial_position = initial_matrix
+            self.initial_position = Connect4Position(
+                rules=self,
+                position=Connect4Matrix(
+                    matrix=initial_matrix,
+                    next_player=initial_player))
+
         elif initial_matrix_str:
-            self.initial_position = Connect4Position.from_str(self, initial_matrix_str)
+            self.initial_position = Connect4Position.from_str(
+                rules=self,
+                st=initial_matrix_str)
         else:
-            self.initial_position = [
-                [Connect4Matrix.EMPTY_CELL for _ in range(7)] for _ in range(6)]
+            self.initial_position = Connect4Position(
+                rules=self,
+                position=Connect4Matrix(
+                    matrix=Connect4Rules.DEFAULT_MATRIX,
+                    next_player=initial_player))
 
         self.n_rows = self.initial_position.n_rows()
         self.n_cols = self.initial_position.n_columns()

@@ -15,9 +15,10 @@ class RandomGenerator:
     def choice(self, seq):
         return self.rng.choice(seq)
 
-    def set_seed(self, seed):
-        self.initial_seed = seed
-        self.reset_seed()
+    def set_seed(self, seed, consistent=False):
+        if consistent:
+            self.seed = seed
+        self.rng = random.Random(seed)
 
     def reset_seed(self):
-        self.set_seed(self.initial_seed)
+        self.set_seed(self.initial_seed, consistent=False)
