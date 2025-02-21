@@ -198,7 +198,7 @@ class TournamentScoreBoard:
         return "\n".join(rows)
 
     def __str__(self) -> str:
-        line = "-"*70
+        line = "-"*70 + "\n"
         st = ""
         st += line
         st += "Results:\n"
