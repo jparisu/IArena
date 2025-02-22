@@ -8,8 +8,9 @@ Getting Started
 Project Overview
 ================
 
-In order to know more about the infrastructure and design of this software from a developer point of view,
-check the :ref:`infrastructure` section.
+.. warning::
+
+    Coming soon.
 
 
 ============
@@ -44,10 +45,6 @@ In order to do so follow this instructions with the game desired:
     rules = HanoiRules()
     game = PlayableGame(rules)
     score = game.play()
-
-.. note::
-
-    Always remember that the lowest score is the best one.
 
 
 ==============

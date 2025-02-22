@@ -9,7 +9,7 @@ Highest Card
 
 This game is a card game with ``N`` players and ``NxM`` cards.
 The objective of the game is to guess the number of rounds that the player will win with its ``M`` cards.
-Each player guesses in secret at the begining knowing only their ``M`` cards, for how many rounds it will win.
+Each player guesses in secret at the beginning knowing only their ``M`` cards, for how many rounds it will win.
 Then, ``M`` rounds are played in which each player plays its highest card.
 The player that gets closer to the real number of rounds that it wins without passing it, wins the game.
 
@@ -84,7 +84,6 @@ Each player can get its cards from the position, and only its cards.
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 It counts with 2 method to retrieve the values of the game
 

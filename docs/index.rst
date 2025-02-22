@@ -6,8 +6,8 @@
    :maxdepth: 2
    :hidden:
 
-   /src/getting_started
-   /src/installation
+   /src/getting_started/getting_started
+   /src/getting_started/installation
 
 
 .. toctree::
@@ -51,4 +51,4 @@
    :maxdepth: 2
    :hidden:
 
-   /rst/appendixes/glossary
+   /src/appendixes/glossary

@@ -83,7 +83,6 @@ The disks go from ``0`` to ``N-1`` in ascending order being ``0`` the highest di
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 -----------
 Constructor

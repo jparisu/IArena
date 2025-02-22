@@ -12,3 +12,10 @@ source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
+
+# The spelling list filename.
+spelling_word_list_filename=['spelling/spelling_wordlist.txt']
+
+# Change tab title
+release = '1.0.0'
+html_title = f"{project} {release} Documentation"

@@ -73,7 +73,6 @@ A position is represented by an ``int`` describing the size of the remaining sta
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 It counts with 2 methods to get the minimum and maximum number of coins that can be taken:
 

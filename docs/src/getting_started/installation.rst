@@ -10,7 +10,7 @@ Installation
 Google Colab
 ============
 
-Using :ref:`Google Colab <https://colab.google>` is the easiest way to get started.
+Using `Google Colab <https://colab.google>` is the easiest way to get started.
 Just add in the first cell of your notebook:
 
 .. code-block:: python
@@ -35,7 +35,18 @@ From a command prompt, you can install it in a conda environment inside Anaconda
 .. code-block:: bash
 
     conda install git
-    pip install --upgrade git+https://github.com/jparisu/IArena.git@v0.2
+    pip install --upgrade git+https://github.com/jparisu/IArena.git
+
+
+===========================
+Install with pip
+===========================
+
+To install the package with ``pip``, you can use the following command:
+
+.. code-block:: bash
+
+    pip install --upgrade git+https://github.com/jparisu/IArena.git
 
 
 ===========
@@ -43,5 +54,3 @@ Coming soon
 ===========
 
 - Installation from source
-- Installation via ``pip``
-- Installation via ``conda``

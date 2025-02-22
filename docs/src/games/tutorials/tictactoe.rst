@@ -90,7 +90,6 @@ Each position is represented by an integer, ``0`` for empty, ``1`` for player 1 
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 
 -----------

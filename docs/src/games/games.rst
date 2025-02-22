@@ -18,9 +18,9 @@ The *IMovement* represents a movement of the game that goes from one position to
 
 .. _rules:
 
-------
-IRules
-------
+----------
+IGameRules
+----------
 
 Represent the rules of a game implementing the following methods:
 
@@ -236,3 +236,12 @@ This is a list of all the games supported and its characteristics:
      - Random
      - Hidden information
      -
+
+   * - **Connect 4**
+     - ``IArena.games.Connect4``
+     - :ref:`connect4_tutorial`
+     - Connect 4 game.
+     - 2
+     - Deterministic
+     - Perfect information
+     - **0 sum game**

@@ -79,7 +79,6 @@ The rules are stored within the rules
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 It counts with 1 method to retrieve the score matrix:
 
@@ -90,7 +89,7 @@ It counts with 1 method to retrieve the score matrix:
 Constructor
 -----------
 
-To construct the rules, it can give the score table, or let it be creater randomly:
+To construct the rules, it can give the score table, or let it be created randomly:
 
 #. Using a secret code already defined.
 
