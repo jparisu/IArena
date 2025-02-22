@@ -3,6 +3,10 @@
 IArena Documentation
 ####################
 
+.. figure:: /resources/images/logo.webp
+    :scale: 40%
+
+
 **IArena** is an **open source** project that aims to provide a **simple** and **easy to use** framework for playing games in a manual or **automatic** way.
 It is developed with educational and research purposes related with **computer science** and **artificial intelligence**.
 

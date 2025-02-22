@@ -1,5 +1,7 @@
 # IArena
 
+<img src="resources/images/logo.webp" alt="drawing" width="20%"/>
+
 [![Documentation Status](https://readthedocs.org/projects/iarena/badge/?version=latest)](https://iarena.readthedocs.io/en/latest/)
 
 **Framework** for testing **AI** system in basic or logic games.
