@@ -35,6 +35,7 @@
    /src/games/tutorials/mastermind
    /src/games/tutorials/prisoner
    /src/games/tutorials/highestcard
+   /src/games/tutorials/connect4
 
 
 .. toctree::
@@ -43,3 +44,11 @@
    :hidden:
 
    /src/arena/arena
+
+
+.. toctree::
+   :caption: Appendixes
+   :maxdepth: 2
+   :hidden:
+
+   /rst/appendixes/glossary

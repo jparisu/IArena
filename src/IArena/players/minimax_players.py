@@ -41,10 +41,6 @@ class AbstractMinimaxPlayer():
     def select_score(self, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
         pass
 
-    @pure_virtual
-    def value_from_score(self, score: ScoreBoard) -> MinimaxScoreType:
-        pass
-
 
 class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
@@ -137,10 +133,6 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
     def select_score(self, max_player: bool, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
         f_player = max if max_player else min
         return f_player(scores)
-
-    @override
-    def value_from_score(self, score: ScoreBoard) -> MinimaxScoreType:
-        return score[self.player]
 
 
 class MinimaxPrunePlayer(StdMinimaxPlayer):
