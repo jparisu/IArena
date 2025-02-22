@@ -26,6 +26,6 @@ def time_limit_run(
     thread.join(timeout_s)
 
     if thread.is_alive():
-        return None
+        raise TimeoutError(f'Timeout of {timeout_s} seconds exceeded')
     else:
         return result[0]

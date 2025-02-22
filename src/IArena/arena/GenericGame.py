@@ -45,7 +45,7 @@ class GenericGame:
 
         # Check if the movement is possible
         if not self.rules.is_movement_possible(movement, current_position):
-            raise ValueError(f'Invalid movement: {movement}')
+            raise ValueError(f'Player <{self.get_player_name(current_position.next_player())}> has made an invalid movement: {movement} in position:\n{current_position}')
 
         return self.rules.next_position(
             movement,
@@ -58,23 +58,27 @@ class GenericGame:
     def calculate_score_(self, position: IPosition) -> PlayerIndex:
         return self.rules.score(position)
 
+    def get_player_name(self, player_index: PlayerIndex) -> str:
+        return f'{self.players[player_index].name()}[{player_index}]'
+
+
 
 class BroadcastGame(GenericGame):
 
     @override
     def next_movement_(self, current_position: IPosition) -> IPosition:
-        next_player = current_position.next_player()
-        movement = self.players[next_player].play(current_position)
+        next_player_index = current_position.next_player()
+        movement = self.players[next_player_index].play(current_position)
 
         # Check if the movement is possible
         if not self.rules.is_movement_possible(movement, current_position):
-            raise ValueError(f'Invalid movement: {movement}')
+            raise ValueError(f'Player <{self.get_player_name(next_player_index)}> has made an invalid movement: {movement} in position:\n{current_position}')
 
         next_position = self.rules.next_position(
             movement,
             current_position)
 
-        print(f'Player <{next_player}>  move: <{movement}> ->\n {next_position}')
+        print(f'Player <{self.get_player_name(next_player_index)}>  move: <{movement}> ->\n {next_position}')
 
         return next_position
 
@@ -93,14 +97,18 @@ class ClockGame(GenericGame):
     @override
     def next_player_move_(self, current_position: IPosition) -> IMovement:
 
-        next_player = current_position.next_player()
+        next_player_index = current_position.next_player()
 
         # Run such function in a new thread that shuts down after timeout_s
-        move = time_limit_run(
-            self.timeout_s,
-            self.players[next_player].play,
-            current_position)
-        return move
+        try:
+            move = time_limit_run(
+                self.timeout_s,
+                self.players[next_player_index].play,
+                current_position)
+            return move
+
+        except TimeoutError:
+            raise TimeoutError(f'Player <{self.get_player_name(next_player_index)}> has exceeded the time limit of {self.timeout_s} seconds in position:\n{current_position}')
 
 
 

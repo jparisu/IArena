@@ -34,23 +34,6 @@ class Connect4Matrix:
     def __hash__(self):
         return hash(str(self))
 
-    # @classmethod
-    # def from_file(cls, file) -> "Connect4Matrix":
-    #     """
-    #     Reads a file and returns a Connect4Position object.
-    #     The file must contains a square matrix with 0s, 1s and '.'.
-    #     """
-    #     with open(file, 'r') as f:
-
-    #         lines = f.readlines()
-    #         next_player = int(lines[0])
-    #         matrix = []
-    #         for line in lines[1:]:
-    #             # Convert '.' to -1
-    #             matrix.append([int(x) if x != '.' else Connect4Matrix.EMPTY_CELL for x in line.strip()])
-
-    #         return cls(matrix, next_player)
-
     def __str__(self) -> str:
         n_rows = len(self.matrix)
         n_cols = len(self.matrix[0])

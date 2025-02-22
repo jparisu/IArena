@@ -39,7 +39,8 @@ class RandomPlayer(IPlayer):
 
 class ConsistentRandomPlayer(IPlayer):
 
-    def __init__(self, seed: int = 0):
+    def __init__(self, seed: int = 0, name: str = None):
+        super().__init__(name=name)
         self.initial_seed = seed
         self.rg = RandomGenerator(seed)
 

@@ -51,7 +51,9 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
     def __init__(
             self,
             player: PlayerIndex = None,
-            depth: int = -1):
+            depth: int = -1,
+            name: str = None):
+        super().__init__(name=name)
         self.player = player
         self.depth = depth
 
@@ -148,8 +150,9 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
             player: PlayerIndex = None,
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
-            beta: MinimaxScoreType = float('inf')):
-        super().__init__(player, depth)
+            beta: MinimaxScoreType = float('inf'),
+            name: str = None):
+        super().__init__(player, depth, name=name)
         self.total_alpha = alpha
         self.total_beta = beta
 
@@ -217,8 +220,14 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
             player: PlayerIndex = None,
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
-            beta: MinimaxScoreType = float('inf')):
-        super().__init__(player, depth, alpha, beta)
+            beta: MinimaxScoreType = float('inf'),
+            name: str = None):
+        super().__init__(
+            player=player,
+            depth=depth,
+            alpha=alpha,
+            beta=beta,
+            name=name)
         self.cache = []
 
     @override
@@ -255,8 +264,9 @@ class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
             beta: MinimaxScoreType = float('inf'),
-            seed: int = 0):
-        super().__init__(player, depth, alpha, beta)
+            seed: int = 0,
+            name: str = None):
+        super().__init__(player=player, depth=depth, alpha=alpha, beta=beta, name=name)
         self.rg = RandomGenerator(seed)
 
     @override
@@ -268,6 +278,11 @@ class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
         best_movements = [movements[i] for i, score in enumerate(scores) if score == best_score]
         # select a random one
         move = self.rg.choice(best_movements)
+
+        if move is None:
+            print("ERROR")
+            print("Movements: ", movements)
+            print("Scores: ", scores)
 
         return move
 
@@ -281,7 +296,3 @@ class MinimaxRandomMatchConsistentPlayer(MinimaxRandomConsistentPlayer):
             player_index: int):
         super().starting_game(rules, player_index)
         self.rg.reset_seed()
-
-
-# Alias
-StrongestPlayer = MinimaxRandomConsistentPlayer

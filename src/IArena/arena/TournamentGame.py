@@ -12,84 +12,6 @@ from IArena.utils.decorators import override
 from IArena.utils.Timer import Timer
 
 
-class RepeatedGame():
-
-    def __init__(
-            self,
-            rules: IGameRules,
-            players: Dict[str, IPlayer],
-            player_order: List[str],
-            matches: int = 10):
-
-        if rules.n_players() != len(players):
-            raise ValueError("Number of players and game rules do not match.")
-
-        self.rules = rules
-        self.players = players
-        self.matches = matches
-        self.player_order = player_order
-
-
-    def play(self) -> PlayerIndex:
-
-        players_names = self.player_order
-        game_players = self.rules.n_players()
-
-        score_board = TournamentScoreBoard()
-
-        matching = players_names
-        # Set all possible games
-        for _ in range(self.matches):
-            match_score = self._next_match(matching)
-            score_board.add_match(match_score, matching)
-
-        return score_board
-
-
-    def _next_match(self, players: List[PlayerIndex]) -> ScoreBoard:
-
-        to_play = [self.players[p] for p in players]
-        game = GenericGame(self.rules, to_play)
-        return game.play()
-
-
-class TournamentGame():
-
-    def __init__(
-            self,
-            rules: IGameRules,
-            players: Dict[str, IPlayer],
-            matches: int = 10,
-            game_ctor = GenericGame):
-
-        self.rules = rules
-        self.players = players
-        self.matches = matches
-        self.game_ctor = game_ctor
-
-
-    def play(self) -> PlayerIndex:
-
-        players_names = list(self.players.keys())
-        game_players = self.rules.n_players()
-
-        score_board = TournamentScoreBoard()
-
-        # Set all possible games
-        for matching in itertools.permutations(players_names, game_players):
-            for _ in range(self.matches):
-                match_score = self._next_match(matching)
-                score_board.add_match(match_score, matching)
-
-        return score_board
-
-
-    def _next_match(self, players: List[PlayerIndex]) -> ScoreBoard:
-
-        to_play = [self.players[p] for p in players]
-        game = self.game_ctor(self.rules, to_play)
-        return game.play()
-
 
 class TournamentScoreBoard:
 
@@ -208,3 +130,64 @@ class TournamentScoreBoard:
         st += self.print_matches() + "\n"
         st += line
         return st
+
+
+class RepeatedGame(GenericGame):
+
+    def __init__(
+            self,
+            rules: IGameRules,
+            players: List[IPlayer],
+            repetition: int = 10):
+        super().__init__(rules, players)
+        self.repetition = repetition
+
+    @override
+    def play(self) -> TournamentScoreBoard:
+
+        score_board = TournamentScoreBoard()
+        players_names = [p.name() for p in self.players]
+
+        for _ in range(self.repetition):
+            score = super().play()
+            score_board.add_match(score, players_names)
+
+        return score_board
+
+
+class TournamentGame():
+
+    def __init__(
+            self,
+            rules: IGameRules,
+            players: List[IPlayer],
+            matches: int = 10,
+            game_ctor = GenericGame):
+
+        self.rules = rules
+        self.players = players
+        self.matches = matches
+        self.game_ctor = game_ctor
+
+
+    def play(self) -> TournamentScoreBoard:
+
+        game_players = self.rules.n_players()
+
+        score_board = TournamentScoreBoard()
+
+        # Set all possible games
+        for matching in itertools.permutations(range(len(self.players)), game_players):
+            players = [self.players[p] for p in matching]
+            players_names = [p.name() for p in players]
+            for _ in range(self.matches):
+                match_score = self._next_match(players)
+                score_board.add_match(match_score, players_names)
+
+        return score_board
+
+
+    def _next_match(self, players: List[IPlayer]) -> ScoreBoard:
+
+        game = self.game_ctor(self.rules, players)
+        return game.play()

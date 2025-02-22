@@ -19,7 +19,7 @@ class PlayablePlayer(IPlayer):
         possibilities = list(position.get_rules().possible_movements(position))
 
         print ("=" * PlayablePlayer.SeparatorN)
-        print (f"Next player: {position.next_player()}")
+        print (f"Next player: {self.name()}[{position.next_player()}]")
         print ("-" * PlayablePlayer.SeparatorN)
         print (position)
         print ("-" * PlayablePlayer.SeparatorN)
@@ -39,7 +39,9 @@ class RecordPlayer(IPlayer):
 
     def __init__(
             self,
-            player: IPlayer):
+            player: IPlayer,
+            name: str = None):
+        super().__init__(name=name)
         self.player = player
         self.movements = []
 
