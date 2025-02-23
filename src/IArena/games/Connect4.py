@@ -138,8 +138,8 @@ class Connect4Position(IPosition):
     def to_short_str(self) -> str:
         return str(self.position)
 
-    def from_str(rules: "Connect4Rules", st: str) -> "Connect4Position":
-        return Connect4Position(rules, Connect4Matrix.from_str(st))
+    def from_str(rules: "Connect4Rules", short_str: str) -> "Connect4Position":
+        return Connect4Position(rules, Connect4Matrix.from_str(short_str))
 
     def convert_short_str_to_matrix(short_str: str) -> List[List[int]]:
         return Connect4Matrix.from_str(short_str).matrix

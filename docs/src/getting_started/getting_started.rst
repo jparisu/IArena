@@ -55,6 +55,13 @@ In order to build a new player, ``IPlayer`` must be implemented.
 Check the :ref:`players` section for more information.
 
 
+=====
+Games
+=====
+
+To check the games available in the library, please check the :ref:`games_available` section.
+
+
 ==============
 Add a new game
 ==============
@@ -63,8 +70,9 @@ Add a new game
 
     Coming soon.
 
-=====
-Games
-=====
 
-To check the games available in the library, please check the :ref:`games_available` section.
+========
+Tutorial
+========
+
+To get a more detailed tutorial, check the :ref:`tutorial` section.

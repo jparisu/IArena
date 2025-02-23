@@ -9,3 +9,4 @@ Tac
 Toe
 conda
 NQueens
+Jupyter

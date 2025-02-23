@@ -239,7 +239,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Connect 4**
      - ``IArena.games.Connect4``
-     - :ref:`connect4_tutorial`
+     - :ref:`connect4`
      - Connect 4 game.
      - 2
      - Deterministic

@@ -115,7 +115,7 @@ To handle this, and the rest of the position information, the ``Connect4Position
 - ``n_columns() -> int``
     - Returns the number of columns
 
-Also, the class has 2 useful static methods to transform matrixes.
+Also, the class has 2 useful static methods to transform matrices.
 These methods helps to understand the short str matrix definition.
 Using them, you can convert a short str to a matrix and vice versa:
 

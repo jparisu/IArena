@@ -8,6 +8,7 @@
 
    /src/getting_started/getting_started
    /src/getting_started/installation
+   /src/getting_started/tutorial
 
 
 .. toctree::

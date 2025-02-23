@@ -68,12 +68,11 @@ In the following snippet, we can see how to create an empty board and how to get
     matrix = [[Connect4Position.EMPTY_CELL for _ in range(7)] for _ in range(6)]  # Create an empty 6x7 board
 
     position = Connect4Position(None, matrix=matrix)  # Create a position object with the empty board
+    print(f'Board state: {matrix_state}')
 
     following_player = position.next_player()  # Get the next player to play
     print(f'Next player: {following_player}')
 
-    matrix_state = position.get_matrix()  # Get the board state
-    print(f'Board state: {matrix_state}')
 
 
 .. note::
@@ -96,6 +95,7 @@ For example, to drop a token in column 0, we can do:
     from IArena.games.Connect4 import Connect4Movement  # Import the Connect4Movement class
 
     movement = Connect4Movement(n=0)  # Drop a token in column 0
+    print(f'Movement: {movement}')
 
 
 
@@ -202,9 +202,9 @@ that is called by the library when the game starts.
 This method is useful to set the player index in the player object, in order to know which player it is playing with.
 
 
---------------
-Random example
---------------
+-----------------
+AI Player Example
+-----------------
 
 Let's see how to create a player for Connect4 that always plays in the first column available:
 
@@ -215,7 +215,7 @@ Let's see how to create a player for Connect4 that always plays in the first col
 
     class MyAIPlayer(IPlayer):  # Create a class that inherits from IPlayer
 
-        def play(self, position: IPosition) -> IMovement:  # Implement the play method
+        def play(self, position: Connect4Position) -> Connect4Movement:  # Implement the play method
             rules = position.get_rules()  # Get the rules object from the position
             possible_movements = rules.possible_movements(position)  # Get the possible movements
             return possible_movements[0]  # Return the first movement available
@@ -246,7 +246,7 @@ There are different types of arenas, depending on the class to use:
 
 - ``GenericGame``: A generic arena that can be used with any game and player.
 - ``BroadcastGame``: An arena that broadcasts the game state to the players in each step.
-- ``ClockGame``: An arena that plays the game with a time limit for each ``play``call for the players.
+- ``ClockGame``: An arena that plays the game with a time limit for each ``play`` call for the players.
 
 ----------------
 Built-in Players
@@ -269,7 +269,7 @@ In order to see the game step by step, we will use a ``BroadcastGame`` arena.
 
 .. code-block:: python
 
-    from IArena.arena.BroadcastGame import BroadcastGame
+    from IArena.arena.GenericGame import BroadcastGame
     from IArena.players.dummy_players import ConsistentRandomPlayer
 
     # CREATE PLAYERS
@@ -288,20 +288,21 @@ In order to see the game step by step, we will use a ``BroadcastGame`` arena.
 
 
 
--------------------------
-Play agains our AI player
--------------------------
+--------------------------
+Play against our AI player
+--------------------------
 
-We can also play against our own player to see how it behaves:
+We can also play against our own player to see how it behaves.
+We can use the generic ``PlayablePlayer``, but we will better use a specific player made for Connect 4:
 
 .. code-block:: python
 
     from IArena.arena.GenericGame import GenericGame
-    from IArena.players.playable_players import PlayablePlayer
+    from IArena.games.Connect4 import Connect4PlayablePlayer
 
     # CREATE PLAYERS
     my_player = MyAIPlayer()
-    human_player = PlayablePlayer()
+    human_player = Connect4PlayablePlayer()
 
     # CREATE ARENA
     arena = GenericGame(
@@ -340,7 +341,22 @@ The ``Connect4Position`` class has 2 methods to convert from a matrix to a short
 - ``convert_short_str_to_matrix_str(short_str: str) -> str``: Converts a short str to a matrix str.
 - ``convert_short_str_to_matrix(short_str: str) -> List[List[int]]``: Converts a short str to a matrix.
 
+And a position can be created from a short str by using ``Connect4Position.from_str(rules: Connect4Rules, short_str: str) -> Connect4Position``.
 
+Let's see how to use this functions to check what position a short str represents, and how to create a position from it:
+
+.. code-block:: python
+
+    from IArena.games.Connect4 import Connect4Position
+
+    # CREATE POSITION FROM SHORT STR
+    short_str = '0|6|111|111|111||0111|0111|0111|'
+    position = Connect4Position.from_str(None, short_str)
+    print(f'Position: {position}')
+
+    # CONVERT POSITION TO SHORT STR
+    s = str(position.position)
+    print(f'Short str: {s}')
 
 
 ==========
@@ -358,9 +374,9 @@ Let's compare our player with 2 other players: a random one and a last player.
     from IArena.players.dummy_players import ConsistentRandomPlayer, LastPlayer
 
     # CREATE PLAYERS
-    my_player = MyAIPlayer()
-    random_player = ConsistentRandomPlayer(seed=42)
-    last_player = LastPlayer()
+    my_player = MyAIPlayer(name="My Player")
+    random_player = ConsistentRandomPlayer(seed=42, name="Random Player")
+    last_player = LastPlayer("Last Player")
 
     # CREATE ARENA
     arena = TournamentGame(
