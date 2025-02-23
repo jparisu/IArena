@@ -1,4 +1,4 @@
-.. _connect4_tutorial:
+.. _connect4:
 
 #########
 Connect 4

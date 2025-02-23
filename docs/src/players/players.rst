@@ -7,6 +7,8 @@ Players
 The final goal of this project is to be able to create software that can play a specific game.
 This software is called **player** and must implement the **IPlayer** interface.
 
+.. _iplayer:
+
 =======
 IPlayer
 =======
