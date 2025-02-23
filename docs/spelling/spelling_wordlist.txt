@@ -1,0 +1,12 @@
+Colab
+IArena
+IGameRules
+IMovement
+IPosition
+IPlayer
+Tic
+Tac
+Toe
+conda
+NQueens
+Jupyter

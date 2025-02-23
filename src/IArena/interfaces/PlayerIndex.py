@@ -1,6 +1,7 @@
 
 """PlayerIndex class represents the index of a player."""
 class PlayerIndex(int):
+    Draw = -42
     FirstPlayer = 0
     SecondPlayer = 1
 

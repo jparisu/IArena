@@ -109,7 +109,6 @@ It counts with the following methods:
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 
 -----------

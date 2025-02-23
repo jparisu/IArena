@@ -15,7 +15,7 @@ The goal is to guess the code in the fewest number of turns.
 
 Some changes have been made to the original game:
 
-- There is only a one player game (guesser) while the other player (codemaker) is the game itself.
+- There is only a one player game (guesser) while the other player (password-maker) is the game itself.
 - Instead of colors we use numbers.
 - The clues of each guess is not only the number of appearance and correctness, but are linked with a direct position in the guess.
 - Numbers could be repeated in the secret code.
@@ -105,7 +105,6 @@ or whether it is not present in the secret code (``0``).
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 It counts with 2 methods to get the minimum and maximum number of coins that can be taken:
 

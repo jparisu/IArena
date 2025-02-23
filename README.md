@@ -1,5 +1,7 @@
 # IArena
 
+<img src="resources/images/logo.webp" alt="drawing" width="20%"/>
+
 [![Documentation Status](https://readthedocs.org/projects/iarena/badge/?version=latest)](https://iarena.readthedocs.io/en/latest/)
 
 **Framework** for testing **AI** system in basic or logic games.
@@ -29,6 +31,7 @@ There are some games implemented under `src/IArena/games`:
 - `FieldWalk`: Similar to `BlindWalk` but with access to the whole map from the beginning.
 - `Coins`: 2 player Roman coins game.
 - `Nim`: 2 player well known Nim game.
+- ...
 
 ### Players
 
@@ -38,6 +41,7 @@ There are some players implemented under `src/IArena/players`:
 - `RandomPlayer`: Play a random movement from the movements possible.
 - `FirstPlayer`: Play the first movement from the movements possible.
 - `LastPlayer`: Play the last movement from the movements possible.
+- ...
 
 ### Arena
 
@@ -46,6 +50,7 @@ Implementations of different ways of playing and measuring scores:
 - `GenericGame`: Decide the rules and the players and create a basic loop game.
 - `BroadcastGame`: Similar to `GenericGame` but print out the player actions.
 - `PlayableGame`: Play a game with all players `PlayablePlayer`.
+- ...
 
 ---
 
@@ -63,3 +68,5 @@ There are some resources under `resources` folder with util information and impl
 ### From source
 
 ```bash
+pip install --upgrade git+https://github.com/jparisu/IArena.git
+```

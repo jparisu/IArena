@@ -7,14 +7,23 @@ Players
 The final goal of this project is to be able to create software that can play a specific game.
 This software is called **player** and must implement the **IPlayer** interface.
 
+.. _iplayer:
+
 =======
 IPlayer
 =======
 
 The interface can be found in ``src/IArena/interfaces/IPlayer`` module.
-
 This interface is used by an *arena* to play a specific set of rules.
-The only method that must be implemented is ``play``.
+
+-------
+Methods
+-------
+
+``play``
+^^^^^^^^
+
+The only **required** method that must be implemented is ``play``.
 It receives an ``IPosition`` and must return an ``IMovement`` (specific movement depending on the rules playing).
 
 .. code-block:: python
@@ -24,8 +33,27 @@ It receives an ``IPosition`` and must return an ``IMovement`` (specific movement
             position: IPosition) -> IMovement:
         pass
 
-The constructor of an ``IPlayer`` is not defined.
-Each implementation could have its own constructor, adding for example a name, the rules of the game, etc.
+``name``
+^^^^^^^^
+
+There is a method ``name`` that returns a string with the name of the player.
+The default constructor has the argument ``name`` that sets the internal ``_name`` attribute.
+
+``starting_game``
+^^^^^^^^^^^^^^^^^
+
+The method ``starting_game`` is called by the ``arena`` when the game starts.
+It is useful to set, for example, the index of the player in the game.
+
+
+.. code-block:: python
+
+    def starting_game(
+            self,
+            rules: IGameRules,
+            player_index: int):
+        pass
+
 
 -----
 Rules
@@ -91,101 +119,3 @@ If you prefer to see step by step the game playing by the player, use ``Broadcas
         players=[my_player]
     )
     score = arena.play()
-
-
-=================
-Multiplayer games
-=================
-
-In games with more than 1 player, you would need another player to play against.
-There are several generic players implemented, please check :ref:`random_player`.
-
-
-.. code-block:: python
-
-    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
-    from IArena.games.Coins import CoinsRules, CoinsMovement, CoinsPosition
-    from IArena.players.players import RandomPlayer
-
-    rules = CoinsRules()
-    my_player = MyPlayer()
-    other_player = RandomPlayer()
-
-    arena = GenericGame(
-        rules=rules,
-        players=[my_player, other_player]
-    )
-    score = arena.play()
-
-You may want to repeat the game several times to get a better score.
-For this purpose just use a loop and accumulate the score.
-
-.. code-block:: python
-
-    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
-    from IArena.games.Coins import CoinsRules, CoinsMovement, CoinsPosition
-    from IArena.players.players import RandomPlayer
-
-    rules = CoinsRules()
-    my_player = MyPlayer()
-    other_player = RandomPlayer()
-
-    score = 0
-    for _ in range(50):
-        arena = GenericGame(
-            rules=rules,
-            players=[my_player, other_player]
-        )
-        score += arena.play()
-
-    for _ in range(50):
-        arena = GenericGame(
-            rules=rules,
-            players=[other_player, my_player]
-        )
-        score += arena.play()
-
-    print(score)
-
-
-================
-Heuristic Player
-================
-
-Other way to create a player is to give a heuristic for a position, rather than a movement.
-The already implement player ``HeuristicPlayer`` does check every possible future position,
-by trying every possible movement in a position,
-and calculates the score of the position by the method ``heuristic``.
-Then, it decides the movement with the lower heuristic.
-
-.. code-block:: python
-
-    from IArena.arena.GenericGame import GenericGame  # or BroadcastGame
-    from IArena.games.Hanoi import HanoiRules, HanoiMovement, HanoiPosition
-    from IArena.players.HeuristicPlayer import HeuristicPlayer
-
-    class MyPlayer(HeuristicPlayer):
-
-        def heuristic(self, position: HanoiPosition) -> float:
-            # Add code to calculate the heuristic of the position
-            return 0.0
-
-    rules = HanoiRules()
-    my_player = MyPlayer()
-
-    arena = GenericGame(
-        rules=rules,
-        players=[my_player]
-    )
-
-
-.. note::
-
-    Remember that the best movement is the one with the lowest heuristic.
-
-Multiplayer game heuristic player
----------------------------------
-
-One thing to take into account is that creating an heuristic for a multiplayer game,
-the heuristic must be calculated as the position given is the one that the opponent will play.
-Because the positions in which it applies are the next ones, and not the current ones.

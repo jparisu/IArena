@@ -6,8 +6,9 @@
    :maxdepth: 2
    :hidden:
 
-   /src/getting_started
-   /src/installation
+   /src/getting_started/getting_started
+   /src/getting_started/installation
+   /src/getting_started/tutorial
 
 
 .. toctree::
@@ -35,6 +36,7 @@
    /src/games/tutorials/mastermind
    /src/games/tutorials/prisoner
    /src/games/tutorials/highestcard
+   /src/games/tutorials/connect4
 
 
 .. toctree::
@@ -43,3 +45,11 @@
    :hidden:
 
    /src/arena/arena
+
+
+.. toctree::
+   :caption: Appendixes
+   :maxdepth: 2
+   :hidden:
+
+   /src/appendixes/glossary

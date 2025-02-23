@@ -94,7 +94,6 @@ One indicates the x axis, other the y axis and the last one the cost to arrive t
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 -----------
 Constructor

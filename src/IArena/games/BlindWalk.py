@@ -19,7 +19,7 @@ The player must reach the end with the minimum cost.
 The grid is not known a priori, and must be discovered by the player step by step.
 """
 
-class BlindWalkMovement(Enum, IMovement):
+class BlindWalkMovement(IMovement):
     """
     Represents the movement of the player in the grid.
 
@@ -29,10 +29,39 @@ class BlindWalkMovement(Enum, IMovement):
         Left: 2 - Move left.
         Right: 3 - Move right.
     """
-    Up = 0
-    Down = 1
-    Left = 2
-    Right = 3
+
+    class Direction(Enum):
+        Up = 0
+        Down = 1
+        Left = 2
+        Right = 3
+
+    def __init__(
+            self,
+            direction: Direction):
+        self.direction = direction
+
+    def __eq__(
+            self,
+            other: "FieldWalkMovement"):
+        return self.direction == other.direction
+
+    def __str__(self):
+        return f'{self.direction.name}'
+
+    def up() -> "FieldWalkMovement":
+        return FieldWalkMovement(FieldWalkMovement.Direction.Up)
+
+    def down() -> "FieldWalkMovement":
+        return FieldWalkMovement(FieldWalkMovement.Direction.Down)
+
+    def left() -> "FieldWalkMovement":
+        return FieldWalkMovement(FieldWalkMovement.Direction.Left)
+
+    def right() -> "FieldWalkMovement":
+        return FieldWalkMovement(FieldWalkMovement.Direction.Right)
+
+
 
 
 class BlindWalkPosition(IPosition):

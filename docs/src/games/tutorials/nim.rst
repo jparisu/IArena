@@ -84,7 +84,6 @@ A position is represented by a ``list`` of ``int`` describing each row:
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 
 -----------

@@ -16,11 +16,11 @@ The *IGameRules* holds the logic of the game.
 The *IPosition* represents a position or state of the game regarding a specific set of rules.
 The *IMovement* represents a movement of the game that goes from one position to another.
 
-.. _rules:
+.. _igamerules:
 
-------
-IRules
-------
+----------
+IGameRules
+----------
 
 Represent the rules of a game implementing the following methods:
 
@@ -76,7 +76,7 @@ Represent the rules of a game implementing the following methods:
 
 
 
-.. _movement:
+.. _imovement:
 
 ---------
 IMovement
@@ -86,7 +86,7 @@ Represent a movement of a game.
 It does not have general methods, as each movement depends on the rules of the specific game.
 
 
-.. _position:
+.. _iposition:
 
 ---------
 IPosition
@@ -236,3 +236,12 @@ This is a list of all the games supported and its characteristics:
      - Random
      - Hidden information
      -
+
+   * - **Connect 4**
+     - ``IArena.games.Connect4``
+     - :ref:`connect4`
+     - Connect 4 game.
+     - 2
+     - Deterministic
+     - Perfect information
+     - **0 sum game**

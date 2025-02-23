@@ -47,14 +47,14 @@ Movement
 A movement is represented by a tuple ``new_position`` of 2 ``int``:
 
 - ``new_position``
-  - ``tuple(int, int)``
-    - ``int``
-    - ``0 <= tower_source < N``
-    - Number of row to place the next queen.
-  - ``tuple(int, int)``
-    - ``int``
-    - ``0 <= tower_source < N``
-    - Number of column to place the next queen.
+    - ``tuple(int, int)``
+        - ``int``
+        - ``0 <= tower_source < N``
+        - Number of row to place the next queen.
+    - ``tuple(int, int)``
+        - ``int``
+        - ``0 <= tower_source < N``
+        - Number of column to place the next queen.
 
 
 .. code-block:: python
@@ -82,7 +82,6 @@ Each movement represents the position of a queen in the board.
 Rules
 =====
 
-This games has every methods of :ref:`IRules <infrastructure_rules>`.
 
 Remember that using ``score`` method can give the current result of the game:
 
