@@ -71,12 +71,22 @@ class Connect4Position(IPosition):
         m: The number of columns of the board [default=7].
     """
 
+    EMPTY_CELL = Connect4Matrix.EMPTY_CELL
+
     def __init__(
             self,
             rules: "Connect4Rules",
-            position: Connect4Matrix):
+            position: Connect4Matrix = None,
+            matrix: List[List[int]] = None,
+            next_player: PlayerIndex = PlayerIndex.FirstPlayer):
         IPosition.__init__(self, rules)
-        self.position = position
+
+        if position:
+            self.position = position
+        elif matrix:
+            self.position = Connect4Matrix(matrix, next_player)
+        else:
+            raise Exception("Invalid parameters: position or matrix must be provided")
 
     @override
     def next_player(
@@ -84,7 +94,7 @@ class Connect4Position(IPosition):
         return self.position.next_player
 
     def get_matrix(self) -> List[List[int]]:
-        return self.position.matrix
+        return copy.deepcopy(self.position.matrix)
 
     def n_rows(self) -> int:
         return self.position.n_rows()
@@ -125,8 +135,14 @@ class Connect4Position(IPosition):
     def __hash__(self):
         return hash(self.position)
 
+    def to_short_str(self) -> str:
+        return str(self.position)
+
     def from_str(rules: "Connect4Rules", st: str) -> "Connect4Position":
         return Connect4Position(rules, Connect4Matrix.from_str(st))
+
+    def convert_short_str_to_matrix(short_str: str) -> List[List[int]]:
+        return Connect4Matrix.from_str(short_str).matrix
 
     def convert_short_str_to_matrix_str(short_str: str) -> str:
         return str(Connect4Position(None, Connect4Matrix.from_str(short_str)))

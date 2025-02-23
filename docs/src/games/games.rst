@@ -16,7 +16,7 @@ The *IGameRules* holds the logic of the game.
 The *IPosition* represents a position or state of the game regarding a specific set of rules.
 The *IMovement* represents a movement of the game that goes from one position to another.
 
-.. _rules:
+.. _igamerules:
 
 ----------
 IGameRules
@@ -76,7 +76,7 @@ Represent the rules of a game implementing the following methods:
 
 
 
-.. _movement:
+.. _imovement:
 
 ---------
 IMovement
@@ -86,7 +86,7 @@ Represent a movement of a game.
 It does not have general methods, as each movement depends on the rules of the specific game.
 
 
-.. _position:
+.. _iposition:
 
 ---------
 IPosition
