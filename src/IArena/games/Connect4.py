@@ -196,7 +196,7 @@ class Connect4Rules(IGameRules):
         elif initial_matrix_str:
             self.initial_position = Connect4Position.from_str(
                 rules=self,
-                st=initial_matrix_str)
+                short_str=initial_matrix_str)
         else:
             self.initial_position = Connect4Position(
                 rules=self,

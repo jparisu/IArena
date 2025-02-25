@@ -68,10 +68,13 @@ In the following snippet, we can see how to create an empty board and how to get
     matrix = [[Connect4Position.EMPTY_CELL for _ in range(7)] for _ in range(6)]  # Create an empty 6x7 board
 
     position = Connect4Position(None, matrix=matrix)  # Create a position object with the empty board
-    print(f'Board state: {matrix_state}')
+    print(f'Board state: {position}')
 
     following_player = position.next_player()  # Get the next player to play
     print(f'Next player: {following_player}')
+
+    position_matrix = position.get_matrix()  # Get the matrix of the position
+    print(f'Position matrix: {position_matrix}')
 
 
 
