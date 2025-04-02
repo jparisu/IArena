@@ -19,8 +19,15 @@ Glossary
     Player
         A class that represents a player in a game. It contains the method to return a movement given a position.
 
+    PlayerIndex
+        ``int`` variable that represents the index of a player in a game.
+
     Position
         A class that represents a specific state of a game. Along with the GameRules, it defines the game.
 
     Score
-        A class that represents the score of a terminated game. Each player has its own score.
+        ``float`` variable that indicates how good the final game went.
+        After finishing any game, you get a ``ScoreBoard`` that holds the score for each player.
+
+    ScoreBoard
+        A class that represents a list of the scores of a terminated game. Each player has its own score.

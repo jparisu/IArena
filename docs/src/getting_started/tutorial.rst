@@ -124,7 +124,7 @@ The game object has the following methods (as every other :ref:`igamerules`):
 - ``next_position(movement: Connect4Movement, position: Connect4Position) -> Connect4Position``: Returns the next position given a movement and a position.
 - ``possible_movements(position: Connect4Position) -> List[Connect4Movement]``: Returns the possible movements given a position.
 - ``finished(position: Connect4Position) -> bool``: Returns whether the game is finished or not.
-- ``score(position: Connect4Position) -> ScoreBoard``: Returns the :term:`Score` of the game.
+- ``score(position: Connect4Position) -> ScoreBoard``: Returns the :ref:`scoreboard` of the game.
 
 -------
 Example

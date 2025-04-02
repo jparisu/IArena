@@ -117,6 +117,7 @@ Some variables referring to the position may be stored in the rules object that 
     - *No*.
 
 
+.. _scoreboard:
 
 ==========
 ScoreBoard
