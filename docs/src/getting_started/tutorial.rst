@@ -176,11 +176,6 @@ Let's see an example on how to create a play of Connect4:
     # my_score = score.get_score(0)  # This line is equivalent to the previous one
     print(f'My score: {my_score}')
 
-    # GET THE SCORE OF MY PLAYER
-    my_score = score[0]
-    # my_score = score.get_score(0)  : This line is equivalent to the previous one
-    print(f'My score: {my_score}')
-
 
 
 
