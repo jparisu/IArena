@@ -116,6 +116,8 @@ Some variables referring to the position may be stored in the rules object that 
     - ``IGameRules``
     - *No*.
 
+
+
 ==========
 ScoreBoard
 ==========
@@ -123,9 +125,35 @@ ScoreBoard
 The Score measured in a ``float`` variable indicates for each player how good the final game went.
 After finishing any game, you get a ``ScoreBoard`` that holds the score for each player.
 
-.. note::
+This ``ScoreBoard`` is a dictionary that maps each player index (``int``) to the score (``float``) of that player.
+These are some methods that can be used with the ``ScoreBoard``:
 
-    Always remember that the lowest score is the best one.
+.. list-table::
+
+  * - **Method**
+    - **Description**
+    - **Arguments type**
+    - **Return type**
+
+  * - ``get_score()``.
+    - Get the score related with a specific player.
+    - ``player: PlayerIndex (int)``
+    - ``Score (float)``
+
+  * - ``winner()``.
+    - Get the winner player index.
+    - ``-``
+    - ``PlayerIndex (int)``
+
+  * - ``[] (getitem)``.
+    - Get the score related with a specific player.
+    - ``player: PlayerIndex (int)``
+    - ``Score (float)``
+
+  * - ``pretty_print()``.
+    - Print the score in a human readable way.
+    - ``-``
+    - ``str``
 
 
 .. _games_available:

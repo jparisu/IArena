@@ -35,12 +35,14 @@ class ScoreBoard:
             self.score += [0] * (player - len(self.score) + 1)
         self.score[player] += score
 
-    def winner(self) -> Score:
+    def winner(self) -> PlayerIndex:
         """Get the winner of the game."""
-        # Sort the players by score and return the higher
         return np.argmax(self.score)
 
     def join(self, score_board: 'ScoreBoard'):
         """Join two score boards."""
         for player, score in enumerate(score_board.score):
             self.add_score(player, score)
+
+    def __getitem__(self, player: PlayerIndex) -> Score:
+        return self.get_score(player)
