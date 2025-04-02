@@ -35,8 +35,10 @@ class GenericGame:
         current_position = self.rules.first_position()
         finished = self.rules.finished(current_position)
         while not finished:
+
             current_position = self.next_movement_(current_position)
             finished = self.rules.finished(current_position)
+
         return self.calculate_score_(current_position)
 
 
@@ -55,7 +57,7 @@ class GenericGame:
         next_player = current_position.next_player()
         return self.players[next_player].play(current_position)
 
-    def calculate_score_(self, position: IPosition) -> PlayerIndex:
+    def calculate_score_(self, position: IPosition) -> ScoreBoard:
         return self.rules.score(position)
 
     def get_player_name(self, player_index: PlayerIndex) -> str:

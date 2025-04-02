@@ -12,14 +12,12 @@ from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.utils.decorators import override, pure_virtual
 from IArena.utils.RandomGenerator import RandomGenerator
 
-DEBUG = 0
-
 MinimaxScoreType = float
 
 class AbstractMinimaxPlayer():
 
     @pure_virtual
-    def minimax(self, position: IPosition) -> MinimaxScoreType:
+    def minimax(self, position: IPosition) -> Tuple[MinimaxScoreType, IMovement]:
         pass
 
     @pure_virtual
@@ -27,23 +25,19 @@ class AbstractMinimaxPlayer():
         pass
 
     @pure_virtual
-    def select_move(self, movements: List[IMovement], scores: List[MinimaxScoreType]) -> IMovement:
+    def cache_store(self, position: IPosition, depth: int, move: IMovement, score: int):
         pass
 
     @pure_virtual
-    def cache_store(self, position: IPosition, depth: int, score: int):
-        pass
-
-    @pure_virtual
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
-        pass
-
-    @pure_virtual
-    def select_score(self, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
+    def cache_get(self, position: IPosition, depth: int) -> Tuple[MinimaxScoreType, IMovement]:
         pass
 
 
 class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
+    """
+    NOTE: Assumes the players are FirstPlayer and SecondPlayer.
+    FirstPlayer=MAX and SecondPlayer=MIN
+    """
 
     def __init__(
             self,
@@ -55,89 +49,103 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         self.depth = depth
 
     @override
-    def starting_game(
-            self,
-            rules: IGameRules,
-            player_index: int):
-        self.player = player_index
-
-    @override
     def play(
             self,
             position: IPosition) -> IMovement:
 
-        scores = []
-        movements = position.get_rules().possible_movements(position)
-
-        for move in movements:
-            next_position = position.get_rules().next_position(move, position)
-            scores.append(self.minimax(next_position, self.depth))
-
-        return self.select_move(movements, scores)
+        res = self.minimax(position, self.depth)
+        score, move = res
+        return move
 
     @override
-    def minimax(self, position: IPosition, depth: int = -1) -> MinimaxScoreType:
+    def minimax(self, position: IPosition, depth: int = -1) -> Tuple[MinimaxScoreType, IMovement]:
 
         # Useful variables
         rules = position.get_rules()
+        max_player = position.next_player() == PlayerIndex.FirstPlayer
 
         # Check if the score is already in the cache
-        cache_score = self.cache_get(position, depth)
-        if cache_score is not None:
-            return cache_score
+        cache = self.cache_get(position, depth)
+        if cache is not None:
+            return cache
 
         # Check if the position is a terminal one
         if rules.finished(position):
-            s = rules.score(position)
-            return s.get_score(self.player)
+            board = rules.score(position)
+            score = board.get_score(PlayerIndex.FirstPlayer)
+            return score, None
 
         # Check if the depth is 0
         if depth == 0:
-            return self.heuristic(position)
+            return self.heuristic(position), None
 
         # Calculate the score of children
         movements = rules.possible_movements(position)
-        scores = []
+        score = float('-inf') if max_player else float('inf')
+        best_move = None
+
         for move in movements:
             next_position = rules.next_position(move, position)
-            next_score = self.minimax(next_position, depth - 1)
-            scores.append(next_score)
+            next_score, next_move = self.minimax(next_position, depth - 1)
 
-        # Calculate the score of the position
-        final_score = self.select_score(self.player == position.next_player(), scores)
+            if max_player:
+                if next_score > score:
+                    score = next_score
+                    best_move = move
+            else:
+                if next_score < score:
+                    score = next_score
+                    best_move = move
 
         # Store the score in the cache
-        self.cache_store(position, depth, final_score)
+        self.cache_store(
+            position=position,
+            depth=depth,
+            move=best_move,
+            score=score)
 
-        return final_score
+        return score, best_move
 
     @override
     def heuristic(self, position: IPosition) -> MinimaxScoreType:
         return 0
 
     @override
-    def select_move(self, movements: list, scores: list) -> IMovement:
-        max_value = max([s for s in scores if s is not None])
-        return movements[scores.index(max(max_value))]
-
-    @override
-    def cache_store(self, position: IPosition, depth: int, score: MinimaxScoreType):
+    def cache_store(self, position: IPosition, depth: int, move: IMovement, score: int):
         # Do Nothing
         pass
 
     @override
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
+    def cache_get(self, position: IPosition, depth: int) -> Tuple[MinimaxScoreType, IMovement]:
         # Do Nothing
         return None
 
+
+class MinimaxCachePlayer(StdMinimaxPlayer):
+
+    def __init__(
+            self,
+            player: PlayerIndex = None,
+            depth: int = -1,
+            name: str = None):
+        super().__init__(
+            player=player,
+            depth=depth,
+            name=name)
+        self.cache = {}
+
     @override
-    def select_score(self, max_player: bool, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
-        # If all scores are None, return None
-        real_scores = [s for s in scores if s is not None]
-        if len(real_scores) == 0:
-            return None
-        f_player = max if max_player else min
-        return f_player(real_scores)
+    def cache_store(self, position: IPosition, depth: int, move: IMovement, score: int):
+        self.cache[position] = (depth, move, score)
+
+    @override
+    def cache_get(self, position: IPosition, depth: int) -> Tuple[MinimaxScoreType, IMovement]:
+        if position in self.cache:
+            d, m, s = self.cache[position]
+            if depth < 0 or d >= depth:
+                return s, m
+        return None
+
 
 
 class MinimaxPrunePlayer(StdMinimaxPlayer):
@@ -210,87 +218,19 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
                 beta = min(beta, next_score)
 
             if alpha >= beta:
-                if DEBUG:
-                    space = str(DEBUG) + "   " * DEBUG
-                    print(space, f"Prune {alpha} >= {beta} in movement {i}: {move}")
-                    print(space, "=====================================")
-                    print()
-                    DEBUG -= 1
-
                 return score
                 break
 
         if not any_not_pruned:
-            if DEBUG:
-                space = str(DEBUG) + "   " * DEBUG
-                print(space, f"All child pruned")
-                print(space, "=====================================")
-                print()
-                DEBUG -= 1
-
             return None
 
         # Calculate the score of the position
         # final_score = self.select_score(self.player == position.next_player(), scores)
 
-        if DEBUG:
-            space = str(DEBUG) + "   " * DEBUG
-            print(space, "Final Score: ", score)
-            print(space, "=====================================")
-            print()
-            DEBUG -= 1
-
-        if cause in str(position):
-            DEBUG = 0
-
         # Store the score in the cache
         self.cache_store(position, depth, score)
 
         return score
-
-
-
-class MinimaxCachePlayer(MinimaxPrunePlayer):
-
-    def __init__(
-            self,
-            player: PlayerIndex = None,
-            depth: int = -1,
-            alpha: MinimaxScoreType = float('-inf'),
-            beta: MinimaxScoreType = float('inf'),
-            name: str = None):
-        super().__init__(
-            player=player,
-            depth=depth,
-            alpha=alpha,
-            beta=beta,
-            name=name)
-        self.cache = []
-
-    @override
-    def starting_game(
-            self,
-            rules: IGameRules,
-            player_index: int):
-        super().starting_game(rules, player_index)
-
-        # Create enough cache for this player index in case it is not already created
-        while len(self.cache) <= player_index:
-            self.cache.append({})
-
-    @override
-    def cache_store(self, position: IPosition, depth: int, score: MinimaxScoreType):
-        # This assumes cache store will never be called if the value is already in the cache
-        self.cache[self.player][position] = (depth, score)
-
-    @override
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
-        if position in self.cache[self.player]:
-            d, s = self.cache[self.player][position]
-            if d >= depth:
-                return s
-        return None
-
 
 
 class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
