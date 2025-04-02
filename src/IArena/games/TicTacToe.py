@@ -52,47 +52,80 @@ class TicTacToePosition(IPosition):
     """
 
     class TicTacToePiece(Enum):
-        Empty = 0
-        FirstPlayer = 1
-        SecondPlayer = 2
+        Empty = -1
+        FirstPlayer = 0
+        SecondPlayer = 1
 
     def __init__(
             self,
             rules: "TicTacToeRules",
-            board: List[List[PlayerIndex]]):
+            board: List[List[PlayerIndex]] = None,
+            next_player: PlayerIndex = None):
         super().__init__(rules)
-        self.board = board
+
+        # Set the board
+        if board is None:
+            board = TicTacToePosition.empty_board()
+        self.board_ = board
+
+        # If next player not given, calculate it
+        # If odd pieces in the board, then it is the second player's turn
+        if next_player is None:
+            n_pieces = sum([sum([1 for x in row if x != TicTacToePosition.TicTacToePiece.Empty]) for row in self.board_])
+            next_player = PlayerIndex.FirstPlayer if n_pieces % 2 == 0 else PlayerIndex.SecondPlayer
+
+        self.next_player_ = next_player
+
 
     @override
     def next_player(
             self) -> PlayerIndex:
-        # The movement is first player if the count in the board is even, otherwise is second player.
-        return PlayerIndex.FirstPlayer if sum(
-            [sum([1 for x in row if x != TicTacToePosition.TicTacToePiece.Empty]) for row in self.board]) % 2 == 0 else PlayerIndex.SecondPlayer
+        return self.next_player_
+
+    def board(self) -> List[List[PlayerIndex]]:
+        return deepcopy(self.board_)
+
+    def short_str(self) -> str:
+        l = f"{self.next_player_}"
+        for row in self.board_:
+            l += "|"
+            for column in row:
+                l += str(column.value)
+        return l
+
 
     def __eq__(
             self,
-            other: "TicTacToePosition"):
-        return self.board == other.board
+            other: "TicTacToePosition") -> bool:
+        return self.board_ == other.board_ and self.next_player_ == other.next_player_
 
-    def __str__(self):
-        st = "----------------\n"
-        for row in self.board:
+    def __str__(self) -> str:
+        line = "+---+---+---+\n"
+        st = line
+        for row in self.board_:
             st += "|"
             for column in row:
                 if column == TicTacToePosition.TicTacToePiece.Empty:
-                    st += " "
+                    st += "   "
                 elif column == TicTacToePosition.TicTacToePiece.FirstPlayer:
-                    st += "X"
+                    st += " X "
                 elif column == TicTacToePosition.TicTacToePiece.SecondPlayer:
-                    st += "O"
+                    st += " O "
                 st += "|"
             st += "\n"
-        st += "----------------\n"
+            st += line
         return st
 
     def __getitem__(self, item: int) -> int:
         return self.board[item]
+
+    def __hash__(self) -> int:
+        return hash(self.short_str())
+
+    def empty_board() -> List[List[PlayerIndex]]:
+        return [
+            [TicTacToePosition.TicTacToePiece.Empty for _ in range(3)] for _ in range(3)
+        ]
 
 
 class TicTacToeRules(IGameRules):
@@ -105,12 +138,7 @@ class TicTacToeRules(IGameRules):
             initial_position: The number of TicTacToe at the beginning of the game.
         """
         if initial_position is None:
-            initial_position = TicTacToePosition(
-                rules=self,
-                board=[
-                    [TicTacToePosition.TicTacToePiece.Empty for _ in range(3)] for _ in range(3)
-                ]
-            )
+            initial_position = TicTacToePosition(rules=self)
         self.initial_position = initial_position
 
     @override
@@ -126,7 +154,11 @@ class TicTacToeRules(IGameRules):
             self,
             movement: TicTacToeMovement,
             position: TicTacToePosition) -> TicTacToePosition:
-        board = deepcopy(position.board)
+        board = position.board()
+
+        # Check the movement is possible
+        if board[movement.row][movement.column] != TicTacToePosition.TicTacToePiece.Empty:
+            raise Exception(f"Invalid movement: {movement}, the position is already taken")
 
         if position.next_player() == PlayerIndex.FirstPlayer:
             board[movement.row][movement.column] = TicTacToePosition.TicTacToePiece.FirstPlayer
@@ -142,67 +174,71 @@ class TicTacToeRules(IGameRules):
         movements = []
         for row in range(3):
             for column in range(3):
-                if position.board[row][column] == TicTacToePosition.TicTacToePiece.Empty:
+                if position.board_[row][column] == TicTacToePosition.TicTacToePiece.Empty:
                     movements.append(TicTacToeMovement(row, column))
         return movements
-
-    @staticmethod
-    def check_winner(position: TicTacToePosition) -> TicTacToePosition.TicTacToePiece:
-        # Check if there is a winner in the rows
-        for row in range(3):
-            if (position.board[row][0] != TicTacToePosition.TicTacToePiece.Empty
-                    and position.board[row][0] == position.board[row][1]
-                    and position.board[row][1] == position.board[row][2]):
-                return position.board[row][0]
-
-        # Check if there is a winner in the columns
-        for column in range(3):
-            if (position.board[0][column] != TicTacToePosition.TicTacToePiece.Empty
-                    and position.board[0][column] == position.board[1][column]
-                    and position.board[1][column] == position.board[2][column]):
-                return position.board[0][column]
-
-        # Check if there is a winner in the diagonals
-        if (position.board[0][0] != TicTacToePosition.TicTacToePiece.Empty
-                and position.board[0][0] == position.board[1][1]
-                and position.board[1][1] == position.board[2][2]):
-            return position.board[0][0]
-
-        if (position.board[0][2] != TicTacToePosition.TicTacToePiece.Empty
-                and position.board[0][2] == position.board[1][1]
-                and position.board[1][1] == position.board[2][0]):
-            return position.board[0][2]
-
-        return TicTacToePosition.TicTacToePiece.Empty
 
 
     @override
     def finished(
             self,
             position: TicTacToePosition) -> bool:
-        winner = TicTacToeRules.check_winner(position)
+        return self.__look_for_3_connected__(position) != None
 
-        # It have finished if there is a winner or the board is full
-        return winner != TicTacToePosition.TicTacToePiece.Empty or all(
-            [all([x != TicTacToePosition.TicTacToePiece.Empty for x in row]) for row in position.board])
 
     @override
     def score(
             self,
             position: TicTacToePosition) -> ScoreBoard:
         s = ScoreBoard()
-        winner = TicTacToeRules.check_winner(position)
+        winner = self.__look_for_3_connected__(position)
 
-        if winner == TicTacToePosition.TicTacToePiece.FirstPlayer:
+        if winner is None:
+            raise Exception("The game is not finished")
+
+        elif winner == TicTacToePosition.TicTacToePiece.Empty:
             s.add_score(PlayerIndex.FirstPlayer, 0.0)
-            s.add_score(PlayerIndex.SecondPlayer, 3.0)
-
-        elif winner == TicTacToePosition.TicTacToePiece.SecondPlayer:
-            s.add_score(PlayerIndex.FirstPlayer, 3.0)
             s.add_score(PlayerIndex.SecondPlayer, 0.0)
 
-        else:
+        elif winner == TicTacToePosition.TicTacToePiece.FirstPlayer:
             s.add_score(PlayerIndex.FirstPlayer, 1.0)
+            s.add_score(PlayerIndex.SecondPlayer, -1.0)
+
+        else:
+            s.add_score(PlayerIndex.FirstPlayer, -1.0)
             s.add_score(PlayerIndex.SecondPlayer, 1.0)
 
         return s
+
+
+    def __look_for_3_connected__(self, position: TicTacToePosition) -> TicTacToePosition.TicTacToePiece:
+        # Check if there is a winner in the rows
+        for row in range(3):
+            if (position.board_[row][0] != TicTacToePosition.TicTacToePiece.Empty
+                    and position.board_[row][0] == position.board_[row][1]
+                    and position.board_[row][1] == position.board_[row][2]):
+                return position.board_[row][0]
+
+        # Check if there is a winner in the columns
+        for column in range(3):
+            if (position.board_[0][column] != TicTacToePosition.TicTacToePiece.Empty
+                    and position.board_[0][column] == position.board_[1][column]
+                    and position.board_[1][column] == position.board_[2][column]):
+                return position.board_[0][column]
+
+        # Check if there is a winner in the diagonals
+        if (position.board_[0][0] != TicTacToePosition.TicTacToePiece.Empty
+                and position.board_[0][0] == position.board_[1][1]
+                and position.board_[1][1] == position.board_[2][2]):
+            return position.board_[0][0]
+
+        if (position.board_[0][2] != TicTacToePosition.TicTacToePiece.Empty
+                and position.board_[0][2] == position.board_[1][1]
+                and position.board_[1][1] == position.board_[2][0]):
+            return position.board_[0][2]
+
+        # It have finished if there is a winner or the board_ is full
+        if all([all([x != TicTacToePosition.TicTacToePiece.Empty for x in row]) for row in position.board_]):
+            return TicTacToePosition.TicTacToePiece.Empty
+
+        return None
