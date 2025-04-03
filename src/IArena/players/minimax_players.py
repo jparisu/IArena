@@ -281,17 +281,6 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
         return None
 
 
-    @override
-    def cache_get(
-            self,
-            position: IPosition,
-            depth: int = None,
-            alpha: MinimaxScoreType = None,
-            beta: MinimaxScoreType = None) -> MinimaxScoreType:
-        # Do Nothing
-        return None
-
-
 class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
 
     def __init__(
