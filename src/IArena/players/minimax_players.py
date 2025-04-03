@@ -12,8 +12,6 @@ from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.utils.decorators import override, pure_virtual
 from IArena.utils.RandomGenerator import RandomGenerator
 
-DEBUG = 0
-
 MinimaxScoreType = float
 
 class AbstractMinimaxPlayer():
@@ -31,15 +29,11 @@ class AbstractMinimaxPlayer():
         pass
 
     @pure_virtual
-    def cache_store(self, position: IPosition, depth: int, score: int):
+    def cache_store(self, position: IPosition, depth: int, alpha: MinimaxScoreType, beta: MinimaxScoreType, score: MinimaxScoreType):
         pass
 
     @pure_virtual
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
-        pass
-
-    @pure_virtual
-    def select_score(self, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
+    def cache_get(self, position: IPosition, depth: int, alpha: MinimaxScoreType, beta: MinimaxScoreType) -> MinimaxScoreType:
         pass
 
 
@@ -97,19 +91,25 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
         # Calculate the score of children
         movements = rules.possible_movements(position)
-        scores = []
+        if self.player == position.next_player(): # Max player
+            score = math.inf
+        else:
+            score = -math.inf
+
         for move in movements:
+
             next_position = rules.next_position(move, position)
             next_score = self.minimax(next_position, depth - 1)
-            scores.append(next_score)
 
-        # Calculate the score of the position
-        final_score = self.select_score(self.player == position.next_player(), scores)
+            if self.player == position.next_player(): # Max player
+                score = max(score, next_score)
+            else:
+                score = min(score, next_score)
 
         # Store the score in the cache
-        self.cache_store(position, depth, final_score)
+        self.cache_store(position, depth, score)
 
-        return final_score
+        return score
 
     @override
     def heuristic(self, position: IPosition) -> MinimaxScoreType:
@@ -118,26 +118,28 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
     @override
     def select_move(self, movements: list, scores: list) -> IMovement:
         max_value = max([s for s in scores if s is not None])
-        return movements[scores.index(max(max_value))]
+        return movements[scores.index(max_value)]
 
     @override
-    def cache_store(self, position: IPosition, depth: int, score: MinimaxScoreType):
+    def cache_store(
+            self,
+            position: IPosition,
+            score: MinimaxScoreType,
+            depth: int = None,
+            alpha: MinimaxScoreType = None,
+            beta: MinimaxScoreType = None):
         # Do Nothing
         pass
 
     @override
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
+    def cache_get(
+            self,
+            position: IPosition,
+            depth: int = None,
+            alpha: MinimaxScoreType = None,
+            beta: MinimaxScoreType = None) -> MinimaxScoreType:
         # Do Nothing
         return None
-
-    @override
-    def select_score(self, max_player: bool, scores: List[MinimaxScoreType]) -> MinimaxScoreType:
-        # If all scores are None, return None
-        real_scores = [s for s in scores if s is not None]
-        if len(real_scores) == 0:
-            return None
-        f_player = max if max_player else min
-        return f_player(real_scores)
 
 
 class MinimaxPrunePlayer(StdMinimaxPlayer):
@@ -165,18 +167,26 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
         alpha = alpha if alpha is not None else self.total_alpha
         beta = beta if beta is not None else self.total_beta
 
+        initial_alpha = alpha
+        initial_beta = beta
+
         # Useful variables
         rules = position.get_rules()
 
         # Check if the score is already in the cache
-        cache_score = self.cache_get(position, depth)
+        cache_score = self.cache_get(
+            position=position,
+            depth=depth,
+            alpha=alpha,
+            beta=beta,
+        )
         if cache_score is not None:
             return cache_score
 
         # Check if the position is a terminal one
         if rules.finished(position):
-            s = rules.score(position)
-            s = s.get_score(self.player)
+            board = rules.score(position)
+            s = board.get_score(self.player)
             return s
 
         # Check if the depth is 0
@@ -190,17 +200,10 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
         else:
             score = self.total_beta
 
-        any_not_pruned = False
         for i, move in enumerate(movements):
 
             next_position = rules.next_position(move, position)
-
             next_score = self.minimax(next_position, depth - 1, alpha, beta)
-
-            if next_score is None:
-                continue
-            else:
-                any_not_pruned = True
 
             if self.player == position.next_player(): # Max player
                 score = max(score, next_score)
@@ -210,41 +213,16 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
                 beta = min(beta, next_score)
 
             if alpha >= beta:
-                if DEBUG:
-                    space = str(DEBUG) + "   " * DEBUG
-                    print(space, f"Prune {alpha} >= {beta} in movement {i}: {move}")
-                    print(space, "=====================================")
-                    print()
-                    DEBUG -= 1
-
-                return score
                 break
 
-        if not any_not_pruned:
-            if DEBUG:
-                space = str(DEBUG) + "   " * DEBUG
-                print(space, f"All child pruned")
-                print(space, "=====================================")
-                print()
-                DEBUG -= 1
-
-            return None
-
-        # Calculate the score of the position
-        # final_score = self.select_score(self.player == position.next_player(), scores)
-
-        if DEBUG:
-            space = str(DEBUG) + "   " * DEBUG
-            print(space, "Final Score: ", score)
-            print(space, "=====================================")
-            print()
-            DEBUG -= 1
-
-        if cause in str(position):
-            DEBUG = 0
-
         # Store the score in the cache
-        self.cache_store(position, depth, score)
+        self.cache_store(
+            position=position,
+            score=score,
+            depth=depth,
+            alpha=initial_alpha,
+            beta=initial_beta,
+        )
 
         return score
 
@@ -279,18 +257,39 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
             self.cache.append({})
 
     @override
-    def cache_store(self, position: IPosition, depth: int, score: MinimaxScoreType):
+    def cache_store(
+            self,
+            position: IPosition,
+            score: MinimaxScoreType,
+            depth: int,
+            alpha: MinimaxScoreType,
+            beta: MinimaxScoreType):
         # This assumes cache store will never be called if the value is already in the cache
-        self.cache[self.player][position] = (depth, score)
+        self.cache[self.player][position] = (depth, alpha, beta, score)
 
     @override
-    def cache_get(self, position: IPosition, depth: int) -> MinimaxScoreType:
+    def cache_get(
+            self,
+            position: IPosition,
+            depth: int,
+            alpha: MinimaxScoreType,
+            beta: MinimaxScoreType) -> MinimaxScoreType:
         if position in self.cache[self.player]:
-            d, s = self.cache[self.player][position]
-            if d >= depth:
+            d, a, b, s = self.cache[self.player][position]
+            if d >= depth and a <= alpha and b >= beta:
                 return s
         return None
 
+
+    @override
+    def cache_get(
+            self,
+            position: IPosition,
+            depth: int = None,
+            alpha: MinimaxScoreType = None,
+            beta: MinimaxScoreType = None) -> MinimaxScoreType:
+        # Do Nothing
+        return None
 
 
 class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
