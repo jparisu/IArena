@@ -37,7 +37,22 @@ class ScoreBoard:
 
     def winner(self) -> PlayerIndex:
         """Get the winner of the game."""
-        return np.argmax(self.score)
+        winner_index = None
+        winner_score = -float('inf')
+        is_unique_winner = True
+
+        for player, score in enumerate(self.score):
+            if score > winner_score:
+                winner_index = player
+                winner_score = score
+                is_unique_winner = True
+            elif score == winner_score:
+                is_unique_winner = False
+        if is_unique_winner:
+            return winner_index
+        else:
+            return None
+
 
     def join(self, score_board: 'ScoreBoard'):
         """Join two score boards."""
