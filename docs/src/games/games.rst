@@ -142,7 +142,7 @@ These are some methods that can be used with the ``ScoreBoard``:
     - ``Score (float)``
 
   * - ``winner()``.
-    - Get the winner player index.
+    - Get the index of the winner, `None` if there is no specific winner.
     - ``-``
     - ``PlayerIndex (int)``
 
