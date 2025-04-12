@@ -60,6 +60,12 @@ class NimPosition(IPosition):
         l = self.lines + [self.next_player_]
         return hash(tuple(l))
 
+    def get_lines(self) -> List[int]:
+        """
+        Returns the lines of the game.
+        """
+        return list(self.lines)
+
 
 class NimMovement(IMovement):
     """
