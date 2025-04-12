@@ -25,7 +25,7 @@ class AbstractMinimaxPlayer():
         pass
 
     @pure_virtual
-    def select_move(self, movements: List[IMovement], scores: List[MinimaxScoreType]) -> IMovement:
+    def select_move(self, movements: List[IMovement], scores: List[MinimaxScoreType], position: IPosition = None) -> IMovement:
         pass
 
     @pure_virtual
@@ -41,19 +41,10 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
     def __init__(
             self,
-            player: PlayerIndex = None,
             depth: int = -1,
             name: str = None):
         super().__init__(name=name)
-        self.player = player
         self.depth = depth
-
-    @override
-    def starting_game(
-            self,
-            rules: IGameRules,
-            player_index: int):
-        self.player = player_index
 
     @override
     def play(
@@ -67,13 +58,14 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
             next_position = position.get_rules().next_position(move, position)
             scores.append(self.minimax(next_position, self.depth))
 
-        return self.select_move(movements, scores)
+        return self.select_move(movements, scores, position)
 
     @override
     def minimax(self, position: IPosition, depth: int = -1) -> MinimaxScoreType:
 
         # Useful variables
         rules = position.get_rules()
+        max_playing = self.is_max_playing(position)
 
         # Check if the score is already in the cache
         cache_score = self.cache_get(position, depth)
@@ -83,7 +75,7 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         # Check if the position is a terminal one
         if rules.finished(position):
             s = rules.score(position)
-            return s.get_score(self.player)
+            return s.get_score(self.max_player())
 
         # Check if the depth is 0
         if depth == 0:
@@ -91,7 +83,7 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
 
         # Calculate the score of children
         movements = rules.possible_movements(position)
-        if self.player == position.next_player(): # Max player
+        if max_playing: # Max player
             score = math.inf
         else:
             score = -math.inf
@@ -101,7 +93,7 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
             next_position = rules.next_position(move, position)
             next_score = self.minimax(next_position, depth - 1)
 
-            if self.player == position.next_player(): # Max player
+            if max_playing: # Max player
                 score = max(score, next_score)
             else:
                 score = min(score, next_score)
@@ -116,9 +108,13 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         return 0
 
     @override
-    def select_move(self, movements: list, scores: list) -> IMovement:
-        max_value = max([s for s in scores if s is not None])
-        return movements[scores.index(max_value)]
+    def select_move(self, movements: list, scores: list, position: IPosition) -> IMovement:
+        if self.is_max_playing(position):
+            best_value = max([s for s in scores if s is not None])
+        else:
+            best_value = min([s for s in scores if s is not None])
+        return movements[scores.index(best_value)]
+
 
     @override
     def cache_store(
@@ -141,17 +137,22 @@ class StdMinimaxPlayer(AbstractMinimaxPlayer, IPlayer):
         # Do Nothing
         return None
 
+    def max_player(self) -> PlayerIndex:
+        return PlayerIndex.FirstPlayer
+
+    def is_max_playing(self, position: IPosition) -> bool:
+        return position.next_player() == self.max_player()
+
 
 class MinimaxPrunePlayer(StdMinimaxPlayer):
 
     def __init__(
             self,
-            player: PlayerIndex = None,
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
             beta: MinimaxScoreType = float('inf'),
             name: str = None):
-        super().__init__(player, depth, name=name)
+        super().__init__(depth, name=name)
         self.total_alpha = alpha
         self.total_beta = beta
 
@@ -172,6 +173,7 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
 
         # Useful variables
         rules = position.get_rules()
+        max_playing = self.is_max_playing(position)
 
         # Check if the score is already in the cache
         cache_score = self.cache_get(
@@ -186,7 +188,7 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
         # Check if the position is a terminal one
         if rules.finished(position):
             board = rules.score(position)
-            s = board.get_score(self.player)
+            s = board.get_score(self.max_player())
             return s
 
         # Check if the depth is 0
@@ -195,7 +197,7 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
 
         # Calculate the score of children
         movements = rules.possible_movements(position)
-        if self.player == position.next_player(): # Max player
+        if max_playing: # Max player
             score = self.total_alpha
         else:
             score = self.total_beta
@@ -205,7 +207,7 @@ class MinimaxPrunePlayer(StdMinimaxPlayer):
             next_position = rules.next_position(move, position)
             next_score = self.minimax(next_position, depth - 1, alpha, beta)
 
-            if self.player == position.next_player(): # Max player
+            if max_playing: # Max player
                 score = max(score, next_score)
                 alpha = max(alpha, next_score)
             else:
@@ -232,29 +234,16 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
 
     def __init__(
             self,
-            player: PlayerIndex = None,
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
             beta: MinimaxScoreType = float('inf'),
             name: str = None):
         super().__init__(
-            player=player,
             depth=depth,
             alpha=alpha,
             beta=beta,
             name=name)
-        self.cache = []
-
-    @override
-    def starting_game(
-            self,
-            rules: IGameRules,
-            player_index: int):
-        super().starting_game(rules, player_index)
-
-        # Create enough cache for this player index in case it is not already created
-        while len(self.cache) <= player_index:
-            self.cache.append({})
+        self.cache = {}
 
     @override
     def cache_store(
@@ -265,7 +254,7 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
             alpha: MinimaxScoreType,
             beta: MinimaxScoreType):
         # This assumes cache store will never be called if the value is already in the cache
-        self.cache[self.player][position] = (depth, alpha, beta, score)
+        self.cache[position] = (depth, alpha, beta, score)
 
     @override
     def cache_get(
@@ -274,8 +263,8 @@ class MinimaxCachePlayer(MinimaxPrunePlayer):
             depth: int,
             alpha: MinimaxScoreType,
             beta: MinimaxScoreType) -> MinimaxScoreType:
-        if position in self.cache[self.player]:
-            d, a, b, s = self.cache[self.player][position]
+        if position in self.cache:
+            d, a, b, s = self.cache[position]
             if d >= depth and a <= alpha and b >= beta:
                 return s
         return None
@@ -285,20 +274,23 @@ class MinimaxRandomConsistentPlayer(MinimaxCachePlayer):
 
     def __init__(
             self,
-            player: PlayerIndex = None,
             depth: int = -1,
             alpha: MinimaxScoreType = float('-inf'),
             beta: MinimaxScoreType = float('inf'),
             seed: int = 0,
             name: str = None):
-        super().__init__(player=player, depth=depth, alpha=alpha, beta=beta, name=name)
+        super().__init__(depth=depth, alpha=alpha, beta=beta, name=name)
         self.rg = RandomGenerator(seed)
 
     @override
-    def select_move(self, movements, scores):
+    def select_move(self, movements: list, scores: list, position: IPosition) -> IMovement:
 
-        # get best score achievable
-        best_score = max([s for s in scores if s is not None])
+        # get the best score
+        if self.is_max_playing(position):
+            best_score = max([s for s in scores if s is not None])
+        else:
+            best_score = min([s for s in scores if s is not None])
+
         # get movements with best score
         best_movements = [movements[i] for i, score in enumerate(scores) if score == best_score]
         # select a random one

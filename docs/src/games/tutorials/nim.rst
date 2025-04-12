@@ -7,10 +7,10 @@ Nim
 .. figure:: /resources/images/nim.svg
     :scale: 40%
 
-This game is a classical 2 players game called *Nim*.
+This is a classical 2 players game called *Nim*.
 There are ``N`` rows with ``Ni`` sticks in each row.
-By turns, each player takes as much sticks as he wants from a single row.
-The player that takes the last stick loses.
+By turns, each player takes as much sticks as they want from a single row.
+The player that takes the last stick wins.
 
 This is a **0 sum** game with perfect information.
 
@@ -18,7 +18,7 @@ This is a **0 sum** game with perfect information.
 Goal
 ====
 
-The goal of this game is not to be the last player to take a stick.
+The goal of this game is to take the last stick.
 
 -----
 Score
@@ -27,7 +27,7 @@ Score
 - The player that takes the last stick:
   - ``1``
 - The player that cannot take a stick:
-  - ``0``
+  - ``-1``
 
 ======
 Import
