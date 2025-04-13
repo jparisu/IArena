@@ -1,5 +1,6 @@
 
 from typing import Iterator, List
+from copy import deepcopy
 
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
@@ -29,7 +30,7 @@ class CoinsPosition(IPosition):
             rules: "CoinsRules",
             coins: List[float],
             next_player: PlayerIndex,
-            score: ScoreBoard = ScoreBoard()):
+            current_score: ScoreBoard = ScoreBoard()):
         super().__init__(rules)
 
         # Number of coins
@@ -39,7 +40,7 @@ class CoinsPosition(IPosition):
         self.next_player_ = next_player
 
         # Score of the game
-        self.score_ = score
+        self.score_ = current_score
 
     def __len__(self) -> int:
         return self.n
@@ -51,21 +52,25 @@ class CoinsPosition(IPosition):
         return self.next_player_
 
     def coins(self) -> List[float]:
-        return self.coins_
+        return deepcopy(self.coins_)
 
-    def score(self) -> ScoreBoard:
-        return self.score_
+    def current_score(self) -> ScoreBoard:
+        return deepcopy(self.score_)
 
     def __eq__(
             self,
             other: "CoinsPosition") -> bool:
-        return self.n == other.n and self.next_player_ == other.next_player_
+        return self.coins_ == other.coins_ and self.next_player_ == other.next_player_ and self.score_ == other.score_
 
     def __str__(self) -> str:
-        return f"{{{self.next_player_}}}" + [f"{x:2d}" for x in self.coins_]
+        return f"{self.score_} {{{self.next_player_}}}" + [f"{x:2d}" for x in self.coins_]
 
     def __len__(self) -> int:
         return len(self.coins_)
+
+    def __hash__(self):
+        l = self.coins_ + [self.next_player_] + [hash(self.score_)]
+        return hash(tuple(l))
 
 
 class CoinsMovement(IMovement):
@@ -87,7 +92,7 @@ class CoinsMovement(IMovement):
         return self.n == other.n
 
     def __str__(self) -> str:
-        return f'{{remove: {self.n}}}'
+        return f'{{{self.n}}}'
 
 
 class CoinsRules(IGameRules):
@@ -98,7 +103,6 @@ class CoinsRules(IGameRules):
             initial_position: List[float] = None,
             min_play: int = 1,
             max_play: int = 3,
-            next_player: PlayerIndex = PlayerIndex.FirstPlayer,
             n_players: int = 2):
         """
         Args:
@@ -113,7 +117,6 @@ class CoinsRules(IGameRules):
         self.min_play_ = min_play
         self.max_play_ = max_play
 
-        self.next_player_ = next_player
         self.n_players_ = n_players
 
     def min_play(self) -> int:
@@ -132,24 +135,33 @@ class CoinsRules(IGameRules):
     def first_position(self) -> CoinsPosition:
         return CoinsPosition(
             rules=self,
-            coins=self.initial_position,
-            next_player=self.next_player_)
+            coins=self.initial_position_,
+            next_player=PlayerIndex.FirstPlayer)
 
     @override
     def next_position(
             self,
             movement: CoinsMovement,
             position: CoinsPosition) -> CoinsPosition:
-        next_player = (position.next_player() + 1) % self.n_players_
+        # Check if the movement is valid
+        if movement.n > len(position.coins()):
+            raise ValueError(f"Invalid movement {movement}: removing more coins than available.")
+
+        # Calculate new score
+        score = position.current_score()
+        value_taken = sum(position.coins()[-movement.n:])
+        score.add_score(position.next_player(), value_taken)
+
+        # Calculate next player
+        next_player = (position.next_player() + 1) % self.n_players()
+        # Calculate new position
         coins = list(position.coins()[:-movement.n])
-        score = position.score()
-        score.add_score(position.next_player(), sum(position.coins()[-movement.n:]))
 
         return CoinsPosition(
             rules=self,
             coins=coins,
             next_player=next_player,
-            score=score)
+            current_score=score)
 
     @override
     def possible_movements(
@@ -157,10 +169,10 @@ class CoinsRules(IGameRules):
             position: CoinsPosition) -> Iterator[CoinsMovement]:
         return [
             CoinsMovement(x) for x in range(
-                self.min_play,
+                self.min_play(),
                 min(
                     len(position),
-                    self.max_play
+                    self.max_play()
                 ) + 1
             )
         ]
@@ -169,10 +181,17 @@ class CoinsRules(IGameRules):
     def finished(
             self,
             position: CoinsPosition) -> bool:
-        return len(position) < self.min_play
+        return len(position) < self.min_play()
 
     @override
     def score(
             self,
             position: CoinsPosition) -> ScoreBoard:
-        return position.score()
+        # Get the scores and distribute them so they sum up 0
+        board = position.current_score()
+        total_score = sum(board.score)
+
+        scores = ScoreBoard()
+        for i, s in enumerate(board.score):
+            scores.add_score(i, s - (total_score / 2))
+        return scores
