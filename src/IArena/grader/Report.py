@@ -21,6 +21,7 @@ class ReportCommonConfiguration(YamlMixing):
     min_score: float = float('-inf')
     repetitions: int = 1
     fails_allowed: int = 0
+    max_moves: int = 1000
 
 
 
@@ -86,6 +87,7 @@ class Report:
                             [self._player],
                             move_timeout_s=self._common_configuration.move_timeout_s,
                             total_timeout_s=self._common_configuration.total_timeout_s,
+                            max_moves=self._common_configuration.max_moves,
                         )
 
                 score = game.play()[0]

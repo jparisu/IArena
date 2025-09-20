@@ -13,10 +13,12 @@ from IArena.players.playable_players import PlayablePlayer
 class GenericGame:
 
     def __init__(
-            self,
-            rules: IGameRules,
-            players: List[IPlayer],
-            check_correct_move: bool = True):
+                self,
+                rules: IGameRules,
+                players: List[IPlayer],
+                check_correct_move: bool = True,
+                max_moves: int = None
+            ):
 
         # If the number of players is not correct, throw exception
         if rules.n_players() != len(players):
@@ -26,6 +28,7 @@ class GenericGame:
         self.rules = rules
         self.players = players
         self.check_correct_move = check_correct_move
+        self.max_moves = max_moves
 
 
     def play(self) -> ScoreBoard:
@@ -36,10 +39,16 @@ class GenericGame:
 
         current_position = self.rules.first_position()
         finished = self.rules.finished(current_position)
+        moves = 0
+
         while not finished:
 
             current_position = self.next_movement_(current_position)
             finished = self.rules.finished(current_position)
+            moves += 1
+
+            if self.max_moves is not None and moves >= self.max_moves:
+                raise TimeoutError(f'Game has exceeded the maximum number of moves: {self.max_moves}.')
 
         return self.calculate_score_(current_position)
 
@@ -90,12 +99,14 @@ class BroadcastGame(GenericGame):
 class ClockGame(GenericGame):
 
     def __init__(
-            self,
-            rules: IGameRules,
-            players: List[IPlayer],
-            move_timeout_s: float = 10.0,
-            total_timeout_s: float = float('inf')):
-        super().__init__(rules, players)
+                self,
+                rules: IGameRules,
+                players: List[IPlayer],
+                move_timeout_s: float = 10.0,
+                total_timeout_s: float = float('inf'),
+                max_moves: int = None,
+            ):
+        super().__init__(rules, players, max_moves=max_moves)
 
         self.move_timeout_s = move_timeout_s
         self.total_timeout_s = total_timeout_s
