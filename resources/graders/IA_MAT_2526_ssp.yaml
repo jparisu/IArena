@@ -62,13 +62,30 @@ reports:
 
   - name: Multiple targets
     args:
-      coins: [19,12,17,13,11,7,5]
+      coins: [19,17,13,11,7,5]
     multi_args:
-      target: [20,30,38,39,40]
+      target: [38,39,40]
 
     max_score: 37
     min_score: 37
-    fails_allowed: 3
+    repetitions: 2
+
+
+  - name: Failures
+    args:
+      target: 40
+    multi_args:
+      coins:
+        - [40]
+        - [30,20,10]
+        - [35,25,15]
+        - [36,26,16]
+        - [36]
+
+    max_score: 40
+    min_score: 36
+    fails_allowed: 9
+    repetitions: 2
 
 
   - name: Great example
@@ -80,3 +97,4 @@ reports:
 
     max_score: 30000
     min_score: 29900
+    value: 3
