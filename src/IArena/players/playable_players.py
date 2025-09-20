@@ -18,6 +18,7 @@ class PlayablePlayer(IPlayer):
 
         possibilities = list(position.get_rules().possible_movements(position))
 
+        print ()
         print ("=" * PlayablePlayer.SeparatorN)
         print (f"Next player: {self.name()}[{position.next_player()}]")
         print ("-" * PlayablePlayer.SeparatorN)

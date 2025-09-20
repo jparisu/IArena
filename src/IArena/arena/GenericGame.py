@@ -73,8 +73,8 @@ class BroadcastGame(GenericGame):
         movement = self.players[next_player_index].play(current_position)
 
         # Check if the movement is possible
-        if not self.rules.is_movement_possible(movement, current_position):
-            raise ValueError(f'Player <{self.get_player_name(next_player_index)}> has made an invalid movement: {movement} in position:\n{current_position}')
+        # if not self.rules.is_movement_possible(movement, current_position):
+        #     raise ValueError(f'Player <{self.get_player_name(next_player_index)}> has made an invalid movement: {movement} in position:\n{current_position}')
 
         next_position = self.rules.next_position(
             movement,
@@ -91,26 +91,43 @@ class ClockGame(GenericGame):
             self,
             rules: IGameRules,
             players: List[IPlayer],
-            timeout_s: float = 10.0):
+            move_timeout_s: float = 10.0,
+            total_timeout_s: float = float('inf')):
         super().__init__(rules, players)
 
-        self.timeout_s = timeout_s
+        self.move_timeout_s = move_timeout_s
+        self.total_timeout_s = total_timeout_s
+
+
+    def play(self) -> ScoreBoard:
+
+        # Run such function in a new thread that shuts down after move_timeout_s
+        try:
+            score = time_limit_run(
+                self.total_timeout_s,
+                super().play)
+            return score
+
+        except TimeoutError:
+            raise TimeoutError(f'Game has exceeded the total time limit of {self.total_timeout_s} seconds.')
+
+
 
     @override
     def next_player_move_(self, current_position: IPosition) -> IMovement:
 
         next_player_index = current_position.next_player()
 
-        # Run such function in a new thread that shuts down after timeout_s
+        # Run such function in a new thread that shuts down after move_timeout_s
         try:
             move = time_limit_run(
-                self.timeout_s,
+                self.move_timeout_s,
                 self.players[next_player_index].play,
                 current_position)
             return move
 
         except TimeoutError:
-            raise TimeoutError(f'Player <{self.get_player_name(next_player_index)}> has exceeded the time limit of {self.timeout_s} seconds in position:\n{current_position}')
+            raise TimeoutError(f'Player <{self.get_player_name(next_player_index)}> has exceeded the time limit of {self.move_timeout_s} seconds in position:\n{current_position}')
 
 
 
