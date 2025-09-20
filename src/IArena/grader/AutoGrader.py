@@ -10,14 +10,15 @@ import copy
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.grader.Grader import ReportConfiguration, Grader
 from IArena.grader.Report import ReportCommonConfiguration
-from IArena.grader.RulesGenerator import IRulesGenerator
+from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite
+from IArena.utils.importing import import_class_from_module, get_cell_from_ipynb, execute_str_as_module, extract_marker_values
 
 TAG_YAML_CONF_GAME = "game"
 TAG_YAML_CONF_DEFAULT = "default"
 TAG_YAML_CONF_REPORTS = "reports"
 
 TAG_PLAYER_VAR = "students_player"
-TAG_AUTHOR = "@AUTHOR"
+TAG_AUTHOR = "@AUTHOR:"
 
 
 
@@ -81,30 +82,29 @@ def get_player_from_file(
     if not os.path.exists(filename):
         raise FileNotFoundError(f"File {filename} does not exist.")
 
+    code_text = ""
+
     if filename.endswith('.py'):
         with open(filename, 'r') as file:
-            code = file.read()
-            local_vars = {}
-            exec(code, {}, local_vars)
-            if player_var_name not in local_vars:
-                raise ValueError(f"Variable {player_var_name} not found in file {filename}.")
-            return local_vars[player_var_name]
+            code_text = file.read()
 
     elif filename.endswith('.ipynb'):
-        with open(filename, 'r', encoding='utf-8') as file:
-            notebook = nbformat.read(file, as_version=4)
-            for cell in notebook.cells:
-                if cell.cell_type == 'code':
-                    cell_source = cell.source
-                    if any(marker in cell_source for marker in PLAYER_CODE_MARKERS):
-                        local_vars = {}
-                        exec(cell_source, {}, local_vars)
-                        if player_var_name not in local_vars:
-                            raise ValueError(f"Variable {player_var_name} not found in code cell in file {filename}.")
-                        return local_vars[player_var_name]
-            raise ValueError(f"No code cell containing any of the markers {PLAYER_CODE_MARKERS} found in file {filename}.")
+        code_text = get_cell_from_ipynb(filename, markers)
+
     else:
         raise ValueError(f"Unsupported file extension for file {filename}. Only .py and .ipynb are supported.")
+
+    # Execute the code as a module
+    module = execute_str_as_module(code_text)
+
+    # Get the player
+    if not hasattr(module, player_var_name):
+        raise ValueError(f"Variable {player_var_name} not found in file {filename}.")
+    player = getattr(module, player_var_name)
+    if not isinstance(player, IPlayer):
+        raise ValueError(f"Variable {player_var_name} is not an instance of IPlayer in file {filename}.")
+    return player
+
 
 
 def read_authors_file(filename: str) -> List[str]:
@@ -113,25 +113,7 @@ def read_authors_file(filename: str) -> List[str]:
     The author tag is defined as TAG_AUTHOR = "@AUTHOR", and the name is after a space after the occurrence of the tag.
     """
 
-    if not os.path.exists(filename):
-        raise FileNotFoundError(f"File {filename} does not exist.")
-
-    authors = []
-
-    with open(filename, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if TAG_AUTHOR in line:
-                parts = line.split(TAG_AUTHOR)
-                if len(parts) > 1:
-                    author_part = parts[1].strip()
-                    if author_part:
-                        authors.append(author_part)
-
-    if not authors:
-        raise ValueError(f"No authors found in file {filename}.")
-
-    return authors
+    return extract_marker_values(filename, TAG_AUTHOR)
 
 
 
@@ -146,12 +128,11 @@ def get_rules_generator_from_name(name: str) -> IRulesGenerator:
     """
 
     try:
-        module = importlib.import_module(f'IArena.games.{name}.{name}RulesGenerator')
-        class_name = f'{name}RulesGenerator'
-        rules_generator_class = getattr(module, class_name)
+        rules_generator_class = import_class_from_module(f"IArena.games.{name}", f"{name}RulesGenerator")
         if not issubclass(rules_generator_class, IRulesGenerator):
-            raise ValueError(f"Class {class_name} is not a subclass of IRulesGenerator.")
+            raise ValueError(f"Class {name}RulesGenerator is not a subclass of IRulesGenerator.")
         return rules_generator_class()
+
     except (ModuleNotFoundError, AttributeError) as e:
         raise ValueError(f"Could not find rules generator for game {name}: {e}")
 
@@ -175,7 +156,7 @@ class IndividualAutoGrader:
         ##############################
         # Read configuration from YAML
 
-        self.yaml_configuration = self._read_yaml_configuration(configuration_filename)
+        self.yaml_configuration = read_yaml(configuration_filename)
 
 
         ##############################
@@ -189,8 +170,8 @@ class IndividualAutoGrader:
         # Prepare game rules
 
         # Get the games name
-        if TAG_YAML_CONF_GAME in self.configuration:
-            game_name = self.configuration[TAG_YAML_CONF_GAME]
+        if TAG_YAML_CONF_GAME in self.yaml_configuration:
+            game_name = self.yaml_configuration[TAG_YAML_CONF_GAME]
         else:
             raise ValueError(f"<TAG_YAML_CONF_GAME> must be specified in the configuration file.")
 
@@ -250,7 +231,7 @@ class IndividualAutoGrader:
                 if not isinstance(report_yaml["multi_args"], dict):
                     raise ValueError(f"Report {i} multi_args is not a dictionary.")
                 multi_args = report_yaml["multi_args"]
-            rules_suite = self.rules_generator.get_rules_generator_suite(args, multi_args)
+            rules_suite = RulesGeneratorSuite(args=args, multi_args=multi_args)
 
             # Get the value
             value = 1.0
@@ -276,14 +257,14 @@ class IndividualAutoGrader:
     def grade(self, debug: bool = True) -> float:
 
         if debug:
-            print(f"Grading player by authors: {', '.join(self.authors)}")
+            print(f"Grading player by authors: {self.authors}")
             print()
 
         self.grader.run(debug=debug)
         grade = self.grader.calculate_final_grade()
 
         if debug:
-            print(f"Final grade: {grade:.2f * 100}%")
+            print(f"Final grade: {grade * 100:.2f}%")
             print()
 
         return grade

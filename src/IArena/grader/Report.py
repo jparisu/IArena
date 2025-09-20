@@ -17,8 +17,8 @@ class ReportCommonConfiguration(YamlMixing):
 
     move_timeout_s: float = 5
     total_timeout_s: float = 10
-    max_score: float = 1.0
-    min_score: float = 0.0
+    max_score: float = float('inf')
+    min_score: float = float('-inf')
     repetitions: int = 1
     fails_allowed: int = 0
 
@@ -34,6 +34,13 @@ class ReportResult:
     successes: List[bool]
     messages: List[str]
     warnings: List[str]
+
+    def total(self) -> int:
+        return len(self.successes)
+    def passed(self) -> int:
+        return sum(1 for s in self.successes if s)
+    def failed(self) -> int:
+        return sum(1 for s in self.successes if not s)
 
 
 class Report:
@@ -60,7 +67,7 @@ class Report:
         self._result = None
 
 
-    def _reckon(
+    def run(
                 self,
             ) -> ReportResult:
 
@@ -72,30 +79,32 @@ class Report:
 
             rules = self._rules_generator.generate(conf)
 
-            game = ClockGame(
-                        rules,
-                        [self._player],
-                        move_timeout_s=self._common_configuration.move_timeout_s,
-                        total_timeout_s=self._common_configuration.total_timeout_s,
-                    )
+            for i in range(self._common_configuration.repetitions):
 
-            score = game.play()[0]
+                game = ClockGame(
+                            rules,
+                            [self._player],
+                            move_timeout_s=self._common_configuration.move_timeout_s,
+                            total_timeout_s=self._common_configuration.total_timeout_s,
+                        )
 
-            if score >= self._common_configuration.min_score:
-                successes.append(True)
-                if score > self._common_configuration.max_score:
-                    warnings.append(f"Score {score} above max {self._common_configuration.max_score} with conf {conf}")
+                score = game.play()[0]
 
-            else:
-                successes.append(False)
-                if score < self._common_configuration.max_score:
-                    messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf}")
+                if score >= self._common_configuration.min_score:
+                    successes.append(True)
+                    if score > self._common_configuration.max_score:
+                        warnings.append(f"Score {score} above max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+
+                else:
+                    successes.append(False)
+                    if score < self._common_configuration.max_score:
+                        messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
 
 
         self._result = ReportResult(
                 successes=successes,
                 messages=messages,
-                warning=warnings,
+                warnings=warnings,
             )
 
         return self._result
@@ -124,11 +133,11 @@ class Report:
         if self._result is None:
             raise RuntimeError("Grader has not been run yet. Please run the grader before calculating the final grade.")
 
-        if self._result.total == 0:
+        if self._result.total() == 0:
             return 0.0
 
         penalty_per_fail = 1.0 / (1 + self._common_configuration.fails_allowed)
-        grade = 1.0 - (self._result.failed * penalty_per_fail)
+        grade = 1.0 - (self._result.failed() * penalty_per_fail)
         if grade < 0.0:
             grade = 0.0
         return grade

@@ -1,0 +1,82 @@
+game: SSP
+
+move_timeout_s: 2
+total_timeout_s: 10
+repetitions: 3
+
+reports:
+
+  - name: All coins
+    args:
+      target: 10
+      coins: [1,2,3,4]
+
+    max_score: 10
+    min_score: 10
+
+
+  - name: One coin
+    args:
+      target: 7
+      coins: [5,6,7]
+
+    max_score: 7
+    min_score: 7
+
+
+  - name: No solution
+    args:
+      target: 1
+      coins: [2,3,4]
+
+    max_score: 0
+    min_score: 0
+
+
+  - name: Large numbers
+    args:
+      target: 1000
+      coins: [100,200,300,400,500]
+
+    max_score: 1000
+    min_score: 1000
+
+
+  - name: Impossible target
+    args:
+      target: 14
+      coins: [2,4,6]
+
+    max_score: 12
+    min_score: 12
+
+
+  - name: Non achievable target
+    args:
+      target: 24
+      coins: [3,5,7,11,13]
+
+    max_score: 23
+    min_score: 23
+
+
+  - name: Multiple targets
+    args:
+      coins: [19,12,17,13,11,7,5]
+    multi_args:
+      target: [20,30,38,39,40]
+
+    max_score: 37
+    min_score: 37
+    fails_allowed: 3
+
+
+  - name: Great example
+    args:
+      target: 30000
+      coins: [123,456,789,1011,1213,1417,
+              1619,1811,2021,2223,2425,2627,
+              2829,3031,3233,3435,3637,3839]
+
+    max_score: 30000
+    min_score: 29900

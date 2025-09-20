@@ -15,7 +15,8 @@ class GenericGame:
     def __init__(
             self,
             rules: IGameRules,
-            players: List[IPlayer]):
+            players: List[IPlayer],
+            check_correct_move: bool = True):
 
         # If the number of players is not correct, throw exception
         if rules.n_players() != len(players):
@@ -24,6 +25,7 @@ class GenericGame:
 
         self.rules = rules
         self.players = players
+        self.check_correct_move = check_correct_move
 
 
     def play(self) -> ScoreBoard:
@@ -80,7 +82,7 @@ class BroadcastGame(GenericGame):
             movement,
             current_position)
 
-        print(f'Player <{self.get_player_name(next_player_index)}>  move: <{movement}> ->\n {next_position}')
+        print(f'Player <{self.get_player_name(next_player_index)}>  move: <{movement}> ->\n{next_position}')
 
         return next_position
 

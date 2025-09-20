@@ -89,9 +89,9 @@ class Grader:
         total_value = self.total_value()
         final_grade = 0.0
 
-        for report in self._reports:
-            report_score = report.calculate_score()
-            report_value = self._report_configurations[report.name].value
+        for report, report_conf in zip(self._reports, self._report_configurations):
+            report_score = report.calculate_grade()
+            report_value = report_conf.value
             final_grade += (report_score * report_value) / total_value
 
         return final_grade

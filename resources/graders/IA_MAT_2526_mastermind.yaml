@@ -3,7 +3,7 @@ game: Mastermind
 move_timeout_s: 2
 total_timeout_s: 20
 max_score: 0
-repetitions: 3
+repetitions: 5
 fails_allowed: 1
 
 reports:

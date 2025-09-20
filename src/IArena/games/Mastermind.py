@@ -249,20 +249,35 @@ class MastermindPlayablePlayer(IPlayer):
         print ("=" * MastermindPlayablePlayer.SeparatorN)
         print (position)
         print ("-" * MastermindPlayablePlayer.SeparatorN)
-        print ("-" * MastermindPlayablePlayer.SeparatorN)
         repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
         print (f"Colors: {list(range(position.get_rules().get_number_colors()))}  ({repetitions_text})")
 
         colors = []
 
-        for i in range(position.get_rules().get_size_code()):
-            print (f"Position {i}: ", end="")
-            next_color = int(input())
+        while True:
+            print ("-" * MastermindPlayablePlayer.SeparatorN)
+            print (f"Insert a code with {position.get_rules().get_size_code()} colors (from 0 to {position.get_rules().get_number_colors()-1}):")
+            next_color = input()
 
-            if next_color < 0 or next_color >= position.get_rules().get_number_colors():
-                raise ValueError(f"Color must be between 0 and {position.get_rules().get_number_colors()-1}")
+            # Check if the input is valid
+            if len(next_color) != position.get_rules().get_size_code():
+                print (f"Code must be of size {position.get_rules().get_size_code()}. Try again:")
+                continue
 
-            colors.append(next_color)
+            try:
+                next_color = [int(x) for x in next_color]
+                if any(x < 0 or x >= position.get_rules().get_number_colors() for x in next_color):
+                    raise ValueError()
+                if not position.get_rules().allow_repetition() and len(set(next_color)) != position.get_rules().get_size_code():
+                    print ("Code must not have repetitions. Try again:")
+                    continue
+
+            except ValueError:
+                print (f"Code must be a list of integers between 0 and {position.get_rules().get_number_colors()-1}. Try again:")
+                continue
+
+            colors = next_color
+            break
 
         print ("=" * MastermindPlayablePlayer.SeparatorN)
 
@@ -273,6 +288,7 @@ class MastermindRulesGenerator(IRulesGenerator):
 
     @override
     def generate(
+            self,
             configuration: dict) -> IGameRules:
 
         code_size = MastermindRulesGenerator._get_param(

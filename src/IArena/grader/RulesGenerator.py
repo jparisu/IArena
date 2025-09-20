@@ -52,7 +52,7 @@ class IRulesGenerator:
     """
 
     @pure_virtual
-    def generate(configuration: RulesGeneratorConfiguration) -> IGameRules:
+    def generate(self, configuration: RulesGeneratorConfiguration) -> IGameRules:
         """Generates a game rules instance based on the provided configuration dictionary."""
         pass
 
