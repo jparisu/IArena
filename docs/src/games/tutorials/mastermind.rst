@@ -112,7 +112,8 @@ or whether it is not present in the secret code (``0``).
     # The first value of the last guess is in the code but in other position
   else:
     # The third value of the last guess is wrong
-inter
+
+
 -------
 Methods
 -------
@@ -166,6 +167,7 @@ Arguments for constructor are:
 
 
 
+.. _mastermind_playable_player:
 
 ===============
 Playable Player

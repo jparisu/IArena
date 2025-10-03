@@ -1,10 +1,8 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import yaml
 import os
 import tempfile
 import requests
-import nbformat
-import importlib
 import copy
 
 from IArena.interfaces.IPlayer import IPlayer

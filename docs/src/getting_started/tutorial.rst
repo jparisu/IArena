@@ -12,7 +12,7 @@ Tutorial
 
 **IArena** is a library that implements several games, in order to allow developing AI players that can be tested on them.
 In this tutorial, we will see each element involved in the player creation.
-We will illustrate it by showing how to create and test a player for the game :ref:`Mastermind`.
+We will illustrate it by showing how to create and test a player for the game :ref:`Mastermind <mastermind_docs>`.
 
 
 ============
@@ -128,7 +128,7 @@ In the following snippet, we can see how to create an empty board and how to get
 
 .. note::
 
-    The ``None`` parameter representes the rules of the game that generated the position.
+    The ``None`` parameter represents the rules of the game that generated the position.
     We will discuss it later.
 
 
@@ -241,7 +241,7 @@ Let's see an example on how to create a play of Mastermind:
 Play
 ====
 
-If you want to play the game manually, you can use the built-in :ref:`PlayablePlayer` class for Mastermind: ``MastermindPlayablePlayer``.
+If you want to play the game manually, you can use the built-in :ref:`playable_player` class for Mastermind: ``MastermindPlayablePlayer``.
 Next, we see how to create a playable game for mastermind:
 
 .. code-block:: python

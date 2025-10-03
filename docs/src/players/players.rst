@@ -119,3 +119,49 @@ If you prefer to see step by step the game playing by the player, use ``Broadcas
         players=[my_player]
     )
     score = arena.play()
+
+
+.. _playable_player:
+
+==============
+PlayablePlayer
+==============
+
+A ``PlayablePlayer`` is a special type of player that allows a human to play the game manually using a simple text interface.
+It implements the ``IPlayer`` interface and can be used in any arena.
+It is useful to test the rules of a game or to play against an autonomous player.
+
+.. code-block:: python
+
+    from IArena.players.playable_players import PlayablePlayer
+    from IArena.games.Hanoi import HanoiRules
+    from IArena.arena.GenericGame import GenericGame
+
+    # Create a playable player
+    human_player = PlayablePlayer()
+
+    # Create the game
+    rules = HanoiRules()
+
+    # Create the arena
+    arena = GenericGame(
+        rules=rules,
+        players=[my_player]
+    )
+
+    # Activate the arena
+    score = arena.play()
+
+
+--------------
+Custom players
+--------------
+
+Several games have custom players that implement the ``PlayablePlayer`` interface.
+These players have a better interface adapted to the specific game.
+Some examples are:
+
+- ``MastermindPlayablePlayer`` in ``IArena.games.Mastermind``. Documentation: :ref:`mastermind_playable_player`
+
+
+For further information, see the documentation of each game.
