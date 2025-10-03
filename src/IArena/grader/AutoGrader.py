@@ -138,11 +138,65 @@ def get_rules_generator_from_name(name: str) -> IRulesGenerator:
 
 
 
+def read_reports(default_config: ReportCommonConfiguration, test_config: Dict) -> List[ReportConfiguration]:
+
+    if not TAG_YAML_CONF_REPORTS in test_config:
+        raise ValueError(f"<{TAG_YAML_CONF_REPORTS}> must be specified in the configuration file.")
+
+    reports = []
+
+    # For each report, create a ReportConfiguration
+    for i, report_yaml in enumerate(test_config[TAG_YAML_CONF_REPORTS]):
+        if not isinstance(report_yaml, dict):
+            raise ValueError(f"Report {i} is not a dictionary.")
+
+        # Get name
+        if "name" not in report_yaml:
+            raise ValueError(f"Report {i} does not have a name.")
+        name = report_yaml["name"]
+
+        # Get the common configuration as the default updated with the report specific values
+        common_configuration = copy.copy(default_config)
+        common_configuration.update(report_yaml)
+
+        # Get the rules suite
+        args = {}
+        multi_args = {}
+
+        if "args" in report_yaml:
+            if not isinstance(report_yaml["args"], dict):
+                raise ValueError(f"Report {i} args is not a dictionary.")
+            args = report_yaml["args"]
+        if "multi_args" in report_yaml:
+            if not isinstance(report_yaml["multi_args"], dict):
+                raise ValueError(f"Report {i} multi_args is not a dictionary.")
+            multi_args = report_yaml["multi_args"]
+        rules_suite = RulesGeneratorSuite(args=args, multi_args=multi_args)
+
+        # Get the value
+        value = 1.0
+        if "value" in report_yaml:
+            try:
+                value = float(report_yaml["value"])
+            except Exception as e:
+                raise ValueError(f"Report {i} value is not a float: {e}")
+        if value < 0:
+            raise ValueError(f"Report {i} value must be non-negative.")
+        reports.append(ReportConfiguration(
+            name=name,
+            common_configuration=common_configuration,
+            rules_suite=rules_suite,
+            value=value
+        ))
+
+    return reports
+
+
 class IndividualAutoGrader:
     """
-    Class to read configurations files and generate a Grader for a student's player code.
+    Class to read configurations file and player and generate a Grader for a student's player code.
 
-    It reads a YAML configuration file and a python file containing the student's code.
+    It reads a YAML configuration file.
     It prepares the game rules generator, the player instance, and the tests to be run.
     It runs the tests and collects the results.
     """
@@ -151,7 +205,8 @@ class IndividualAutoGrader:
     def __init__(
             self,
             configuration_filename: str,
-            player_filename: str):
+            player: IPlayer,
+            authors: List[str] = []):
 
         ##############################
         # Read configuration from YAML
@@ -162,8 +217,8 @@ class IndividualAutoGrader:
         ##############################
         # Read students code
 
-        self.authors = read_authors_file(player_filename)
-        self.student_player = get_player_from_file(player_filename, TAG_PLAYER_VAR)
+        self.student_player = player
+        self.authors = authors
 
 
         ##############################
@@ -186,71 +241,13 @@ class IndividualAutoGrader:
 
         ##############################
         # Create the Grader
-        report_configurations = self._read_reports(self.yaml_configuration)
+        report_configurations = read_reports(self.default_config, self.yaml_configuration)
 
         self.grader = Grader(
             game_rules_generator=self.rules_generator,
             player=self.student_player,
             report_configurations=report_configurations
         )
-
-
-
-
-
-    def _read_reports(self, test_config: Dict) -> List[ReportConfiguration]:
-
-        if not TAG_YAML_CONF_REPORTS in test_config:
-            raise ValueError(f"<{TAG_YAML_CONF_REPORTS}> must be specified in the configuration file.")
-
-        reports = []
-
-        # For each report, create a ReportConfiguration
-        for i, report_yaml in enumerate(test_config[TAG_YAML_CONF_REPORTS]):
-            if not isinstance(report_yaml, dict):
-                raise ValueError(f"Report {i} is not a dictionary.")
-
-            # Get name
-            if "name" not in report_yaml:
-                raise ValueError(f"Report {i} does not have a name.")
-            name = report_yaml["name"]
-
-            # Get the common configuration as the default updated with the report specific values
-            common_configuration = copy.copy(self.default_config)
-            common_configuration.update(report_yaml)
-
-            # Get the rules suite
-            args = {}
-            multi_args = {}
-
-            if "args" in report_yaml:
-                if not isinstance(report_yaml["args"], dict):
-                    raise ValueError(f"Report {i} args is not a dictionary.")
-                args = report_yaml["args"]
-            if "multi_args" in report_yaml:
-                if not isinstance(report_yaml["multi_args"], dict):
-                    raise ValueError(f"Report {i} multi_args is not a dictionary.")
-                multi_args = report_yaml["multi_args"]
-            rules_suite = RulesGeneratorSuite(args=args, multi_args=multi_args)
-
-            # Get the value
-            value = 1.0
-            if "value" in report_yaml:
-                try:
-                    value = float(report_yaml["value"])
-                except Exception as e:
-                    raise ValueError(f"Report {i} value is not a float: {e}")
-            if value < 0:
-                raise ValueError(f"Report {i} value must be non-negative.")
-            reports.append(ReportConfiguration(
-                name=name,
-                common_configuration=common_configuration,
-                rules_suite=rules_suite,
-                value=value
-            ))
-
-        return reports
-
 
 
 
@@ -268,3 +265,35 @@ class IndividualAutoGrader:
             print()
 
         return grade
+
+
+    def authors(self) -> List[str]:
+        return self.authors
+
+
+
+class IndividualCompleteAutoGrader(IndividualAutoGrader):
+    """
+    Class to read configurations files and generate a Grader for a student's player code.
+
+    It reads a YAML configuration file and a python file containing the student's code.
+    It prepares the game rules generator, the player instance, and the tests to be run.
+    It runs the tests and collects the results.
+    """
+
+
+    def __init__(
+            self,
+            configuration_filename: str,
+            player_filename: str):
+
+        ##############################
+        # Read students code
+
+        authors = read_authors_file(player_filename)
+        student_player = get_player_from_file(player_filename, TAG_PLAYER_VAR)
+
+
+        ##############################
+        # Reuse the parent to read configuration and prepare the grader
+        super().__init__(configuration_filename, student_player, authors)

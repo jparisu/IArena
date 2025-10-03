@@ -1,5 +1,5 @@
 
-from copy import deepcopy
+import copy
 from typing import Iterator, List
 import random
 from enum import Enum
@@ -70,8 +70,8 @@ class MastermindPosition(IPosition):
             guesses: List[MastermindMovement],
             correctness: List[List[MastermindCorrectness]]):
         super().__init__(rules)
-        self.guesses = guesses
-        self.correctness = correctness
+        self._guesses = guesses
+        self._correctness = correctness
 
     @override
     def next_player(
@@ -81,15 +81,31 @@ class MastermindPosition(IPosition):
     def __eq__(
             self,
             other: "MastermindPosition"):
-        return self.guesses == other.guesses and self.correctness == other.correctness
+        return self._guesses == other.guesses and self._correctness == other.correctness
 
     def __str__(self):
 
-        if len(self.guesses) == 0:
+        if len(self._guesses) == 0:
             return "<EMPTY POSITION>\n"
 
         # Print each guess in a line together with the correctness
-        return "\n".join([f'{self.guesses[i]} : {[x.name for x in self.correctness[i]]}' for i in range(len(self.guesses))]) + "\n"
+        return "\n".join([f'{self._guesses[i]} : {[x.name for x in self._correctness[i]]}' for i in range(len(self._guesses))]) + "\n"
+
+    def guesses(self) -> List[MastermindMovement]:
+        return copy.deepcopy(self._guesses)
+
+    def correctness(self) -> List[List[MastermindCorrectness]]:
+        return copy.deepcopy(self._correctness)
+
+    def last_guess(self) -> MastermindMovement:
+        if len(self._guesses) == 0:
+            return None
+        return copy.deepcopy(self._guesses[-1])
+
+    def last_correctness(self) -> List[MastermindCorrectness]:
+        if len(self._correctness) == 0:
+            return None
+        return copy.deepcopy(self._correctness[-1])
 
 
 class MastermindRules(IGameRules):
@@ -119,9 +135,9 @@ class MastermindRules(IGameRules):
 
     def __init__(
             self,
-            code_size: int,
-            number_colors: int,
-            secret: List[int],
+            code_size: int = 5,
+            number_colors: int = 8,
+            secret: List[int] = None,
             allow_repetitions: bool = True):
         """
         Construct a secret code of size n with numbers from 0 to m-1.
@@ -138,6 +154,15 @@ class MastermindRules(IGameRules):
             seed: Seed for the random generator.
             secret: The secret code.
         """
+
+        if secret is None:
+            secret = MastermindRules.random_secret(
+                code_size=code_size,
+                number_colors=number_colors,
+                rng=RandomGenerator(),
+                color_repetition=allow_repetitions,
+            )
+
         self.m = number_colors
         self.n = code_size
         if len(secret) != code_size or any(x < 0 or x >= number_colors for x in secret):
@@ -196,7 +221,7 @@ class MastermindRules(IGameRules):
                     correctness[i] = MastermindPosition.MastermindCorrectness.Misplaced
                     break
 
-        new_correctness = deepcopy(position.correctness)
+        new_correctness = copy.deepcopy(position.correctness)
         new_correctness.append(correctness)
 
         return MastermindPosition(self, guesses, new_correctness)

@@ -1,4 +1,4 @@
-.. _hanoi_tutorial:
+.. _hanoi_docs:
 
 #####
 Hanoi

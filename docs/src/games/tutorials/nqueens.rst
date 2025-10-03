@@ -1,4 +1,4 @@
-.. _nqueens_tutorial:
+.. _nqueens_docs:
 
 #######
 NQueens
