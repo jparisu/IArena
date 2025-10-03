@@ -178,7 +178,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Hanoi**
      - ``IArena.games.Hanoi``
-     - :ref:`hanoi_tutorial`
+     - :ref:`hanoi_docs`
      - The classic Hanoi's Tower game.
      - 1
      - Deterministic
@@ -187,7 +187,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **SlicingPuzzle**
      - ``IArena.games.SlicingPuzzle``
-     - :ref:`slicing_tutorial`
+     - :ref:`slicing_docs`
      - The classic Slicing Puzzle game.
      - 1
      - Deterministic
@@ -196,7 +196,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **NQueens**
      - ``IArena.games.NQueens``
-     - :ref:`nqueens_tutorial`
+     - :ref:`nqueens_docs`
      - The classic N-Queens game.
      - 1
      - Deterministic
@@ -205,7 +205,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **FieldWalk**
      - ``IArena.games.FieldWalk``
-     - :ref:`fieldwalk_tutorial`
+     - :ref:`fieldwalk_docs`
      - Minimum cost path search.
      - 1
      - Deterministic
@@ -214,7 +214,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Coins**
      - ``IArena.games.Coins``
-     - :ref:`coins_tutorial`
+     - :ref:`coins_docs`
      - Roman's coin game.
      - 2
      - Deterministic
@@ -223,7 +223,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Nim**
      - ``IArena.games.Nim``
-     - :ref:`nim_tutorial`
+     - :ref:`nim_docs`
      - Nim game.
      - 2
      - Deterministic
@@ -232,7 +232,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Tic-Tac-Toe**
      - ``IArena.games.Tic-Tac-Toe``
-     - :ref:`tictactoe_tutorial`
+     - :ref:`tictactoe_docs`
      - Tic-Tac-Toe game (3 in a row).
      - 2
      - Deterministic
@@ -241,7 +241,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Mastermind**
      - ``IArena.games.Mastermind``
-     - :ref:`mastermind_tutorial`
+     - :ref:`mastermind_docs`
      - The classic Mastermind game.
      - 1
      - Deterministic
@@ -250,7 +250,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Prisoner**
      - ``IArena.games.Prisoner``
-     - :ref:`prisoner_tutorial`
+     - :ref:`prisoner_docs`
      - Prisoner Dilemma 2 player game.
      - 2
      - Deterministic
@@ -259,7 +259,7 @@ This is a list of all the games supported and its characteristics:
 
    * - **Highest card**
      - ``IArena.games.HighestCard``
-     - :ref:`highestcard_tutorial`
+     - :ref:`highestcard_docs`
      - Highest card N player game.
      - N
      - Random

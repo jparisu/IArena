@@ -1,4 +1,4 @@
-.. _tictactoe_tutorial:
+.. _tictactoe_docs:
 
 ###########
 Tic-Tac-Toe

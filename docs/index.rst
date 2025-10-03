@@ -9,6 +9,7 @@
    /src/getting_started/getting_started
    /src/getting_started/installation
    /src/getting_started/tutorial
+   /src/getting_started/connect4_tutorial
 
 
 .. toctree::

@@ -1,4 +1,4 @@
-.. _slicing_tutorial:
+.. _slicing_docs:
 
 ##############
 Slicing Puzzle

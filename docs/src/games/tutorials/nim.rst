@@ -1,4 +1,4 @@
-.. _nim_tutorial:
+.. _nim_docs:
 
 ###
 Nim

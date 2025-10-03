@@ -1,13 +1,13 @@
-.. _mastermind_tutorial:
+.. _mastermind_docs:
 
 ##########
 Mastermind
 ##########
 
 .. figure:: /resources/images/mastermind.png
-    :scale: 2%
+    :scale: 8%
 
-This game is the classical Mastermind game.
+This game is the classical Mastermind game as 1 player version.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (color pegs) chosen from *M* numbers available ``[0,M)``.
 Each turn the player has to guess the code.
 After each guess, the game will tell the player which of the guesses appears in the code but are not correctly positioned, and which ones are correctly positioned.
@@ -15,10 +15,14 @@ The goal is to guess the code in the fewest number of turns.
 
 Some changes have been made to the original game:
 
-- There is only a one player game (guesser) while the other player (password-maker) is the game itself.
+- There is only one player (guesser) while the other player (password-maker) is not considered a player.
 - Instead of colors we use numbers.
 - The clues of each guess is not only the number of appearance and correctness, but are linked with a direct position in the guess.
-- Numbers could be repeated in the secret code.
+- There are 2 versions: **with repetitions** (same number could appear more than once in the code) and **without repetitions**.
+
+An online version of the game can be found at `this link <https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/guess.html>`_.
+Be aware that this version does not give clues linked to the position of the guess, so the game implemented here is slightly different.
+
 
 ====
 Goal
@@ -30,7 +34,8 @@ Guess the correct *secret code* in the fewest number of turns.
 Score
 -----
 
-The number of turns needed to guess the secret code.
+The score is ``-T`` where ``T`` is the number of turns needed to guess the secret code.
+The highest the score, the better.
 
 
 ======
@@ -63,6 +68,10 @@ It must have ``N`` integers in the range ``[0,M)``.
   # A guess in a game with N=3 and M>2
   movement = MastermindMovement(guess=[0, 1, 2])
 
+.. warning::
+
+  Depending on the rules, the guess could be invalid if has repeated values (the same number more than once).
+
 
 ========
 Position
@@ -88,54 +97,97 @@ or whether it is not present in the secret code (``0``).
 .. code-block:: python
 
   # position : MastermindPosition
-  guesses = position.guesses
-  correctness = position.correctness
+  guesses = position.guesses()
+  correctness = position.correctness()
 
+  guesses[-1]  # Last guess
   guesses[-1][0]  # First position of the last guess
 
-  if correctness[-1][0] == MastermindPosition.MastermindCorrectness.Correct:
+  correctness[-1]  # Correctness of the last guess
+  c = correctness[-1][0]  # Correctness of the first position of the last guess
+
+  if c == MastermindPosition.MastermindCorrectness.Correct:
     # The first value of the last guess is correct
-  elif correctness[-1][1] == MastermindPosition.MastermindCorrectness.Misplaced:
-    # The second value of the last guess is in the code but in other position
+  elif c == MastermindPosition.MastermindCorrectness.Misplaced:
+    # The first value of the last guess is in the code but in other position
   else:
     # The third value of the last guess is wrong
 
+
+-------
+Methods
+-------
+
+- ``guesses() -> List[MastermindMovement]``: List of guesses made so far.
+- ``correctness() -> List[List[MastermindCorrectness]]``: List of correctness lists made so far.
+- ``last_guess() -> MastermindMovement``: Last guess made.
+- ``last_correctness() -> List[MastermindCorrectness]``: Correctness of the last guess.
 
 =====
 Rules
 =====
 
+This object defines the rules of the game, including the secret code.
+When constructed, it sets the secret code, the number of values in the code (N), and the number of different values available (M), and whether repetitions are allowed.
 
-It counts with 2 methods to get the minimum and maximum number of coins that can be taken:
 
-- ``rules.get_size_code() -> int``
-- ``rules.get_number_colors() -> int``
+
+-------
+Methods
+-------
+
+- ``get_size_code() -> int``: Number of values in the secret code (N).
+- ``get_number_colors() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
+- ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
 
 
 -----------
 Constructor
 -----------
 
-There are 2 ways to construct the rules:
+Arguments for constructor are:
+
+- ``code_size: int``: N
+- ``number_colors: int``: M
+- ``secret: List[int]``: List of N values between ``[0,M)`` representing the secret code.
+- ``allow_repetitions: bool``: Whether the secret code can have repeated values.
+
 
 1. Using a secret code already defined.
 
   .. code-block:: python
 
     # Secret code with N=4 and M=6
-    rules = MastermindRules(secret=[0, 1, 2, 3], m=6)
+    rules = MastermindRules(
+        code_size=4,
+        number_colors=6,
+        secret=[0, 1, 2, 3],
+        allow_repetitions=False
+    )
 
-    # Secret code with N=8 and M=8
-    rules = MastermindRules(secret=[0, 0, 0, 0, 0, 0, 0, 7], m=8)
 
 
-2. Setting arguments ``n: int`` and ``m: int`` in order to generate a random secret code.
-   Using argument ``seed: int`` the random generation can be reproduced.
+.. _mastermind_playable_player:
 
-  .. code-block:: python
+===============
+Playable Player
+===============
 
-    # Random secret code with N=4 and M=6
-    rules = MastermindRules()
+This game implements a ``PlayablePlayer`` interface that allows to play manually with a simple text interface.
 
-    # Random secret code with N=8 and M=8 reproducible
-    rules = MastermindRules(n=8, m=8, seed=0)
+In order to test it in a game, you can do the following:
+
+.. code-block:: python
+
+  from IArena.games.Mastermind import MastermindPlayablePlayer
+  from IArena.arena.GenericGame import GenericGame
+
+  rules = MastermindRules(code_size=4, number_colors=6, secret=[0, 1, 2, 3], allow_repetitions=False)
+
+  player = MastermindPlayablePlayer(name="Human")
+
+  game = GenericGame(rules=rules, players=[player])
+
+  score = game.play()
+
+  print(score.pretty_print())

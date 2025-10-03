@@ -1,4 +1,4 @@
-.. _prisoner_tutorial:
+.. _prisoner_docs:
 
 ################
 Prisoner Dilemma

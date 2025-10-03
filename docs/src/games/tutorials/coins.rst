@@ -1,4 +1,4 @@
-.. _coins_tutorial:
+.. _coins_docs:
 
 #####
 Coins

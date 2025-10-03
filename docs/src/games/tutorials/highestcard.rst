@@ -1,4 +1,4 @@
-.. _highestcard_tutorial:
+.. _highestcard_docs:
 
 ############
 Highest Card

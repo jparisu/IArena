@@ -1,19 +1,22 @@
 
-from copy import deepcopy
+import copy
 from typing import Iterator, List
 import random
 from enum import Enum
 import itertools
 
+from IArena.grader.RulesGenerator import IRulesGenerator
+from IArena.interfaces.IPlayer import IPlayer
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
 from IArena.interfaces.IGameRules import IGameRules
-from IArena.interfaces.PlayerIndex import PlayerIndex, two_player_game_change_player
-from IArena.utils.decorators import override
+from IArena.interfaces.PlayerIndex import PlayerIndex
 from IArena.interfaces.ScoreBoard import ScoreBoard
+from IArena.utils.decorators import override
+from IArena.utils.RandomGenerator import RandomGenerator
 
 """
-This game represents the Mastermind game.
+This game represents the Mastermind game with exact tips.
 In this game there is a pattern hidden and the player must guess it.
 The pattern is a list of N numbers from 0 to M-1.
 The player makes guesses and the game tells how many numbers are correct and in the right position.
@@ -67,8 +70,8 @@ class MastermindPosition(IPosition):
             guesses: List[MastermindMovement],
             correctness: List[List[MastermindCorrectness]]):
         super().__init__(rules)
-        self.guesses = guesses
-        self.correctness = correctness
+        self._guesses = guesses
+        self._correctness = correctness
 
     @override
     def next_player(
@@ -78,11 +81,31 @@ class MastermindPosition(IPosition):
     def __eq__(
             self,
             other: "MastermindPosition"):
-        return self.guesses == other.guesses and self.correctness == other.correctness
+        return self._guesses == other.guesses and self._correctness == other.correctness
 
     def __str__(self):
+
+        if len(self._guesses) == 0:
+            return "<EMPTY POSITION>\n"
+
         # Print each guess in a line together with the correctness
-        return "\n".join([f'{self.guesses[i]} : {[x.name for x in self.correctness[i]]}' for i in range(len(self.guesses))]) + "\n"
+        return "\n".join([f'{self._guesses[i]} : {[x.name for x in self._correctness[i]]}' for i in range(len(self._guesses))]) + "\n"
+
+    def guesses(self) -> List[MastermindMovement]:
+        return copy.deepcopy(self._guesses)
+
+    def correctness(self) -> List[List[MastermindCorrectness]]:
+        return copy.deepcopy(self._correctness)
+
+    def last_guess(self) -> MastermindMovement:
+        if len(self._guesses) == 0:
+            return None
+        return copy.deepcopy(self._guesses[-1])
+
+    def last_correctness(self) -> List[MastermindCorrectness]:
+        if len(self._correctness) == 0:
+            return None
+        return copy.deepcopy(self._correctness[-1])
 
 
 class MastermindRules(IGameRules):
@@ -91,17 +114,31 @@ class MastermindRules(IGameRules):
     DefaultNumberColors = 6
 
     @staticmethod
-    def get_secret(n: int, m: int, seed: int = None) -> List[int]:
-        if seed is not None:
-            random.seed(seed)
-        return [random.randint(0, m-1) for _ in range(n)]
+    def random_secret(
+                code_size: int,
+                number_colors: int,
+                rng: RandomGenerator,
+                color_repetition: bool = True) -> List[int]:
+        if not color_repetition and code_size > number_colors:
+            raise ValueError("n must be less than or equal to m when color_repetition is False")
+        if color_repetition:
+            return [rng.randint(number_colors) for _ in range(code_size)]
+        else:
+            possible_colors = set(range(number_colors))
+            colors = []
+            for _ in range(code_size):
+                color = rng.choice(list(possible_colors))
+                colors.append(color)
+                possible_colors.remove(color)
+            return colors
+
 
     def __init__(
             self,
-            n: int = DefaultNumberColors,
-            m: int = DefaultSizeCode,
-            seed: int = None,
-            secret: List[int] = None):
+            code_size: int = 5,
+            number_colors: int = 8,
+            secret: List[int] = None,
+            allow_repetitions: bool = True):
         """
         Construct a secret code of size n with numbers from 0 to m-1.
 
@@ -117,19 +154,32 @@ class MastermindRules(IGameRules):
             seed: Seed for the random generator.
             secret: The secret code.
         """
-        self.m = m
-        if secret:
-            self.__secret = secret
-            self.n = len(secret)
-        else:
-            self.__secret = MastermindRules.get_secret(n, m, seed)
-            self.n = n
+
+        if secret is None:
+            secret = MastermindRules.random_secret(
+                code_size=code_size,
+                number_colors=number_colors,
+                rng=RandomGenerator(),
+                color_repetition=allow_repetitions,
+            )
+
+        self.m = number_colors
+        self.n = code_size
+        if len(secret) != code_size or any(x < 0 or x >= number_colors for x in secret):
+            raise ValueError("Secret must be of size n and with numbers from 0 to m-1")
+        if not allow_repetitions and len(set(secret)) != code_size:
+            raise ValueError("Secret must not have repetitions when allow_repetitions is False")
+        self.__secret = secret
+        self.allow_repetitions_ = allow_repetitions
 
     def get_number_colors(self) -> int:
         return self.m
 
     def get_size_code(self) -> int:
         return self.n
+
+    def allow_repetition(self) -> bool:
+        return self.allow_repetitions_
 
     @override
     def n_players(self) -> int:
@@ -145,6 +195,12 @@ class MastermindRules(IGameRules):
             movement: MastermindMovement,
             position: MastermindPosition) -> MastermindPosition:
         guesses = position.guesses + [movement]
+
+        # Check if the movement is valid
+        if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
+            raise ValueError("Movement must be of size n and with numbers from 0 to m-1")
+        if not self.allow_repetitions_ and len(set(movement.guess)) != self.n:
+            raise ValueError("Movement must not have repetitions when allow_repetitions is False")
 
         # Calculate the correctness of the new guess
         correctness = [MastermindPosition.MastermindCorrectness.Wrong for _ in range(self.n)]
@@ -165,7 +221,7 @@ class MastermindRules(IGameRules):
                     correctness[i] = MastermindPosition.MastermindCorrectness.Misplaced
                     break
 
-        new_correctness = deepcopy(position.correctness)
+        new_correctness = copy.deepcopy(position.correctness)
         new_correctness.append(correctness)
 
         return MastermindPosition(self, guesses, new_correctness)
@@ -174,10 +230,16 @@ class MastermindRules(IGameRules):
     def possible_movements(
             self,
             position: MastermindPosition) -> Iterator[MastermindMovement]:
-        # Every combination of n numbers from 0 to m-1 using itertools
-        return [MastermindMovement(guess = list(x))
-                for x
-                in itertools.product(range(self.m), repeat=self.n)]
+
+        if self.allow_repetitions_:
+            # Every combination of n numbers from 0 to m-1 using itertools
+            for x in itertools.product(range(self.m), repeat=self.n):
+                yield MastermindMovement(guess=list(x))
+
+        else:
+            # Every permutation of n numbers from 0 to m-1 using itertools
+            for x in itertools.permutations(range(self.m), self.n):
+                yield MastermindMovement(guess=list(x))
 
     @override
     def finished(
@@ -193,5 +255,119 @@ class MastermindRules(IGameRules):
             self,
             position: MastermindPosition) -> ScoreBoard:
         s = ScoreBoard()
-        s.add_score(PlayerIndex.FirstPlayer, len(position.guesses))
+        s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses))
         return s
+
+
+
+class MastermindPlayablePlayer(IPlayer):
+
+    SeparatorN = 40
+
+    @override
+    def play(
+            self,
+            position: IPosition) -> IMovement:
+
+        possibilities = list(position.get_rules().possible_movements(position))
+
+        print ("=" * MastermindPlayablePlayer.SeparatorN)
+        print (position)
+        print ("-" * MastermindPlayablePlayer.SeparatorN)
+        repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
+        print (f"Colors: {list(range(position.get_rules().get_number_colors()))}  ({repetitions_text})")
+
+        colors = []
+
+        while True:
+            print ("-" * MastermindPlayablePlayer.SeparatorN)
+            print (f"Insert a code with {position.get_rules().get_size_code()} colors (from 0 to {position.get_rules().get_number_colors()-1}):")
+            next_color = input()
+
+            # Check if the input is valid
+            if len(next_color) != position.get_rules().get_size_code():
+                print (f"Code must be of size {position.get_rules().get_size_code()}. Try again:")
+                continue
+
+            try:
+                next_color = [int(x) for x in next_color]
+                if any(x < 0 or x >= position.get_rules().get_number_colors() for x in next_color):
+                    raise ValueError()
+                if not position.get_rules().allow_repetition() and len(set(next_color)) != position.get_rules().get_size_code():
+                    print ("Code must not have repetitions. Try again:")
+                    continue
+
+            except ValueError:
+                print (f"Code must be a list of integers between 0 and {position.get_rules().get_number_colors()-1}. Try again:")
+                continue
+
+            colors = next_color
+            break
+
+        print ("=" * MastermindPlayablePlayer.SeparatorN)
+
+        return MastermindMovement(colors)
+
+
+class MastermindRulesGenerator(IRulesGenerator):
+
+    @override
+    def generate(
+            self,
+            configuration: dict) -> IGameRules:
+
+        code_size = MastermindRulesGenerator._get_param(
+            configuration=configuration,
+            param_names = ['n', 'code_size'],
+            required = True,
+            type_cast = int,
+        )
+
+        number_colors = MastermindRulesGenerator._get_param(
+            configuration=configuration,
+            param_names = ['m', 'number_colors'],
+            required = True,
+            type_cast = int,
+        )
+
+        allow_repetitions = MastermindRulesGenerator._get_param(
+            configuration=configuration,
+            param_name = 'allow_repetitions',
+            default_value = False,
+            type_cast = bool,
+        )
+
+        secret = MastermindRulesGenerator._get_param(
+            configuration=configuration,
+            param_name = 'secret',
+        )
+
+        if secret is not None:
+            if len(secret) != code_size or any(x < 0 or x >= number_colors for x in secret):
+                raise ValueError("Secret must be of size n and with numbers from 0 to m-1")
+            if not allow_repetitions and len(set(secret)) != code_size:
+                raise ValueError("Secret must not have repetitions when allow_repetitions is False")
+        else:
+
+            seed = MastermindRulesGenerator._get_param(
+                configuration=configuration,
+                param_name = 'seed',
+                required = True,
+                type_cast = int,
+            )
+
+            rng = RandomGenerator(seed)
+
+            secret = MastermindRules.random_secret(
+                code_size=code_size,
+                number_colors=number_colors,
+                rng=rng,
+                color_repetition=allow_repetitions,
+            )
+
+
+        return MastermindRules(
+            code_size=code_size,
+            number_colors=number_colors,
+            secret=secret,
+            allow_repetitions=allow_repetitions)
