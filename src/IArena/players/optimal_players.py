@@ -5,9 +5,10 @@ from IArena.utils.decorators import override
 from IArena.games.Wordle import WordlePosition, WordleRules, WordleMovement
 from IArena.games.Mastermind import MastermindPosition, MastermindRules, MastermindMovement
 from IArena.utils.RandomGenerator import RandomGenerator
+from IArena.interfaces.IPlayer import IPlayer
 
 
-class WordleOptimalPlayer_norep():
+class WordleOptimalPlayer_norep(IPlayer):
 
     def __init__(
             self,
@@ -17,24 +18,26 @@ class WordleOptimalPlayer_norep():
         super().__init__(name=name)
 
         self.rng = rng
-        self.size_code = None
-        self.n_colors = None
+        self.code_size = None
+        self.number_values = None
         self.possibilities = None
 
 
-    @override
     def starting_game(
             self,
             rules: WordleRules,
             player_index: int):
 
-        self.size_code = rules.get_size_code()
-        self.n_colors = rules.get_number_colors()
+        self.code_size = rules.code_size()
+        self.number_values = rules.number_values()
 
-        self.possibilities = [set(range(self.n_colors)) for _ in range(self.size_code)]
+        self.possibilities = [list(range(self.number_values)) for _ in range(self.code_size)]
+
+        # Shuffle possibilities
+        for p in self.possibilities:
+            self.rng.shuffle(p)
 
 
-    @override
     def play(
             self,
             position: WordlePosition) -> WordleMovement:
@@ -44,31 +47,61 @@ class WordleOptimalPlayer_norep():
 
         # First move
         if last_guess is None:
-            return self._random_guess()
+            return self._arbitrary_guess()
 
         # Update possibilities
         for i, c in enumerate(last_correct):
-            guess_i = last_guess[i]
+            guess_i = last_guess.guess[i]
             if c == WordlePosition.WordleFeedback.Correct:
-                self.possibilities[i] = {guess_i}
+                self.possibilities[i] = [guess_i]
+                for j in range(self.code_size):
+                    if j != i:
+                        if guess_i in self.possibilities[j]:
+                            self.possibilities[j].remove(guess_i)
             elif c == WordlePosition.WordleFeedback.Wrong:
-                for j in range(self.size_code):
-                    self.possibilities[j].discard(guess_i)
+                for j in range(self.code_size):
+                    if guess_i in self.possibilities[j]:
+                        self.possibilities[j].remove(guess_i)
             else:
-                self.possibilities[i].discard(guess_i)
+                if guess_i in self.possibilities[i]:
+                    self.possibilities[i].remove(guess_i)
 
-        return self._random_guess()
+        # Check if any number is only possible in one space
+        for color in range(self.number_values):
+            possible_spaces = [i for i in range(self.code_size) if color in self.possibilities[i]]
+            if len(possible_spaces) == 1:
+                space = possible_spaces[0]
+                self.possibilities[space] = [color]
+
+        return self._arbitrary_guess()
 
 
-    def _random_guess(self) -> WordleMovement:
+    def _arbitrary_guess(self) -> WordleMovement:
 
-        guess = []
+        # Calculate number of possibilities for space
+        n_possibilities = [len(p) for p in self.possibilities]
 
-        for i in range(self.size_code):
-            color = self.rng.choice(self.possibilities[i])
-            guess.append(color)
+        # Move from the most constrained space
+        indexes = [0] * self.code_size
 
-        return WordleMovement(guess)
+        while True:
+
+            guess = [p[i] for i, p in zip(indexes,self.possibilities)]
+            while not self._no_rep_valid_guess(guess):
+                indexes[-1] += 1
+                i = -1
+                while indexes[i] >= n_possibilities[i]:
+                    indexes[i] = 0
+                    i -= 1
+                    indexes[i] += 1
+                guess = [p[i] for i, p in zip(indexes,self.possibilities)]
+
+            else:
+                return WordleMovement(guess)
+
+
+    def _no_rep_valid_guess(self, guess) -> bool:
+        return len(guess) == len(set(guess))
 
 
 class WordleOptimalPlayer_rep():
@@ -79,12 +112,12 @@ class WordleOptimalPlayer_rep():
             position: WordlePosition) -> WordleMovement:
 
         rules = position.get_rules()
-        size_code = rules.get_size_code()
-        n_colors = rules.get_number_colors()
+        code_size = rules.code_size()
+        number_values = rules.number_values()
         feedback = position.feedback()
 
-        if len(feedback) < n_colors:
-            return self._all_n_guess(size_code, len(feedback))
+        if len(feedback) < number_values:
+            return self._all_n_guess(code_size, len(feedback))
         else:
             return self._correct_guess(feedback)
 

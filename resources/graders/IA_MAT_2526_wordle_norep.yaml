@@ -1,4 +1,4 @@
-game: Mastermind
+game: Wordle
 
 move_timeout_s: 2
 total_timeout_s: 20

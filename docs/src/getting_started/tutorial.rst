@@ -180,8 +180,8 @@ The game object has the following methods (as every other :ref:`igamerules`):
 
 Apart from class methods, ``WordleRules`` has the following specific methods:
 
-- ``get_number_values()``: Get value (N).
-- ``get_size_code()``: Get value (M).
+- ``number_values()``: Get value (N).
+- ``code_size()``: Get value (M).
 - ``allow_repetition()``: Whether repetitions are allowed in the secret code.
 
 

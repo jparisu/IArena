@@ -116,6 +116,9 @@ class MastermindPosition(IPosition):
     def number_values(self) -> int:
         return self.get_rules().number_values()
 
+    def allow_repetition(self) -> bool:
+        return self.get_rules().allow_repetition()
+
 
 class MastermindRules(IGameRules):
 
@@ -181,10 +184,10 @@ class MastermindRules(IGameRules):
         self.__secret = secret
         self.allow_repetition_ = allow_repetition
 
-    def get_number_values(self) -> int:
+    def number_values(self) -> int:
         return self.m
 
-    def get_size_code(self) -> int:
+    def code_size(self) -> int:
         return self.n
 
     def allow_repetition(self) -> bool:
@@ -203,8 +206,8 @@ class MastermindRules(IGameRules):
             self,
             movement: MastermindMovement,
             position: MastermindPosition) -> MastermindPosition:
-        guesses = position.guesses + [movement]
-        old_feedback = position.feedback
+        guesses = position.guesses() + [movement]
+        old_feedback = position.feedback()
 
         # Check if the movement is valid
         if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
@@ -231,7 +234,7 @@ class MastermindRules(IGameRules):
                 guess_copy[i] = -2
 
         # Append the new feedback to the list of feedbacks
-        feedback = copy.deepcopy(position.feedback)
+        feedback = copy.deepcopy(position.feedback())
         feedback.append(new_feedback)
 
         return MastermindPosition(self, guesses, feedback)
@@ -256,16 +259,16 @@ class MastermindRules(IGameRules):
             self,
             position: MastermindPosition) -> bool:
         # Game is finished if the last guess is equal the hidden secret
-        if len(position.guesses) == 0:
+        if len(position.guesses()) == 0:
             return False
-        return position.guesses[-1].guess == self.__secret
+        return position.guesses()[-1].guess == self.__secret
 
     @override
     def score(
             self,
             position: MastermindPosition) -> ScoreBoard:
         s = ScoreBoard()
-        s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses))
+        s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses()))
         return s
 
 
@@ -279,37 +282,39 @@ class MastermindPlayablePlayer(IPlayer):
             self,
             position: MastermindPosition) -> IMovement:
 
+        code_size = position.get_rules().code_size()
+        number_values = position.get_rules().number_values()
+
         print ("=" * MastermindPlayablePlayer.SeparatorN)
         print (position)
         print ("-" * MastermindPlayablePlayer.SeparatorN)
         repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
-        print (f"Colors: {list(range(position.get_rules().get_number_values()))}  ({repetitions_text})")
+        print (f"Values: {list(range(position.get_rules().number_values()))}  ({repetitions_text})")
 
         colors = []
 
         while True:
             print ("-" * MastermindPlayablePlayer.SeparatorN)
-            print (f"Insert a code with {position.get_rules().get_size_code()} colors (from 0 to {position.get_rules().get_number_values()-1}):")
-            next_color = input()
+            print (f"Insert a code with {code_size} numbers (from 0 to {number_values-1}):")
+            next_guess = []
+
+            for i in range(code_size):
+                next_guess.append(int(input(f"Number {i+1}: ")))
 
             # Check if the input is valid
-            if len(next_color) != position.get_rules().get_size_code():
-                print (f"Code must be of size {position.get_rules().get_size_code()}. Try again:")
-                continue
-
             try:
-                next_color = [int(x) for x in next_color]
-                if any(x < 0 or x >= position.get_rules().get_number_values() for x in next_color):
+                next_guess = [int(x) for x in next_guess]
+                if any(x < 0 or x >= number_values for x in next_guess):
                     raise ValueError()
-                if not position.get_rules().allow_repetition() and len(set(next_color)) != position.get_rules().get_size_code():
+                if not position.get_rules().allow_repetition() and len(set(next_guess)) != code_size:
                     print ("Code must not have repetitions. Try again:")
                     continue
 
             except ValueError:
-                print (f"Code must be a list of integers between 0 and {position.get_rules().get_number_values()-1}. Try again:")
+                print (f"Code must be a list of integers between 0 and {number_values-1}. Try again:")
                 continue
 
-            colors = next_color
+            colors = next_guess
             break
 
         print ("=" * MastermindPlayablePlayer.SeparatorN)
