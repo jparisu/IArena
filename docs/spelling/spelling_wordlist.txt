@@ -10,3 +10,4 @@ Toe
 conda
 NQueens
 Jupyter
+wordle

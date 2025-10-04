@@ -1,4 +1,4 @@
-.. _mastermind_docs:
+.. _wordle_docs:
 
 ######
 Wordle

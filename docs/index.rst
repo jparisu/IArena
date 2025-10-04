@@ -39,6 +39,7 @@
    /src/games/tutorials/prisoner
    /src/games/tutorials/highestcard
    /src/games/tutorials/connect4
+   /src/games/tutorials/compassblindwalk
 
 
 .. toctree::

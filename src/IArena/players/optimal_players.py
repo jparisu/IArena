@@ -40,7 +40,7 @@ class WordleOptimalPlayer_norep():
             position: WordlePosition) -> WordleMovement:
 
         last_guess = position.last_guess()
-        last_correct = position.last_correctness()
+        last_correct = position.last_feedback()
 
         # First move
         if last_guess is None:
@@ -49,9 +49,9 @@ class WordleOptimalPlayer_norep():
         # Update possibilities
         for i, c in enumerate(last_correct):
             guess_i = last_guess[i]
-            if c == WordlePosition.WordleCorrectness.Correct:
+            if c == WordlePosition.WordleFeedback.Correct:
                 self.possibilities[i] = {guess_i}
-            elif c == WordlePosition.WordleCorrectness.Wrong:
+            elif c == WordlePosition.WordleFeedback.Wrong:
                 for j in range(self.size_code):
                     self.possibilities[j].discard(guess_i)
             else:
@@ -81,12 +81,12 @@ class WordleOptimalPlayer_rep():
         rules = position.get_rules()
         size_code = rules.get_size_code()
         n_colors = rules.get_number_colors()
-        correctness = position.correctness()
+        feedback = position.feedback()
 
-        if len(correctness) < n_colors:
-            return self._all_n_guess(size_code, len(correctness))
+        if len(feedback) < n_colors:
+            return self._all_n_guess(size_code, len(feedback))
         else:
-            return self._correct_guess(correctness)
+            return self._correct_guess(feedback)
 
     @staticmethod
     def _all_n_guess(size: int, n: int) -> WordleMovement:
@@ -94,10 +94,10 @@ class WordleOptimalPlayer_rep():
         return WordleMovement(guess)
 
     @staticmethod
-    def _correct_guess(all_correctness: List[List[WordlePosition.WordleCorrectness]]) -> WordleMovement:
-        guess = [0] * len(all_correctness[0])
-        for i, corr in enumerate(all_correctness):
+    def _correct_guess(all_feedback: List[List[WordlePosition.WordleFeedback]]) -> WordleMovement:
+        guess = [0] * len(all_feedback[0])
+        for i, corr in enumerate(all_feedback):
             for j, c in enumerate(corr):
-                if c == WordlePosition.WordleCorrectness.Correct:
+                if c == WordlePosition.WordleFeedback.Correct:
                     guess[j] = i
         return WordleMovement(guess)

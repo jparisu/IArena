@@ -69,13 +69,13 @@ Position
 
 In a game we have a :term:`Position` class.
 This object, that inherits from :ref:`iposition` class, holds the current state of the game.
-In the case of Wordle, the position object is ``WordlePosition``, that holds the list of guesses done so far, and their correctness.
+In the case of Wordle, the position object is ``WordlePosition``, that holds the list of guesses done so far, and their feedback.
 
-WordleCorrectness
-^^^^^^^^^^^^^^^^^^^^^
+WordleFeedback
+^^^^^^^^^^^^^^
 
-First let's see an auxiliary class: ``WordleCorrectness``.
-This is an enumeration to indicate the correctness of a number in a code with the following values:
+First let's see an auxiliary class: ``WordleFeedback``.
+This is an enumeration to indicate the feedback of a number in a code with the following values:
 - ``Wrong``: 0
 - ``Misplaced``: 1
 - ``Correct``: 2
@@ -87,11 +87,11 @@ Each ``position`` object holds 2 main variables, accessible by the following met
     - The first guess is ``guesses()[0]``.
     - The last guess is ``guesses()[-1]``.
     - To access the last guess, there is also the method ``last_guess()``.
-- ``correctness()``: A list with a value per guess indicating those numbers that are correct, misplaced or wrong. This returns a list ``List[List[WordleCorrectness]]``:
-    - The correctness of the first guess is ``correctness()[0]``.
-    - The correctness of the last guess is ``correctness()[-1]``.
-    - To access the correctness of the last guess, there is also the method ``last_correctness()``.
-    - Each correctness is a list of ``WordleCorrectness`` with the same length as the guess. This indicates for each number in the guess, if it is correct, misplaced or wrong.
+- ``feedback()``: A list with a value per guess indicating those numbers that are correct, misplaced or wrong. This returns a list ``List[List[WordleFeedback]]``:
+    - The feedback of the first guess is ``feedback()[0]``.
+    - The feedback of the last guess is ``feedback()[-1]``.
+    - To access the feedback of the last guess, there is also the method ``last_feedback()``.
+    - Each feedback is a list of ``WordleFeedback`` with the same length as the guess. This indicates for each number in the guess, if it is correct, misplaced or wrong.
 
 In the following snippet, we can see how to create an empty board and how to get the matrix and player from it:
 
@@ -103,26 +103,26 @@ In the following snippet, we can see how to create an empty board and how to get
     guess_0 = WordleMovement(guess=[0, 1, 2, 3])  # First guess
     guess_1 = WordleMovement(guess=[0, 2, 4, 5])  # Second guess
 
-    # Let's imagine that the secret code was [0, 2, 5, 6]. The correctness would be:
-    correctness_0 = [2, 0, 1, 0]  # Correctness of the first guess: 0 is correct, 1 is wrong, 2 is misplaced, 3 is wrong
-    correctness_1 = [2, 2, 0, 1]  # Correctness of the second guess: 0 is correct, 2 is correct, 4 is wrong, 5 is misplaced
+    # Let's imagine that the secret code was [0, 2, 5, 6]. The feedback would be:
+    feedback_0 = [2, 0, 1, 0]  # Feedback of the first guess: 0 is correct, 1 is wrong, 2 is misplaced, 3 is wrong
+    feedback_1 = [2, 2, 0, 1]  # Feedback of the second guess: 0 is correct, 2 is correct, 4 is wrong, 5 is misplaced
 
-    # Create a position with 2 guesses and their correctness
+    # Create a position with 2 guesses and their feedback
     # This is the object that will be passed to the player in order to play
     position = WordlePosition(
         rules=None,  # We will discuss this parameter later
         guesses=[guess_0, guess_1],  # List of guesses done so far
-        correctness=[correctness_0, correctness_1]  # List of correctness of the guesses done so far
+        feedback=[feedback_0, feedback_1]  # List of feedback of the guesses done so far
     )
 
     # Get the last guess tried
     last_guess = position.last_guess()
 
-    # Get the correctness of the last guess
-    last_correctness = position.last_correctness()
+    # Get the feedback of the last guess
+    last_feedback = position.last_feedback()
 
     # Check how many numbers on the last guess are correct
-    n_correct = sum(1 for c in last_correctness if c == WordlePosition.WordleCorrectness.Correct)
+    n_correct = sum(1 for c in last_feedback if c == WordlePosition.WordleFeedback.Correct)
 
 
 
