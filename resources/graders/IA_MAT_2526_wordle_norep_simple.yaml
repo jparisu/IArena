@@ -1,0 +1,36 @@
+game: Mastermind
+
+move_timeout_s: 2
+total_timeout_s: 20
+max_score: 0
+repetitions: 5
+fails_allowed: 1
+max_moves: 100
+
+reports:
+
+  - name: Example Test
+
+    description: "Default Test with 3 spaces and 4 colors."
+
+    args:
+      code_size: 3
+      number_colors: 4
+      allow_repetitions: false
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -10
+
+  - name: Basic Test
+
+    description: "Default Test with 5 spaces and 8 colors."
+
+    args:
+      code_size: 5
+      number_colors: 8
+      allow_repetitions: false
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -10

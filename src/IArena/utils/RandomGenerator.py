@@ -1,7 +1,7 @@
 import random
 
 class RandomGenerator:
-    def __init__(self, seed=None):
+    def __init__(self, seed=0):
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
         self.initial_seed = seed

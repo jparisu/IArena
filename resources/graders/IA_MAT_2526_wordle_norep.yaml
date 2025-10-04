@@ -1,0 +1,80 @@
+game: Mastermind
+
+move_timeout_s: 2
+total_timeout_s: 20
+max_score: 0
+repetitions: 5
+fails_allowed: 1
+max_moves: 100
+
+reports:
+
+  - name: Basic Test
+
+    description: "Simple Test with 3 spaces and 4 colors."
+
+    args:
+      code_size: 3
+      number_colors: 4
+      allow_repetitions: false
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -10
+
+
+  - name: Std Test
+
+    description: "Default Test with 5 spaces and 8 colors."
+
+    args:
+      code_size: 5
+      number_colors: 8
+      allow_repetitions: false
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -10
+
+
+  - name: All colors
+
+    description: "Test with sames spaces than colors."
+
+    args:
+      code_size: 10
+      number_colors: 10
+      allow_repetitions: false
+    multi_args:
+      seed: [21, 63, 105]
+
+    min_score: -20
+
+
+  - name: One space
+
+    description: "Test with only one space for color."
+
+    args:
+      code_size: 1
+      number_colors: 10
+      allow_repetitions: false
+    multi_args:
+      seed: [7, 14, 21]
+
+    min_score: -10
+
+
+
+  - name: Huge Test
+
+    description: "Test with very big numbers."
+
+    args:
+      code_size: 25
+      number_colors: 50
+      allow_repetitions: false
+    multi_args:
+      seed: [11, 22, 33]
+
+    min_score: -50
