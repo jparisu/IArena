@@ -1,9 +1,10 @@
 
-from typing import Dict, Iterator, List, Tuple
+from typing import Dict, Iterator, List, Tuple, Optional
 from enum import Enum
 from queue import PriorityQueue
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from collections import deque
 
 from IArena.interfaces.IMovement import IMovement
@@ -142,9 +143,15 @@ class SquareMap:
         return self.in_bounds(coord) and self.map_[coord.x][coord.y]
 
     def plot_2d_map(
-                self,
-                coordinates: Dict[str, SquareMapCoordinate] = {}
-            ):
+            self,
+            coordinates: Optional[Dict[str, SquareMapCoordinate]] = None,
+            legend_info: List[str] = None,
+        ):
+        """
+        Plot map with optional coordinate markers and a free-text legend row.
+        """
+        if coordinates is None:
+            coordinates = {}
 
         rows, cols = self.size()
         grid = np.zeros((rows, cols))
@@ -152,11 +159,27 @@ class SquareMap:
             for j in range(cols):
                 if not self.map_[i][j]:
                     grid[i, j] = 1
+
         plt.imshow(grid, cmap='Greys', origin='upper')
+
+        # Plot points with labels (normal legend entries)
         for label, coord in coordinates.items():
             plt.scatter(coord.y, coord.x, s=100, label=label)
-            plt.legend()
+
+        # Build legend with a text-only first row if legend_info provided
+        ax = plt.gca()
+        handles, labels = ax.get_legend_handles_labels()
+
+        if legend_info:
+            for s in legend_info:
+                labels.append(s)
+                handles.append(Line2D([], [], linestyle="none"))
+
+        if handles:
+            plt.legend(handles, labels, handlelength=0, handletextpad=0.0, frameon=True)
+
         plt.show()
+
 
 def minimum_path(
         map: SquareMap,

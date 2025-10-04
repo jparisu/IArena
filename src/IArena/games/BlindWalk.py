@@ -1,8 +1,5 @@
 
-from typing import Dict, Iterator, List, Tuple
-from enum import Enum
-import random
-import math
+from typing import Iterator, List
 
 from IArena.interfaces.IPosition import IPosition
 from IArena.interfaces.IMovement import IMovement
