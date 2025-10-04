@@ -17,7 +17,7 @@ class WordleOptimalPlayer_norep():
         super().__init__(name=name)
 
         self.rng = rng
-        self.size_code = None
+        self.code_size = None
         self.n_colors = None
         self.possibilities = None
 
@@ -28,10 +28,10 @@ class WordleOptimalPlayer_norep():
             rules: WordleRules,
             player_index: int):
 
-        self.size_code = rules.get_size_code()
-        self.n_colors = rules.get_number_colors()
+        self.code_size = rules.code_size()
+        self.n_colors = rules.number_values()
 
-        self.possibilities = [set(range(self.n_colors)) for _ in range(self.size_code)]
+        self.possibilities = [set(range(self.n_colors)) for _ in range(self.code_size)]
 
 
     @override
@@ -52,7 +52,7 @@ class WordleOptimalPlayer_norep():
             if c == WordlePosition.WordleFeedback.Correct:
                 self.possibilities[i] = {guess_i}
             elif c == WordlePosition.WordleFeedback.Wrong:
-                for j in range(self.size_code):
+                for j in range(self.code_size):
                     self.possibilities[j].discard(guess_i)
             else:
                 self.possibilities[i].discard(guess_i)
@@ -64,7 +64,7 @@ class WordleOptimalPlayer_norep():
 
         guess = []
 
-        for i in range(self.size_code):
+        for i in range(self.code_size):
             color = self.rng.choice(self.possibilities[i])
             guess.append(color)
 
@@ -79,12 +79,12 @@ class WordleOptimalPlayer_rep():
             position: WordlePosition) -> WordleMovement:
 
         rules = position.get_rules()
-        size_code = rules.get_size_code()
-        n_colors = rules.get_number_colors()
+        code_size = rules.code_size()
+        n_colors = rules.number_values()
         feedback = position.feedback()
 
         if len(feedback) < n_colors:
-            return self._all_n_guess(size_code, len(feedback))
+            return self._all_n_guess(code_size, len(feedback))
         else:
             return self._correct_guess(feedback)
 

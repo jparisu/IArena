@@ -115,6 +115,7 @@ Methods
 - ``last_feedback() -> List[MastermindFeedback]``: Feedback of the last guess.
 - ``code_size() -> int``: Number of values in the secret code (N).
 - ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
+- ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
 
 
 =====
@@ -130,7 +131,7 @@ When constructed, it sets the secret code, the number of values in the code (N),
 Methods
 -------
 
-- ``size_code() -> int``: Number of values in the secret code (N).
+- ``code_size() -> int``: Number of values in the secret code (N).
 - ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
 

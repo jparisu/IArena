@@ -112,6 +112,9 @@ class WordlePosition(IPosition):
     def number_values(self) -> int:
         return self.get_rules().number_values()
 
+    def allow_repetition(self) -> bool:
+        return self.get_rules().allow_repetition()
+
 
 class WordleRules(IGameRules):
 
@@ -199,7 +202,7 @@ class WordleRules(IGameRules):
             self,
             movement: WordleMovement,
             position: WordlePosition) -> WordlePosition:
-        guesses = position.guesses + [movement]
+        guesses = position.guesses() + [movement]
 
         # Check if the movement is valid
         if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
@@ -226,7 +229,7 @@ class WordleRules(IGameRules):
                     feedback[i] = WordlePosition.WordleFeedback.Misplaced
                     break
 
-        new_feedback = copy.deepcopy(position.feedback)
+        new_feedback = copy.deepcopy(position.feedback())
         new_feedback.append(feedback)
 
         return WordlePosition(self, guesses, new_feedback)
@@ -251,16 +254,16 @@ class WordleRules(IGameRules):
             self,
             position: WordlePosition) -> bool:
         # Game is finished if the last guess is equal the hidden secret
-        if len(position.guesses) == 0:
+        if len(position.guesses()) == 0:
             return False
-        return position.guesses[-1].guess == self.__secret
+        return position.guesses()[-1].guess == self.__secret
 
     @override
     def score(
             self,
             position: WordlePosition) -> ScoreBoard:
         s = ScoreBoard()
-        s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses))
+        s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses()))
         return s
 
 
@@ -274,39 +277,39 @@ class WordlePlayablePlayer(IPlayer):
             self,
             position: IPosition) -> IMovement:
 
-        possibilities = list(position.get_rules().possible_movements(position))
+        code_size = position.get_rules().code_size()
+        number_values = position.get_rules().number_values()
 
         print ("=" * WordlePlayablePlayer.SeparatorN)
         print (position)
         print ("-" * WordlePlayablePlayer.SeparatorN)
         repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
-        print (f"Letters: {list(range(position.get_rules().number_values()))}  ({repetitions_text})")
+        print (f"Values: {list(range(number_values))}  ({repetitions_text})")
 
         letters = []
 
         while True:
             print ("-" * WordlePlayablePlayer.SeparatorN)
-            print (f"Insert a code with {position.get_rules().get_size_code()} letters (from 0 to {position.get_rules().number_values()-1}):")
-            next_letter = input()
+            print (f"Insert a code with {code_size} numbers (from 0 to {number_values-1}):")
+            next_guess = []
+
+            for i in range(code_size):
+                next_guess.append(input(f"Number {i+1}: "))
 
             # Check if the input is valid
-            if len(next_letter) != position.get_rules().get_size_code():
-                print (f"Code must be of size {position.get_rules().get_size_code()}. Try again:")
-                continue
-
             try:
-                next_letter = [int(x) for x in next_letter]
-                if any(x < 0 or x >= position.get_rules().number_values() for x in next_letter):
+                next_guess = [int(x) for x in next_guess]
+                if any(x < 0 or x >= number_values for x in next_guess):
                     raise ValueError()
-                if not position.get_rules().allow_repetition() and len(set(next_letter)) != position.get_rules().get_size_code():
+                if not position.get_rules().allow_repetition() and len(set(next_guess)) != code_size:
                     print ("Code must not have repetitions. Try again:")
                     continue
 
             except ValueError:
-                print (f"Code must be a list of integers between 0 and {position.get_rules().number_values()-1}. Try again:")
+                print (f"Code must be a list of integers between 0 and {number_values-1}. Try again:")
                 continue
 
-            letters = next_letter
+            letters = next_guess
             break
 
         print ("=" * WordlePlayablePlayer.SeparatorN)
