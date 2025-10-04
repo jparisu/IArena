@@ -75,19 +75,19 @@ It must have ``N`` integers in the range ``[0,M)``.
 Position
 ========
 
-A position is represented by a list of movements (guesses) and a list of correctness.
+A position is represented by a list of movements (guesses) and a list of feedback.
 
------------
-Correctness
------------
+--------
+Feedback
+--------
 
-A ``WordleCorrectness`` is an enumeration with the following values:
+A ``WordleFeedback`` is an enumeration with the following values:
 
 - ``Wrong``: 0
 - ``Misplaced``: 1
 - ``Correct``: 2
 
-The correctness of a guess is a list of ``WordleCorrectness`` indicating for each of the values in the guess,
+The feedback of a guess is a list of ``WordleFeedback`` indicating for each of the values in the guess,
 if it is correctly placed (``2``),
 if it is in the secret code, but misplaced (``1``),
 or whether it is not present in the secret code (``0``).
@@ -96,17 +96,17 @@ or whether it is not present in the secret code (``0``).
 
   # position : WordlePosition
   guesses = position.guesses()
-  correctness = position.correctness()
+  feedback = position.feedback()
 
   guesses[-1]  # Last guess
   guesses[-1][0]  # First position of the last guess
 
-  correctness[-1]  # Correctness of the last guess
-  c = correctness[-1][0]  # Correctness of the first position of the last guess
+  feedback[-1]  # Feedback of the last guess
+  c = feedback[-1][0]  # Feedback of the first position of the last guess
 
-  if c == WordlePosition.WordleCorrectness.Correct:
+  if c == WordlePosition.WordleFeedback.Correct:
     # The first value of the last guess is correct
-  elif c == WordlePosition.WordleCorrectness.Misplaced:
+  elif c == WordlePosition.WordleFeedback.Misplaced:
     # The first value of the last guess is in the code but in other position
   else:
     # The third value of the last guess is wrong
@@ -117,9 +117,12 @@ Methods
 -------
 
 - ``guesses() -> List[WordleMovement]``: List of guesses made so far.
-- ``correctness() -> List[List[WordleCorrectness]]``: List of correctness lists made so far.
+- ``feedback() -> List[List[WordleFeedback]]``: List of feedback lists made so far.
 - ``last_guess() -> WordleMovement``: Last guess made.
-- ``last_correctness() -> List[WordleCorrectness]``: Correctness of the last guess.
+- ``last_feedback() -> List[WordleFeedback]``: Feedback of the last guess.
+- ``code_size() -> int``: Number of values in the secret code (N).
+- ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
+
 
 =====
 Rules
@@ -134,8 +137,8 @@ When constructed, it sets the secret code, the number of values in the code (N),
 Methods
 -------
 
-- ``get_size_code() -> int``: Number of values in the secret code (N).
-- ``get_number_colors() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
+- ``size_code() -> int``: Number of values in the secret code (N).
+- ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
 
 
@@ -146,7 +149,7 @@ Constructor
 Arguments for constructor are:
 
 - ``code_size: int``: N
-- ``number_colors: int``: M
+- ``number_values: int``: M
 - ``secret: List[int]``: List of N values between ``[0,M)`` representing the secret code.
 - ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
@@ -158,7 +161,7 @@ Arguments for constructor are:
     # Secret code with N=4 and M=6
     rules = WordleRules(
         code_size=4,
-        number_colors=6,
+        number_values=6,
         secret=[0, 1, 2, 3],
         allow_repetition=False
     )
@@ -180,7 +183,7 @@ In order to test it in a game, you can do the following:
   from IArena.games.Wordle import WordlePlayablePlayer
   from IArena.arena.GenericGame import GenericGame
 
-  rules = WordleRules(code_size=4, number_colors=6, secret=[0, 1, 2, 3], allow_repetition=False)
+  rules = WordleRules(code_size=4, number_values=6, secret=[0, 1, 2, 3], allow_repetition=False)
 
   player = WordlePlayablePlayer(name="Human")
 
