@@ -168,7 +168,7 @@ Arguments for constructor are:
 
 
 
-.. _mastermind_playable_player:
+.. _wordle_playable_player:
 
 ===============
 Playable Player

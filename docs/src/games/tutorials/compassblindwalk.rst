@@ -4,7 +4,9 @@
 Compass BlindWalk
 #################
 
-.. figure:: /resources/images/c_blindwalk.png
+.. ::
+  TODO: Add image
+  figure:: /resources/images/c_blindwalk.png
     :scale: 30%
 
 This game is an interactive search problem in a 2D grid.
