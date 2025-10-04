@@ -145,7 +145,7 @@ In order to create a game object, ``MastermindGame`` requires the following para
 - ``code_size: int``: Length of the secret code (N).
 - ``number_colors: int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``secret: List[int]``: A list of size (N) with integers between 0 and M-1 representing the secret code.
-- ``allow_repetitions: bool``: Whether the secret code can have repeated values.
+- ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
 ``MastermindGame`` also counts with a static method that generates a random secret code: ``random_secret`` with the following parameters:
 
@@ -164,7 +164,7 @@ Let's see an example on how to create a game object with a random secret code:
     game = MastermindRules()
 
     # Create a game object with specific values: N = 4, M = 7, repetitions allowed, random secret code
-    game = MastermindRules(code_size=4, number_colors=7, allow_repetitions=True, secret=[0, 2, 5, 6])
+    game = MastermindRules(code_size=4, number_colors=7, allow_repetition=True, secret=[0, 2, 5, 6])
 
 
 
@@ -197,7 +197,7 @@ Let's see an example on how to create a play of Mastermind:
 
     # CREATE GAME RULES
     # Create a game object with specific values: N = 4, M = 7, repetitions not allowed, random secret code
-    game = MastermindRules(code_size=4, number_colors=7, allow_repetitions=False, secret=[0, 2, 5, 6])
+    game = MastermindRules(code_size=4, number_colors=7, allow_repetition=False, secret=[0, 2, 5, 6])
 
     # GET FIRST POSITION
     position = game.first_position()  # Default first position with 6x7 empty board
@@ -252,11 +252,11 @@ Next, we see how to create a playable game for mastermind:
     # PARAMETERS
     code_size = 4
     number_colors = 7
-    allow_repetitions = False
+    allow_repetition = False
     secret = [0, 2, 5, 6]  # Set None to use a random secret
 
     # Create game rules
-    game = MastermindRules(code_size=code_size, number_colors=number_colors, allow_repetitions=allow_repetitions, secret=secret)
+    game = MastermindRules(code_size=code_size, number_colors=number_colors, allow_repetition=allow_repetition, secret=secret)
 
     # Create Player
     player = MastermindPlayablePlayer(name="Human")

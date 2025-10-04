@@ -11,12 +11,12 @@ reports:
 
   - name: Basic Test
 
-    description: "Simple Test with 3 spaces and 4 colors."
+    description: "Simple Test with 3 spaces and 4 values."
 
     args:
       code_size: 3
-      number_colors: 4
-      allow_repetitions: true
+      number_values: 4
+      allow_repetition: true
     multi_args:
       seed: [42, 84, 126]
 
@@ -26,26 +26,26 @@ reports:
 
   - name: Std Test
 
-    description: "Default Test with 5 spaces and 8 colors."
+    description: "Default Test with 5 spaces and 8 values."
 
     args:
       code_size: 5
-      number_colors: 8
-      allow_repetitions: true
+      number_values: 8
+      allow_repetition: true
     multi_args:
       seed: [42, 84, 126]
 
     min_score: -10
 
 
-  - name: All colors
+  - name: All values
 
-    description: "Test with sames spaces than colors."
+    description: "Test with sames spaces than values."
 
     args:
       code_size: 10
-      number_colors: 10
-      allow_repetitions: true
+      number_values: 10
+      allow_repetition: true
     multi_args:
       seed: [21, 63, 105]
 
@@ -58,8 +58,8 @@ reports:
 
     args:
       code_size: 1
-      number_colors: 10
-      allow_repetitions: true
+      number_values: 10
+      allow_repetition: true
     multi_args:
       seed: [7, 14, 21]
 
@@ -72,8 +72,8 @@ reports:
 
     args:
       code_size: 10
-      number_colors: 1
-      allow_repetitions: true
+      number_values: 1
+      allow_repetition: true
     multi_args:
       seed: [7, 14, 21]
 
@@ -86,8 +86,8 @@ reports:
 
     args:
       code_size: 25
-      number_colors: 50
-      allow_repetitions: true
+      number_values: 50
+      allow_repetition: true
     multi_args:
       seed: [11, 22, 33]
 

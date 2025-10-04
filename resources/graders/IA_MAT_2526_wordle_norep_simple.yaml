@@ -11,12 +11,12 @@ reports:
 
   - name: Example Test
 
-    description: "Default Test with 3 spaces and 4 colors."
+    description: "Default Test with 3 spaces and 4 values."
 
     args:
       code_size: 3
-      number_colors: 4
-      allow_repetitions: false
+      number_values: 4
+      allow_repetition: false
     multi_args:
       seed: [42, 84, 126]
 
@@ -24,12 +24,12 @@ reports:
 
   - name: Basic Test
 
-    description: "Default Test with 5 spaces and 8 colors."
+    description: "Default Test with 5 spaces and 8 values."
 
     args:
       code_size: 5
-      number_colors: 8
-      allow_repetitions: false
+      number_values: 8
+      allow_repetition: false
     multi_args:
       seed: [42, 84, 126]
 

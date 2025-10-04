@@ -110,24 +110,30 @@ class MastermindPosition(IPosition):
             return None
         return copy.deepcopy(self._feedback[-1])
 
+    def code_size(self) -> int:
+        return self.get_rules().code_size()
+
+    def number_values(self) -> int:
+        return self.get_rules().number_values()
+
 
 class MastermindRules(IGameRules):
 
-    DefaultSizeCode = 4
-    DefaultNumberColors = 6
+    DefaultCodeSize = 5
+    DefaultNumberValues = 8
 
     @staticmethod
     def random_secret(
                 code_size: int,
-                number_colors: int,
+                number_values: int,
                 rng: RandomGenerator,
-                color_repetition: bool = True) -> List[int]:
-        if not color_repetition and code_size > number_colors:
-            raise ValueError("n must be less than or equal to m when color_repetition is False")
-        if color_repetition:
-            return [rng.randint(number_colors) for _ in range(code_size)]
+                allow_repetition: bool = True) -> List[int]:
+        if not allow_repetition and code_size > number_values:
+            raise ValueError("n must be less than or equal to m when allow_repetition is False")
+        if allow_repetition:
+            return [rng.randint(number_values) for _ in range(code_size)]
         else:
-            possible_colors = set(range(number_colors))
+            possible_colors = set(range(number_values))
             colors = []
             for _ in range(code_size):
                 color = rng.choice(list(possible_colors))
@@ -138,10 +144,10 @@ class MastermindRules(IGameRules):
 
     def __init__(
             self,
-            code_size: int = 5,
-            number_colors: int = 8,
+            code_size: int = DefaultCodeSize,
+            number_values: int = DefaultNumberValues,
             secret: List[int] = None,
-            allow_repetitions: bool = True):
+            allow_repetition: bool = True):
         """
         Construct a secret code of size n with numbers from 0 to m-1.
 
@@ -152,37 +158,37 @@ class MastermindRules(IGameRules):
         m must be always provided.
 
         Args:
-            n: Size of the code.
-            m: Number of colors.
-            seed: Seed for the random generator.
-            secret: The secret code.
+            code_size: Size of the code.
+            number_values: Number of different values (from 0 to m-1).
+            secret: Seed for the random generator.
+            allow_repetition: The secret code.
         """
 
         if secret is None:
             secret = MastermindRules.random_secret(
                 code_size=code_size,
-                number_colors=number_colors,
+                number_values=number_values,
                 rng=RandomGenerator(),
-                color_repetition=allow_repetitions,
+                allow_repetition=allow_repetition,
             )
 
-        self.m = number_colors
+        self.m = number_values
         self.n = code_size
-        if len(secret) != code_size or any(x < 0 or x >= number_colors for x in secret):
+        if len(secret) != code_size or any(x < 0 or x >= number_values for x in secret):
             raise ValueError("Secret must be of size n and with numbers from 0 to m-1")
-        if not allow_repetitions and len(set(secret)) != code_size:
-            raise ValueError("Secret must not have repetitions when allow_repetitions is False")
+        if not allow_repetition and len(set(secret)) != code_size:
+            raise ValueError("Secret must not have repetitions when allow_repetition is False")
         self.__secret = secret
-        self.allow_repetitions_ = allow_repetitions
+        self.allow_repetition_ = allow_repetition
 
-    def get_number_colors(self) -> int:
+    def get_number_values(self) -> int:
         return self.m
 
     def get_size_code(self) -> int:
         return self.n
 
     def allow_repetition(self) -> bool:
-        return self.allow_repetitions_
+        return self.allow_repetition_
 
     @override
     def n_players(self) -> int:
@@ -203,8 +209,8 @@ class MastermindRules(IGameRules):
         # Check if the movement is valid
         if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
             raise ValueError("Movement must be of size n and with numbers from 0 to m-1")
-        if not self.allow_repetitions_ and len(set(movement.guess)) != self.n:
-            raise ValueError("Movement must not have repetitions when allow_repetitions is False")
+        if not self.allow_repetition_ and len(set(movement.guess)) != self.n:
+            raise ValueError("Movement must not have repetitions when allow_repetition is False")
 
         # Calculate the feedback of the new guess
         new_feedback = MastermindPosition.MastermindFeedback()
@@ -235,7 +241,7 @@ class MastermindRules(IGameRules):
             self,
             position: MastermindPosition) -> Iterator[MastermindMovement]:
 
-        if self.allow_repetitions_:
+        if self.allow_repetition_:
             # Every combination of n numbers from 0 to m-1 using itertools
             for x in itertools.product(range(self.m), repeat=self.n):
                 yield MastermindMovement(guess=list(x))
@@ -277,13 +283,13 @@ class MastermindPlayablePlayer(IPlayer):
         print (position)
         print ("-" * MastermindPlayablePlayer.SeparatorN)
         repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
-        print (f"Colors: {list(range(position.get_rules().get_number_colors()))}  ({repetitions_text})")
+        print (f"Colors: {list(range(position.get_rules().get_number_values()))}  ({repetitions_text})")
 
         colors = []
 
         while True:
             print ("-" * MastermindPlayablePlayer.SeparatorN)
-            print (f"Insert a code with {position.get_rules().get_size_code()} colors (from 0 to {position.get_rules().get_number_colors()-1}):")
+            print (f"Insert a code with {position.get_rules().get_size_code()} colors (from 0 to {position.get_rules().get_number_values()-1}):")
             next_color = input()
 
             # Check if the input is valid
@@ -293,14 +299,14 @@ class MastermindPlayablePlayer(IPlayer):
 
             try:
                 next_color = [int(x) for x in next_color]
-                if any(x < 0 or x >= position.get_rules().get_number_colors() for x in next_color):
+                if any(x < 0 or x >= position.get_rules().get_number_values() for x in next_color):
                     raise ValueError()
                 if not position.get_rules().allow_repetition() and len(set(next_color)) != position.get_rules().get_size_code():
                     print ("Code must not have repetitions. Try again:")
                     continue
 
             except ValueError:
-                print (f"Code must be a list of integers between 0 and {position.get_rules().get_number_colors()-1}. Try again:")
+                print (f"Code must be a list of integers between 0 and {position.get_rules().get_number_values()-1}. Try again:")
                 continue
 
             colors = next_color
@@ -325,16 +331,16 @@ class MastermindRulesGenerator(IRulesGenerator):
             type_cast = int,
         )
 
-        number_colors = MastermindRulesGenerator._get_param(
+        number_values = MastermindRulesGenerator._get_param(
             configuration=configuration,
-            param_names = ['m', 'number_colors'],
+            param_names = ['m', 'number_values'],
             required = True,
             type_cast = int,
         )
 
-        allow_repetitions = MastermindRulesGenerator._get_param(
+        allow_repetition = MastermindRulesGenerator._get_param(
             configuration=configuration,
-            param_name = 'allow_repetitions',
+            param_name = 'allow_repetition',
             default_value = False,
             type_cast = bool,
         )
@@ -345,10 +351,10 @@ class MastermindRulesGenerator(IRulesGenerator):
         )
 
         if secret is not None:
-            if len(secret) != code_size or any(x < 0 or x >= number_colors for x in secret):
+            if len(secret) != code_size or any(x < 0 or x >= number_values for x in secret):
                 raise ValueError("Secret must be of size n and with numbers from 0 to m-1")
-            if not allow_repetitions and len(set(secret)) != code_size:
-                raise ValueError("Secret must not have repetitions when allow_repetitions is False")
+            if not allow_repetition and len(set(secret)) != code_size:
+                raise ValueError("Secret must not have repetitions when allow_repetition is False")
         else:
 
             seed = MastermindRulesGenerator._get_param(
@@ -362,14 +368,14 @@ class MastermindRulesGenerator(IRulesGenerator):
 
             secret = MastermindRules.random_secret(
                 code_size=code_size,
-                number_colors=number_colors,
+                number_values=number_values,
                 rng=rng,
-                color_repetition=allow_repetitions,
+                allow_repetition=allow_repetition,
             )
 
 
         return MastermindRules(
             code_size=code_size,
-            number_colors=number_colors,
+            number_values=number_values,
             secret=secret,
-            allow_repetitions=allow_repetitions)
+            allow_repetition=allow_repetition)

@@ -150,7 +150,7 @@ Arguments for constructor are:
 - ``code_size: int``: N
 - ``number_colors: int``: M
 - ``secret: List[int]``: List of N values between ``[0,M)`` representing the secret code.
-- ``allow_repetitions: bool``: Whether the secret code can have repeated values.
+- ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
 
 1. Using a secret code already defined.
@@ -162,7 +162,7 @@ Arguments for constructor are:
         code_size=4,
         number_colors=6,
         secret=[0, 1, 2, 3],
-        allow_repetitions=False
+        allow_repetition=False
     )
 
 
@@ -182,7 +182,7 @@ In order to test it in a game, you can do the following:
   from IArena.games.Mastermind import MastermindPlayablePlayer
   from IArena.arena.GenericGame import GenericGame
 
-  rules = MastermindRules(code_size=4, number_colors=6, secret=[0, 1, 2, 3], allow_repetitions=False)
+  rules = MastermindRules(code_size=4, number_colors=6, secret=[0, 1, 2, 3], allow_repetition=False)
 
   player = MastermindPlayablePlayer(name="Human")
 
