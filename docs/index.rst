@@ -9,7 +9,6 @@
    /src/getting_started/getting_started
    /src/getting_started/installation
    /src/getting_started/tutorials/tutorial
-   /src/getting_started/tutorials/wordle_tutorial
    /src/getting_started/tutorials/connect4_tutorial
 
 
@@ -28,8 +27,9 @@
    :hidden:
 
    /src/games/games
-   /src/games/docs/mastermind
+   /src/games/docs/numberguess
    /src/games/docs/wordle
+   /src/games/docs/mastermind
    /src/games/docs/hanoi
    /src/games/docs/slicing
    /src/games/docs/nqueens
