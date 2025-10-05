@@ -211,9 +211,9 @@ class MastermindRules(IGameRules):
 
         # Check if the movement is valid
         if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
-            raise ValueError("Movement must be of size n and with numbers from 0 to m-1")
+            raise ValueError(f"Movement must be of size n and with numbers from 0 to m-1. Incorrect movement: {movement}")
         if not self.allow_repetition_ and len(set(movement.guess)) != self.n:
-            raise ValueError("Movement must not have repetitions when allow_repetition is False")
+            raise ValueError(f"Movement must not have repetitions when allow_repetition is False. Incorrect movement: {movement}")
 
         # Calculate the feedback of the new guess
         new_feedback = MastermindPosition.MastermindFeedback()

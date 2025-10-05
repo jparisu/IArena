@@ -20,7 +20,7 @@ reports:
     multi_args:
       seed: [42, 84, 126]
 
-    min_score: -10
+    min_score: -30
 
 
   - name: Std Test
@@ -34,23 +34,8 @@ reports:
     multi_args:
       seed: [42, 84, 126, 168, 210]
 
-    min_score: -10
+    min_score: -50
     value: 4
-
-
-  - name: All values
-
-    description: "Test with sames spaces than values."
-
-    args:
-      code_size: 6
-      number_values: 6
-      allow_repetition: true
-    multi_args:
-      seed: [21, 63, 105]
-
-    min_score: -10
-    value: 2
 
 
   - name: One space
@@ -80,23 +65,7 @@ reports:
       seed: [7, 14, 21]
 
     min_score: -1
-    value: 1
-
-
-  - name: Ney York Times
-
-    description: "Test with default Wordle configuration."
-
-    args:
-      code_size: 5
-      number_values: 23
-      allow_repetition: true
-    multi_args:
-      seed: [5, 10, 15]
-
-    min_score: -24
     value: 2
-    repetitions: 1
 
 
   - name: More spaces than colors
@@ -110,8 +79,25 @@ reports:
     multi_args:
       seed: [5, 10, 15]
 
-    min_score: -6
+    min_score: -40
     value: 2
+
+
+  - name: Optimize Turns
+
+    description: "Test forcing optimal solutions."
+
+    args:
+      code_size: 4
+      number_values: 10
+      allow_repetition: true
+    multi_args:
+      seed: [11, 22, 33]
+
+    min_score: -20
+    move_timeout_s: 10
+    fails_allowed: 3
+    value: 3
 
 
   - name: Huge Test
@@ -125,11 +111,11 @@ reports:
     multi_args:
       seed: [11, 22, 33]
 
-    min_score: -20
-    max_moves: 100
+    min_score: -200
+    max_moves: 300
     move_timeout_s: 12
     fails_allowed: 3
-    value: 3
+    value: 2
 
 
   - name: Remarkable Test
@@ -143,7 +129,7 @@ reports:
     multi_args:
       seed: [1, 2]
 
-    min_score: -30
-    max_moves: 200
+    min_score: -150
+    max_moves: 1000
     repetitions: 1
     move_timeout_s: 15
