@@ -5,6 +5,7 @@ from IArena.interfaces.IPlayer import IPlayer
 from IArena.arena.GenericGame import ClockGame
 from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite
 from IArena.utils.YamlMixing import YamlMixing
+from IArena.utils.printing import green_tick, red_cross
 
 
 
@@ -71,6 +72,7 @@ class Report:
 
     def run(
                 self,
+                debug: bool = False,
             ) -> ReportResult:
 
         successes = []
@@ -110,6 +112,12 @@ class Report:
                         successes.append(False)
                         if score < self._common_configuration.max_score:
                             messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+
+                if debug:
+                    if successes[-1]:
+                        print(green_tick(), end="")  # green small check
+                    else:
+                        print(red_cross(), end="")  # red small cross
 
 
         self._result = ReportResult(

@@ -78,13 +78,6 @@ class WordleOptimalPlayer_norep(IPlayer):
                 if guess_i in self.possibilities[i]:
                     self.possibilities[i].remove(guess_i)
 
-        # Check if any number is only possible in one space
-        for color in range(self.number_values):
-            possible_spaces = [i for i in range(self.code_size) if color in self.possibilities[i]]
-            if len(possible_spaces) == 1:
-                space = possible_spaces[0]
-                self.possibilities[space] = [color]
-
         return self._arbitrary_guess()
 
 

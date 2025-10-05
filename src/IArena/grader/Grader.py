@@ -66,7 +66,13 @@ class Grader:
                 rules_suite=report_configuration.rules_suite,
             )
 
-            report.run()
+            if debug:
+                print(f"  RUNNING: ", end="")
+
+            report.run(debug)
+
+            if debug:
+                print()
 
             self._reports.append(report)
 
@@ -110,7 +116,7 @@ class Grader:
         total_value = self.total_value()
         this_report_value = report_configuration.value
 
-        print(f"  RESULT: [{report_configuration.name}] ({this_report_value}/{total_value}) -> ", end="")
+        print(f"  RESULT: [{report_configuration.name}] -> ", end="")
 
         for s in report.get_result().successes:
             # Use small green check and small red cross
@@ -120,7 +126,9 @@ class Grader:
                 print(red_cross(), end="")  # red small cross
 
         print()
+        print (f"  VALUE: {this_report_value}/{total_value}")
         print (f"  SCORE: {report.calculate_grade()*100}%")
+
 
         if error_level >= 0:
             print (f"  RUN DETAILS:")
