@@ -1,8 +1,8 @@
 .. _tutorial:
 
-########
-Tutorial
-########
+###############
+Wordle Tutorial
+###############
 
 .. contents::
     :local:

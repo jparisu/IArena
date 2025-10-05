@@ -80,7 +80,7 @@ class WordlePosition(IPosition):
     def __eq__(
             self,
             other: "WordlePosition"):
-        return self._guesses == other.guesses and self._feedback == other.feedback
+        return self._guesses == other._guesses and self._feedback == other._feedback
 
     def __str__(self):
 

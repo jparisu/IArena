@@ -8,8 +8,9 @@
 
    /src/getting_started/getting_started
    /src/getting_started/installation
-   /src/getting_started/tutorial
-   /src/getting_started/connect4_tutorial
+   /src/getting_started/tutorials/tutorial
+   /src/getting_started/tutorials/wordle_tutorial
+   /src/getting_started/tutorials/connect4_tutorial
 
 
 .. toctree::
@@ -27,19 +28,19 @@
    :hidden:
 
    /src/games/games
-   /src/games/tutorials/mastermind
-   /src/games/tutorials/wordle
-   /src/games/tutorials/hanoi
-   /src/games/tutorials/slicing
-   /src/games/tutorials/nqueens
-   /src/games/tutorials/fieldwalk
-   /src/games/tutorials/coins
-   /src/games/tutorials/nim
-   /src/games/tutorials/tictactoe
-   /src/games/tutorials/prisoner
-   /src/games/tutorials/highestcard
-   /src/games/tutorials/connect4
-   /src/games/tutorials/compassblindwalk
+   /src/games/docs/mastermind
+   /src/games/docs/wordle
+   /src/games/docs/hanoi
+   /src/games/docs/slicing
+   /src/games/docs/nqueens
+   /src/games/docs/fieldwalk
+   /src/games/docs/coins
+   /src/games/docs/nim
+   /src/games/docs/tictactoe
+   /src/games/docs/prisoner
+   /src/games/docs/highestcard
+   /src/games/docs/connect4
+   /src/games/docs/compassblindwalk
 
 
 .. toctree::
