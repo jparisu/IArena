@@ -290,7 +290,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
 
     def starting_game(
             self,
-            rules: WordleRules,
+            rules: MastermindRules,
             player_index: int):
 
         self.code_size = rules.code_size()
@@ -310,7 +310,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
     @override
     def play(
             self,
-            position: WordlePosition) -> WordleMovement:
+            position: MastermindPosition) -> MastermindMovement:
 
         # Status update
         if self.status[1] == 0:
@@ -346,7 +346,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
     When all values are found, and all positions are fixed, play the correct guess.
     """
 
-    def _strategy1_update(self, position: WordlePosition):
+    def _strategy1_update(self, position: MastermindPosition):
         feedback = position.last_feedback()
         self.number_per_value[self.status[2]] = feedback.correct
 
@@ -359,11 +359,11 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
             # Update next move
             self.status[2] += 1
 
-    def _strategy1_move(self, position: WordlePosition) -> WordleMovement:
+    def _strategy1_move(self, position: MastermindPosition) -> MastermindMovement:
         return self._all_n_guess(self.code_size, self.status[2])
 
 
-    def _strategy2_update(self, position: WordlePosition):
+    def _strategy2_update(self, position: MastermindPosition):
         last_guess = position.last_guess()
         last_feedback = position.last_feedback()
 
@@ -396,7 +396,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
             self.status[2] += 1
 
 
-    def _strategy2_move(self, position: WordlePosition) -> WordleMovement:
+    def _strategy2_move(self, position: MastermindPosition) -> MastermindMovement:
 
         l = self.status[2]
 
@@ -410,11 +410,11 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
         return MastermindMovement(guess=guess)
 
 
-    def _strategy3_move(self, position: WordlePosition) -> WordleMovement:
+    def _strategy3_move(self, position: MastermindPosition) -> MastermindMovement:
         return MastermindMovement(guess=list(self.fix_positions))
 
 
     @staticmethod
-    def _all_n_guess(size: int, n: int) -> WordleMovement:
+    def _all_n_guess(size: int, n: int) -> MastermindMovement:
         guess = [n] * size
-        return WordleMovement(guess)
+        return MastermindMovement(guess)

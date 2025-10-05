@@ -1,4 +1,4 @@
-game: Wordle
+game: Mastermind
 
 move_timeout_s: 5
 total_timeout_s: 100
@@ -65,7 +65,7 @@ reports:
       seed: [7, 14, 21]
 
     min_score: -1
-    value: 2
+    value: 1
 
 
   - name: More spaces than colors
