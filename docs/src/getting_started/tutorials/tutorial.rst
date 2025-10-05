@@ -122,7 +122,7 @@ In the following snippet, we can see how to create an empty board and how to get
     last_feedback = position.last_feedback()
 
     # Check how many numbers on the last guess are correct
-    n_correct = sum(1 for c in last_feedback if c == WordlePosition.WordleFeedback.Correct)
+    n_correct = sum(1 for c in last_feedback if c == WordlePosition.WordleFeedback.Correct.value)
 
 
 
@@ -246,7 +246,7 @@ Next, we see how to create a playable game for wordle:
 
 .. code-block:: python
 
-    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules
+    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules, WordlePlayablePlayer
     from IArena.arena.GenericGame import GenericGame
 
     # PARAMETERS
@@ -262,9 +262,9 @@ Next, we see how to create a playable game for wordle:
     player = WordlePlayablePlayer(name="Human")
 
     # Activate game loop
-    game = GenericGame(rules=rules, players=[player])
+    game = GenericGame(rules=game, players=[player])
     score = game.play()
-    print(score.pretty_print())
+    print("SCORE: ", score.pretty_print())
 
 
 
@@ -318,14 +318,18 @@ Let's see how to create a player for Wordle that always plays in the first colum
             return next(possible_movements)  # Return the first movement available
 
 
-    # TEST MY PLAYER
+    # Create an instance of the player
     my_player = MyAIPlayer()
 
+    # Create game rules
     rules = WordleRules()  # Default game rules
-    position = game.first_position()  # Default first position with random secret
+
+    # Test your player with a position
+    position = rules.first_position()  # Default first position with random secret
     move = my_player.play(position)
     print(f'Movement selected: {move}')
 
+    # Check the next position after playing the movement
     position = rules.next_position(move, position)
     print(f'Next position: {position}')
 
@@ -344,3 +348,30 @@ There are different types of arenas, depending on the class to use:
 - ``GenericGame``: A generic arena that can be used with any game and player.
 - ``BroadcastGame``: An arena that broadcasts the game state to the players in each step. Use this arena to see the game development for an AI player.
 - ``ClockGame``: An arena that plays the game with a time limit for each ``play`` call for the players.
+
+In order to use an arena, you must create it by passing the game rules and the players to play.
+Then, you can call the ``play()`` method to start the game loop.
+
+Let's see an example of how to create an arena and play a game with our AI player:
+
+
+.. code-block:: python
+
+    from IArena.interfaces.IPlayer import IPlayer
+    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules
+    from IArena.arena.GenericGame import BroadcastGame
+    from IArena.players.dummy_players import RandomPlayer
+
+
+    # Set the player you want to test. In this example, a Random Player
+    my_player = RandomPlayer()
+
+    # Create rules
+    rules = WordleRules()  # Default game rules
+
+    # Create arena. Set a max number of moves, as a random player would be likely to never finish the game
+    game = BroadcastGame(rules=rules, players=[my_player], max_moves=10)
+
+    # Play the game
+    score = game.play()
+    print("SCORE: ", score.pretty_print())

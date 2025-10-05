@@ -34,7 +34,7 @@ class RandomPlayer(IPlayer):
     def play(
             self,
             position: IPosition) -> IMovement:
-        return random.choice(position.get_rules().possible_movements(position))
+        return random.choice(list(position.get_rules().possible_movements(position)))
 
 
 class ConsistentRandomPlayer(IPlayer):

@@ -17,7 +17,6 @@ class GenericGame:
                 self,
                 rules: IGameRules,
                 players: List[IPlayer],
-                check_correct_move: bool = True,
                 max_moves: int = None,
                 check_movements: bool = False,
             ):
@@ -29,7 +28,6 @@ class GenericGame:
 
         self.rules = rules
         self.players = players
-        self.check_correct_move = check_correct_move
         self.max_moves = max_moves
         self.check_movements = check_movements
 
