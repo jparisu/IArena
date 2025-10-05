@@ -68,6 +68,22 @@ reports:
     value: 2
 
 
+  - name: Ney York Times
+
+    description: "Test with default Wordle configuration."
+
+    args:
+      code_size: 5
+      number_values: 23
+      allow_repetition: false
+    multi_args:
+      seed: [5, 10, 15, 20]
+
+    min_score: -10
+    value: 2
+    repetitions: 1
+
+
   - name: Huge Test
 
     description: "Test with very big numbers."
@@ -83,16 +99,16 @@ reports:
     max_moves: 100
     move_timeout_s: 12
     fails_allowed: 3
-    value: 2
+    value: 3
 
 
   - name: Remarkable Test
 
-    description: "Test with very big numbers."
+    description: "Excellency test."
 
     args:
       code_size: 15
-      number_values: 20
+      number_values: 30
       allow_repetition: false
     multi_args:
       seed: [1, 2]

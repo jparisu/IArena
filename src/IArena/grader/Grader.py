@@ -116,18 +116,9 @@ class Grader:
         total_value = self.total_value()
         this_report_value = report_configuration.value
 
-        print(f"  RESULT: [{report_configuration.name}] -> ", end="")
-
-        for s in report.get_result().successes:
-            # Use small green check and small red cross
-            if s:
-                print(green_tick(), end="")  # green small check
-            else:
-                print(red_cross(), end="")  # red small cross
-
-        print()
-        print (f"  VALUE: {this_report_value}/{total_value}")
-        print (f"  SCORE: {report.calculate_grade()*100}%")
+        g = report.calculate_grade()
+        print (f"  TEST VALUE: {this_report_value}/{total_value}  ->  {(this_report_value/total_value)*100:.2f}%")
+        print (f"  SCORE: {g*100}%  ->  {g*this_report_value*100/total_value:.2f}%")
 
 
         if error_level >= 0:
