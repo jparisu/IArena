@@ -1,0 +1,44 @@
+game: Wordle
+
+move_timeout_s: 2
+total_timeout_s: 10
+max_score: 0
+repetitions: 3
+fails_allowed: 1
+max_moves: 100
+
+reports:
+
+  - name: Example Test
+
+    description: "Simple Test 4 values."
+
+    args:
+      number_values: 4
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -5
+
+  - name: Basic Test
+
+    description: "Default Test 8 values."
+
+    args:
+      number_values: 8
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -10
+
+  - name: Big Test
+
+    description: "Big Test 80 values."
+
+    args:
+      number_values: 80
+    multi_args:
+      seed: [42, 84, 126, 168, 210]
+
+    min_score: -80
+  repetitions: 2

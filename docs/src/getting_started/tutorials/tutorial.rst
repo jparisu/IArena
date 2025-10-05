@@ -1,8 +1,8 @@
 .. _tutorial:
 
-########
-Tutorial
-########
+###############
+Wordle Tutorial
+###############
 
 .. contents::
     :local:
@@ -12,7 +12,7 @@ Tutorial
 
 **IArena** is a library that implements several games, in order to allow developing AI players that can be tested on them.
 In this tutorial, we will see each element involved in the player creation.
-We will illustrate it by showing how to create and test a player for the game :ref:`Mastermind <mastermind_docs>`.
+We will illustrate it by showing how to create and test a player for the game :ref:`Wordle <wordle_docs>`.
 
 
 ============
@@ -40,7 +40,7 @@ Game
 ====
 
 First of all, let's focus on the game we want to play.
-For this example, we will use the game :ref:`mastermind_docs`.
+For this example, we will use the game :ref:`wordle_docs`.
 However, this is extrapolated to any other game implemented in **IArena**.
 
 
@@ -49,16 +49,16 @@ Movement
 --------
 
 First of all, in a game we have a :term:`Movement` class.
-In the case of Mastermind, the movements are defined by a guess of the secret code.
-The movements are defined by the ``MastermindMovement`` object, an inherited class from :ref:`imovement`.
+In the case of Wordle, the movements are defined by a guess of the secret code.
+The movements are defined by the ``WordleMovement`` object, an inherited class from :ref:`imovement`.
 This object has the attribute ``guess`` that defines a list of integers representing the guess.
 For example, in a game with 7 possible numbers, and a code of length 4, a guess could be: ``[0, 1, 2, 3]`` or ``[6, 5, 4, 3]``.
 
 .. code-block:: python
 
-    from IArena.games.Mastermind import MastermindMovement  # Import the MastermindMovement class
+    from IArena.games.Wordle import WordleMovement  # Import the WordleMovement class
 
-    movement = MastermindMovement(guess=[0, 1, 2, 3])  # Guess the code [0, 1, 2, 3]
+    movement = WordleMovement(guess=[0, 1, 2, 3])  # Guess the code [0, 1, 2, 3]
     print(f'Movement: {movement}')
 
 
@@ -69,13 +69,13 @@ Position
 
 In a game we have a :term:`Position` class.
 This object, that inherits from :ref:`iposition` class, holds the current state of the game.
-In the case of Mastermind, the position object is ``MastermindPosition``, that holds the list of guesses done so far, and their correctness.
+In the case of Wordle, the position object is ``WordlePosition``, that holds the list of guesses done so far, and their feedback.
 
-MastermindCorrectness
-^^^^^^^^^^^^^^^^^^^^^
+WordleFeedback
+^^^^^^^^^^^^^^
 
-First let's see an auxiliary class: ``MastermindCorrectness``.
-This is an enumeration to indicate the correctness of a number in a code with the following values:
+First let's see an auxiliary class: ``WordleFeedback``.
+This is an enumeration to indicate the feedback of a number in a code with the following values:
 - ``Wrong``: 0
 - ``Misplaced``: 1
 - ``Correct``: 2
@@ -83,46 +83,46 @@ This is an enumeration to indicate the correctness of a number in a code with th
 
 Each ``position`` object holds 2 main variables, accessible by the following methods:
 
-- ``guesses()``: The list of guesses done so far. This returns a list ``List[MastermindMovement]``:
+- ``guesses()``: The list of guesses done so far. This returns a list ``List[WordleMovement]``:
     - The first guess is ``guesses()[0]``.
     - The last guess is ``guesses()[-1]``.
     - To access the last guess, there is also the method ``last_guess()``.
-- ``correctness()``: A list with a value per guess indicating those numbers that are correct, misplaced or wrong. This returns a list ``List[List[MastermindCorrectness]]``:
-    - The correctness of the first guess is ``correctness()[0]``.
-    - The correctness of the last guess is ``correctness()[-1]``.
-    - To access the correctness of the last guess, there is also the method ``last_correctness()``.
-    - Each correctness is a list of ``MastermindCorrectness`` with the same length as the guess. This indicates for each number in the guess, if it is correct, misplaced or wrong.
+- ``feedback()``: A list with a value per guess indicating those numbers that are correct, misplaced or wrong. This returns a list ``List[List[WordleFeedback]]``:
+    - The feedback of the first guess is ``feedback()[0]``.
+    - The feedback of the last guess is ``feedback()[-1]``.
+    - To access the feedback of the last guess, there is also the method ``last_feedback()``.
+    - Each feedback is a list of ``WordleFeedback`` with the same length as the guess. This indicates for each number in the guess, if it is correct, misplaced or wrong.
 
 In the following snippet, we can see how to create an empty board and how to get the matrix and player from it:
 
 .. code-block:: python
 
-    from IArena.games.Mastermind import MastermindPosition  # Import the MastermindPosition object
+    from IArena.games.Wordle import WordlePosition  # Import the WordlePosition object
 
     # Let's recreate a position on a game with 7 possible numbers and a code of length 4
-    guess_0 = MastermindMovement(guess=[0, 1, 2, 3])  # First guess
-    guess_1 = MastermindMovement(guess=[0, 2, 4, 5])  # Second guess
+    guess_0 = WordleMovement(guess=[0, 1, 2, 3])  # First guess
+    guess_1 = WordleMovement(guess=[0, 2, 4, 5])  # Second guess
 
-    # Let's imagine that the secret code was [0, 2, 5, 6]. The correctness would be:
-    correctness_0 = [2, 0, 1, 0]  # Correctness of the first guess: 0 is correct, 1 is wrong, 2 is misplaced, 3 is wrong
-    correctness_1 = [2, 2, 0, 1]  # Correctness of the second guess: 0 is correct, 2 is correct, 4 is wrong, 5 is misplaced
+    # Let's imagine that the secret code was [0, 2, 5, 6]. The feedback would be:
+    feedback_0 = [2, 0, 1, 0]  # Feedback of the first guess: 0 is correct, 1 is wrong, 2 is misplaced, 3 is wrong
+    feedback_1 = [2, 2, 0, 1]  # Feedback of the second guess: 0 is correct, 2 is correct, 4 is wrong, 5 is misplaced
 
-    # Create a position with 2 guesses and their correctness
+    # Create a position with 2 guesses and their feedback
     # This is the object that will be passed to the player in order to play
-    position = MastermindPosition(
+    position = WordlePosition(
         rules=None,  # We will discuss this parameter later
         guesses=[guess_0, guess_1],  # List of guesses done so far
-        correctness=[correctness_0, correctness_1]  # List of correctness of the guesses done so far
+        feedback=[feedback_0, feedback_1]  # List of feedback of the guesses done so far
     )
 
     # Get the last guess tried
     last_guess = position.last_guess()
 
-    # Get the correctness of the last guess
-    last_correctness = position.last_correctness()
+    # Get the feedback of the last guess
+    last_feedback = position.last_feedback()
 
     # Check how many numbers on the last guess are correct
-    n_correct = sum(1 for c in last_correctness if c == MastermindPosition.MastermindCorrectness.Correct)
+    n_correct = sum(1 for c in last_feedback if c == WordlePosition.WordleFeedback.Correct)
 
 
 
@@ -138,50 +138,50 @@ Game
 
 Finally, we have the :term:`GameRule` class.
 This object, that inherits from :ref:`igamerules`, holds the game rules and the game state.
-In the case of Mastermind, the game object is ``MastermindGame``.
+In the case of Wordle, the game object is ``WordleGame``.
 
-In order to create a game object, ``MastermindGame`` requires the following parameters:
+In order to create a game object, ``WordleGame`` requires the following parameters:
 
 - ``code_size: int``: Length of the secret code (N).
-- ``number_colors: int``: Number of different values available (M). If no repetitions allowed, M >= N.
+- ``number_values: int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``secret: List[int]``: A list of size (N) with integers between 0 and M-1 representing the secret code.
-- ``allow_repetitions: bool``: Whether the secret code can have repeated values.
+- ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
-``MastermindGame`` also counts with a static method that generates a random secret code: ``random_secret`` with the following parameters:
+``WordleGame`` also counts with a static method that generates a random secret code: ``random_secret`` with the following parameters:
 
 - ``code_size: int``: Length of the secret code (N).
-- ``number_colors: int``: Number of different values available (M). If no repetitions allowed, M >= N.
+- ``number_values: int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``rng: RandomGenerator``: A random generator to generate the secret code.
-- ``color_repetition: bool``: Whether the secret code can have repeated values.
+- ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
 Let's see an example on how to create a game object with a random secret code:
 
 .. code-block:: python
 
-    from IArena.games.Mastermind import MastermindRules  # Import the MastermindRules class
+    from IArena.games.Wordle import WordleRules  # Import the WordleRules class
 
     # Create a game object with default values: N = 5, M = 8, no repetitions, random secret code
-    game = MastermindRules()
+    game = WordleRules()
 
     # Create a game object with specific values: N = 4, M = 7, repetitions allowed, random secret code
-    game = MastermindRules(code_size=4, number_colors=7, allow_repetitions=True, secret=[0, 2, 5, 6])
+    game = WordleRules(code_size=4, number_values=7, allow_repetition=True, secret=[0, 2, 5, 6])
 
 
 
 The game object has the following methods (as every other :ref:`igamerules`):
 
 - ``n_players() -> int``: Returns the number of players.
-- ``first_position() -> MastermindPosition``: Returns the first position of the game.
-- ``next_position(movement: MastermindMovement, position: MastermindPosition) -> MastermindPosition``: Returns the next position given a movement and a position.
-- ``possible_movements(position: MastermindPosition) -> List[MastermindMovement]``: Returns the possible movements given a position.
-- ``finished(position: MastermindPosition) -> bool``: Returns whether the game is finished or not.
-- ``score(position: MastermindPosition) -> ScoreBoard``: Returns the :ref:`scoreboard` of the game.
+- ``first_position() -> WordlePosition``: Returns the first position of the game.
+- ``next_position(movement: WordleMovement, position: WordlePosition) -> WordlePosition``: Returns the next position given a movement and a position.
+- ``possible_movements(position: WordlePosition) -> List[WordleMovement]``: Returns the possible movements given a position.
+- ``finished(position: WordlePosition) -> bool``: Returns whether the game is finished or not.
+- ``score(position: WordlePosition) -> ScoreBoard``: Returns the :ref:`scoreboard` of the game.
 
 
-Apart from class methods, ``MastermindRules`` has the following specific methods:
+Apart from class methods, ``WordleRules`` has the following specific methods:
 
-- ``get_number_colors()``: Get value (N).
-- ``get_size_code()``: Get value (M).
+- ``number_values()``: Get value (N).
+- ``code_size()``: Get value (M).
 - ``allow_repetition()``: Whether repetitions are allowed in the secret code.
 
 
@@ -189,15 +189,15 @@ Apart from class methods, ``MastermindRules`` has the following specific methods
 Example
 -------
 
-Let's see an example on how to create a play of Mastermind:
+Let's see an example on how to create a play of Wordle:
 
 .. code-block:: python
 
-    from IArena.games.Mastermind import MastermindMovement, MastermindPosition, MastermindRules
+    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules
 
     # CREATE GAME RULES
     # Create a game object with specific values: N = 4, M = 7, repetitions not allowed, random secret code
-    game = MastermindRules(code_size=4, number_colors=7, allow_repetitions=False, secret=[0, 2, 5, 6])
+    game = WordleRules(code_size=4, number_values=7, allow_repetition=False, secret=[0, 2, 5, 6])
 
     # GET FIRST POSITION
     position = game.first_position()  # Default first position with 6x7 empty board
@@ -218,7 +218,7 @@ Let's see an example on how to create a play of Mastermind:
     print(f'Game finished: {finished}')
 
     # LET'S FORCE A WIN
-    winning_movement = MastermindMovement(guess=[0, 2, 5, 6])  # The secret code
+    winning_movement = WordleMovement(guess=[0, 2, 5, 6])  # The secret code
     position = game.next_position(winning_movement, position)
     print(f'Next position (winning): {position}')
 
@@ -241,25 +241,25 @@ Let's see an example on how to create a play of Mastermind:
 Play
 ====
 
-If you want to play the game manually, you can use the built-in :ref:`playable_player` class for Mastermind: ``MastermindPlayablePlayer``.
-Next, we see how to create a playable game for mastermind:
+If you want to play the game manually, you can use the built-in :ref:`playable_player` class for Wordle: ``WordlePlayablePlayer``.
+Next, we see how to create a playable game for wordle:
 
 .. code-block:: python
 
-    from IArena.games.Mastermind import MastermindMovement, MastermindPosition, MastermindRules
+    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules
     from IArena.arena.GenericGame import GenericGame
 
     # PARAMETERS
     code_size = 4
-    number_colors = 7
-    allow_repetitions = False
+    number_values = 7
+    allow_repetition = False
     secret = [0, 2, 5, 6]  # Set None to use a random secret
 
     # Create game rules
-    game = MastermindRules(code_size=code_size, number_colors=number_colors, allow_repetitions=allow_repetitions, secret=secret)
+    game = WordleRules(code_size=code_size, number_values=number_values, allow_repetition=allow_repetition, secret=secret)
 
     # Create Player
-    player = MastermindPlayablePlayer(name="Human")
+    player = WordlePlayablePlayer(name="Human")
 
     # Activate game loop
     game = GenericGame(rules=rules, players=[player])
@@ -303,16 +303,16 @@ This method is useful to reset the player for a new game if needed.
 AI Player Example
 -----------------
 
-Let's see how to create a player for Mastermind that always plays in the first column available:
+Let's see how to create a player for Wordle that always plays in the first column available:
 
 .. code-block:: python
 
     from IArena.interfaces.IPlayer import IPlayer
-    from IArena.games.Mastermind import MastermindMovement, MastermindPosition, MastermindRules
+    from IArena.games.Wordle import WordleMovement, WordlePosition, WordleRules
 
     class MyAIPlayer(IPlayer):  # Create a class that inherits from IPlayer
 
-        def play(self, position: MastermindPosition) -> MastermindMovement:  # Implement the play method
+        def play(self, position: WordlePosition) -> WordleMovement:  # Implement the play method
             rules = position.get_rules()  # Get the rules object from the position
             possible_movements = rules.possible_movements(position)  # Get the possible movements
             return next(possible_movements)  # Return the first movement available
@@ -321,7 +321,7 @@ Let's see how to create a player for Mastermind that always plays in the first c
     # TEST MY PLAYER
     my_player = MyAIPlayer()
 
-    rules = MastermindRules()  # Default game rules
+    rules = WordleRules()  # Default game rules
     position = game.first_position()  # Default first position with random secret
     move = my_player.play(position)
     print(f'Movement selected: {move}')

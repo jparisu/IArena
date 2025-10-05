@@ -78,15 +78,17 @@ class IRulesGenerator:
                     raise ValueError(f'Error casting parameter to {type_cast}: {e}')
             return value
 
-        if param_name is not None:
+        if param_names is None:
+            param_names = [param_name]
+
+        elif param_name is not None:
             param_names.insert(0, param_name)
 
-        elif param_names is not None:
-            for name in param_names:
-                if name in configuration:
-                    value = configuration[name]
-                    return __type_cast(value, type_cast)
+        for name in param_names:
+            if name in configuration:
+                value = configuration[name]
+                return __type_cast(value, type_cast)
 
-            if required:
-                raise ValueError(f'One of the parameters {param_names} is required in configuration.')
-            return default_value
+        if required:
+            raise ValueError(f'One of the parameters {param_names} is required in configuration.')
+        return default_value

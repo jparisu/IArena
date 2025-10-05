@@ -1,9 +1,8 @@
 
 import copy
-from typing import Iterator, List, Set
+from typing import Iterator, List
 from enum import Enum
 import itertools
-from dataclasses import dataclass
 
 from IArena.grader.RulesGenerator import IRulesGenerator
 from IArena.interfaces.IPlayer import IPlayer
@@ -16,7 +15,7 @@ from IArena.utils.decorators import override
 from IArena.utils.RandomGenerator import RandomGenerator
 
 """
-This game represents the Mastermind game with exact tips.
+This game represents the Wordle game with exact tips.
 In this game there is a pattern hidden and the player must guess it.
 The pattern is a list of N numbers from 0 to M-1.
 The player makes guesses and the game tells how many numbers are correct and in the right position.
@@ -24,11 +23,11 @@ The game ends when the player guesses the pattern.
 
 NOTE:
 1. In this implementation, the game is played by one player, and the pattern is not known.
-2. The numbers (colors) could or not be repeated depending on the configuration.
-3. The game tells for each guess how many numbers are correct and in the right position, and how many are correct but in the wrong position, but not the exact position of each.
+2. The numbers (letters in actual game) could or nor be repeated depending on the configuration.
+3. The game tells for each guess exactly which numbers are correct and in the right position.
 """
 
-class MastermindMovement(IMovement):
+class WordleMovement(IMovement):
     """
     Represents the movement of the player in the game by guessing the pattern.
     It is a list of N numbers with numbers from 0 to M-1.
@@ -44,30 +43,31 @@ class MastermindMovement(IMovement):
 
     def __eq__(
             self,
-            other: "MastermindMovement"):
+            other: "WordleMovement"):
         return self.guess == other.guess
 
     def __str__(self):
         return f'{self.guess}'
 
 
-class MastermindPosition(IPosition):
+class WordlePosition(IPosition):
     """
     TODO
     """
 
-    @dataclass
-    class MastermindFeedback ():
-        """Represents the feedback for a single position in the guess."""
-        correct: int = 0
-        misplaced: int = 0
-
+    class WordleFeedback (Enum):
+        """
+        Represents the feedback one number in one guess.
+        """
+        Wrong = 0
+        Misplaced = 1
+        Correct = 2
 
     def __init__(
             self,
-            rules: "MastermindRules",
-            guesses: List[MastermindMovement],
-            feedback: List[List[MastermindFeedback]]):
+            rules: "WordleRules",
+            guesses: List[WordleMovement],
+            feedback: List[List[WordleFeedback]]):
         super().__init__(rules)
         self._guesses = guesses
         self._feedback = feedback
@@ -79,7 +79,7 @@ class MastermindPosition(IPosition):
 
     def __eq__(
             self,
-            other: "MastermindPosition"):
+            other: "WordlePosition"):
         return self._guesses == other._guesses and self._feedback == other._feedback
 
     def __str__(self):
@@ -88,24 +88,20 @@ class MastermindPosition(IPosition):
             return "<EMPTY POSITION>\n"
 
         # Print each guess in a line together with the feedback
-        st = ""
-        for i in range(len(self._guesses)):
-            feedback_str = f'Correct: {self._feedback[i].correct}, Misplaced: {self._feedback[i].misplaced}'
-            st += f'Guess {i}: {self._guesses[i]} | Feedback: {feedback_str}\n'
-        return st
+        return "\n".join([f'{self._guesses[i]} : {[x.name for x in self._feedback[i]]}' for i in range(len(self._guesses))]) + "\n"
 
-    def guesses(self) -> List[MastermindMovement]:
+    def guesses(self) -> List[WordleMovement]:
         return copy.deepcopy(self._guesses)
 
-    def feedback(self) -> List[MastermindFeedback]:
+    def feedback(self) -> List[List[WordleFeedback]]:
         return copy.deepcopy(self._feedback)
 
-    def last_guess(self) -> MastermindMovement:
+    def last_guess(self) -> WordleMovement:
         if len(self._guesses) == 0:
             return None
         return copy.deepcopy(self._guesses[-1])
 
-    def last_feedback(self) -> MastermindFeedback:
+    def last_feedback(self) -> List[WordleFeedback]:
         if len(self._feedback) == 0:
             return None
         return copy.deepcopy(self._feedback[-1])
@@ -120,7 +116,7 @@ class MastermindPosition(IPosition):
         return self.get_rules().allow_repetition()
 
 
-class MastermindRules(IGameRules):
+class WordleRules(IGameRules):
 
     DefaultCodeSize = 5
     DefaultNumberValues = 8
@@ -136,13 +132,13 @@ class MastermindRules(IGameRules):
         if allow_repetition:
             return [rng.randint(number_values) for _ in range(code_size)]
         else:
-            possible_colors = set(range(number_values))
-            colors = []
+            possible_letters = set(range(number_values))
+            letters = []
             for _ in range(code_size):
-                color = rng.choice(list(possible_colors))
-                colors.append(color)
-                possible_colors.remove(color)
-            return colors
+                letter = rng.choice(list(possible_letters))
+                letters.append(letter)
+                possible_letters.remove(letter)
+            return letters
 
 
     def __init__(
@@ -168,7 +164,7 @@ class MastermindRules(IGameRules):
         """
 
         if secret is None:
-            secret = MastermindRules.random_secret(
+            secret = WordleRules.random_secret(
                 code_size=code_size,
                 number_values=number_values,
                 rng=RandomGenerator(),
@@ -198,66 +194,65 @@ class MastermindRules(IGameRules):
         return 1
 
     @override
-    def first_position(self) -> MastermindPosition:
-        return MastermindPosition(self, [], [])
+    def first_position(self) -> WordlePosition:
+        return WordlePosition(self, [], [])
 
     @override
     def next_position(
             self,
-            movement: MastermindMovement,
-            position: MastermindPosition) -> MastermindPosition:
+            movement: WordleMovement,
+            position: WordlePosition) -> WordlePosition:
         guesses = position.guesses() + [movement]
-        old_feedback = position.feedback()
 
         # Check if the movement is valid
         if len(movement.guess) != self.n or any(x < 0 or x >= self.m for x in movement.guess):
-            raise ValueError("Movement must be of size n and with numbers from 0 to m-1")
+            raise ValueError(f"Movement must be of size {self.n} and with numbers from 0 to {self.m-1}")
         if not self.allow_repetition_ and len(set(movement.guess)) != self.n:
             raise ValueError("Movement must not have repetitions when allow_repetition is False")
 
         # Calculate the feedback of the new guess
-        new_feedback = MastermindPosition.MastermindFeedback()
-        secret_copy = self.__secret.copy()
-        guess_copy = movement.guess.copy()
-        # First pass: check for correct positions
+        feedback = [WordlePosition.WordleFeedback.Wrong for _ in range(self.n)]
+        already_placed = [False for _ in range(self.n)]
+        possible_misplaced = []
         for i in range(self.n):
-            if guess_copy[i] == secret_copy[i]:
-                new_feedback.correct += 1
-                secret_copy[i] = -1
-                guess_copy[i] = -2
-        # Second pass: check for misplaced positions
-        for i in range(self.n):
-            if guess_copy[i] in secret_copy:
-                new_feedback.misplaced += 1
-                secret_index = secret_copy.index(guess_copy[i])
-                secret_copy[secret_index] = -1
-                guess_copy[i] = -2
+            if movement.guess[i] == self.__secret[i]:
+                feedback[i] = WordlePosition.WordleFeedback.Correct
+                already_placed[i] = True
+            elif movement.guess[i] in self.__secret:
+                possible_misplaced.append(i)
 
-        # Append the new feedback to the list of feedbacks
-        feedback = copy.deepcopy(position.feedback())
-        feedback.append(new_feedback)
+        for i in possible_misplaced:
+            # Check if such number is in secret in a position that has already not being checked
+            for j in range(self.n):
+                if not already_placed[j] and movement.guess[i] == self.__secret[j]:
+                    already_placed[j] = True
+                    feedback[i] = WordlePosition.WordleFeedback.Misplaced
+                    break
 
-        return MastermindPosition(self, guesses, feedback)
+        new_feedback = copy.deepcopy(position.feedback())
+        new_feedback.append(feedback)
+
+        return WordlePosition(self, guesses, new_feedback)
 
     @override
     def possible_movements(
             self,
-            position: MastermindPosition) -> Iterator[MastermindMovement]:
+            position: WordlePosition) -> Iterator[WordleMovement]:
 
         if self.allow_repetition_:
             # Every combination of n numbers from 0 to m-1 using itertools
             for x in itertools.product(range(self.m), repeat=self.n):
-                yield MastermindMovement(guess=list(x))
+                yield WordleMovement(guess=list(x))
 
         else:
             # Every permutation of n numbers from 0 to m-1 using itertools
             for x in itertools.permutations(range(self.m), self.n):
-                yield MastermindMovement(guess=list(x))
+                yield WordleMovement(guess=list(x))
 
     @override
     def finished(
             self,
-            position: MastermindPosition) -> bool:
+            position: WordlePosition) -> bool:
         # Game is finished if the last guess is equal the hidden secret
         if len(position.guesses()) == 0:
             return False
@@ -266,40 +261,40 @@ class MastermindRules(IGameRules):
     @override
     def score(
             self,
-            position: MastermindPosition) -> ScoreBoard:
+            position: WordlePosition) -> ScoreBoard:
         s = ScoreBoard()
         s.define_score(PlayerIndex.FirstPlayer, -len(position.guesses()))
         return s
 
 
 
-class MastermindPlayablePlayer(IPlayer):
+class WordlePlayablePlayer(IPlayer):
 
     SeparatorN = 40
 
     @override
     def play(
             self,
-            position: MastermindPosition) -> IMovement:
+            position: IPosition) -> IMovement:
 
         code_size = position.get_rules().code_size()
         number_values = position.get_rules().number_values()
 
-        print ("=" * MastermindPlayablePlayer.SeparatorN)
+        print ("=" * WordlePlayablePlayer.SeparatorN)
         print (position)
-        print ("-" * MastermindPlayablePlayer.SeparatorN)
+        print ("-" * WordlePlayablePlayer.SeparatorN)
         repetitions_text = "with repetition" if position.get_rules().allow_repetition() else "without repetition"
-        print (f"Values: {list(range(position.get_rules().number_values()))}  ({repetitions_text})")
+        print (f"Values: {list(range(number_values))}  ({repetitions_text})")
 
-        colors = []
+        letters = []
 
         while True:
-            print ("-" * MastermindPlayablePlayer.SeparatorN)
+            print ("-" * WordlePlayablePlayer.SeparatorN)
             print (f"Insert a code with {code_size} numbers (from 0 to {number_values-1}):")
             next_guess = []
 
             for i in range(code_size):
-                next_guess.append(int(input(f"Number {i+1}: ")))
+                next_guess.append(input(f"Number {i+1}: "))
 
             # Check if the input is valid
             try:
@@ -314,43 +309,43 @@ class MastermindPlayablePlayer(IPlayer):
                 print (f"Code must be a list of integers between 0 and {number_values-1}. Try again:")
                 continue
 
-            colors = next_guess
+            letters = next_guess
             break
 
-        print ("=" * MastermindPlayablePlayer.SeparatorN)
+        print ("=" * WordlePlayablePlayer.SeparatorN)
 
-        return MastermindMovement(colors)
+        return WordleMovement(letters)
 
 
-class MastermindRulesGenerator(IRulesGenerator):
+class WordleRulesGenerator(IRulesGenerator):
 
     @override
     def generate(
             self,
             configuration: dict) -> IGameRules:
 
-        code_size = MastermindRulesGenerator._get_param(
+        code_size = WordleRulesGenerator._get_param(
             configuration=configuration,
             param_names = ['n', 'code_size'],
             required = True,
             type_cast = int,
         )
 
-        number_values = MastermindRulesGenerator._get_param(
+        number_values = WordleRulesGenerator._get_param(
             configuration=configuration,
             param_names = ['m', 'number_values'],
             required = True,
             type_cast = int,
         )
 
-        allow_repetition = MastermindRulesGenerator._get_param(
+        allow_repetition = WordleRulesGenerator._get_param(
             configuration=configuration,
             param_name = 'allow_repetition',
             default_value = False,
             type_cast = bool,
         )
 
-        secret = MastermindRulesGenerator._get_param(
+        secret = WordleRulesGenerator._get_param(
             configuration=configuration,
             param_name = 'secret',
         )
@@ -362,7 +357,7 @@ class MastermindRulesGenerator(IRulesGenerator):
                 raise ValueError("Secret must not have repetitions when allow_repetition is False")
         else:
 
-            seed = MastermindRulesGenerator._get_param(
+            seed = WordleRulesGenerator._get_param(
                 configuration=configuration,
                 param_name = 'seed',
                 required = True,
@@ -371,7 +366,7 @@ class MastermindRulesGenerator(IRulesGenerator):
 
             rng = RandomGenerator(seed)
 
-            secret = MastermindRules.random_secret(
+            secret = WordleRules.random_secret(
                 code_size=code_size,
                 number_values=number_values,
                 rng=rng,
@@ -379,7 +374,7 @@ class MastermindRulesGenerator(IRulesGenerator):
             )
 
 
-        return MastermindRules(
+        return WordleRules(
             code_size=code_size,
             number_values=number_values,
             secret=secret,
