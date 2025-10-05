@@ -97,7 +97,7 @@ class Grader:
         return final_grade
 
 
-    def print_report_result(self, report_index: int):
+    def print_report_result(self, report_index: int, error_level: int = 1):
         if self._reports is None:
             raise RuntimeError("Grader has not been run yet. Please run the grader before printing the report result.")
 
@@ -110,7 +110,7 @@ class Grader:
         total_value = self.total_value()
         this_report_value = report_configuration.value
 
-        print(f"RESULT: [{report_configuration.name}] ({this_report_value}/{total_value}) -> ", end="")
+        print(f"  RESULT: [{report_configuration.name}] ({this_report_value}/{total_value}) -> ", end="")
 
         for s in report.get_result().successes:
             # Use small green check and small red cross
@@ -119,4 +119,18 @@ class Grader:
             else:
                 print(red_cross(), end="")  # red small cross
 
-        print (f"   SCORE: {report.calculate_grade()*100}%")
+        print()
+        print (f"  SCORE: {report.calculate_grade()*100}%")
+
+        if error_level >= 0:
+            print (f"  RUN DETAILS:")
+            for e in report.get_result().errors:
+                print(f"   ERROR: {e}")
+
+        if error_level >= 1:
+            for w in report.get_result().warnings:
+                print(f"   WARNING: {w}")
+
+        if error_level >= 2:
+            for m in report.get_result().messages:
+                print(f"   MESSAGE: {m}")

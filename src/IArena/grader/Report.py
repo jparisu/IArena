@@ -35,6 +35,7 @@ class ReportResult:
     successes: List[bool]
     messages: List[str]
     warnings: List[str]
+    errors: List[str]
 
     def total(self) -> int:
         return len(self.successes)
@@ -75,6 +76,7 @@ class Report:
         successes = []
         messages = []
         warnings = []
+        errors = []
 
         for conf in self._rules_suite.get_configuration_iterator():
 
@@ -90,23 +92,31 @@ class Report:
                             max_moves=self._common_configuration.max_moves,
                         )
 
-                score = game.play()[0]
-
-                if score >= self._common_configuration.min_score:
-                    successes.append(True)
-                    if score > self._common_configuration.max_score:
-                        warnings.append(f"Score {score} above max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
-
-                else:
+                correct_execution = True
+                try:
+                    score = game.play()[0]
+                except Exception as e:
+                    correct_execution = False
                     successes.append(False)
-                    if score < self._common_configuration.max_score:
-                        messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+                    errors.append(f"Game crashed with conf {conf} repetition {i+1}: {{{e}}}")
+
+                if correct_execution:
+                    if score >= self._common_configuration.min_score:
+                        successes.append(True)
+                        if score > self._common_configuration.max_score:
+                            warnings.append(f"Score {score} above max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+
+                    else:
+                        successes.append(False)
+                        if score < self._common_configuration.max_score:
+                            messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
 
 
         self._result = ReportResult(
                 successes=successes,
                 messages=messages,
                 warnings=warnings,
+                errors=errors,
             )
 
         return self._result
@@ -114,7 +124,7 @@ class Report:
 
     def get_result(self) -> ReportResult:
         if self._result is None:
-            self._reckon()
+            raise RuntimeError("Grader has not been run yet. Please run the grader before getting the result.")
         return self._result
 
 

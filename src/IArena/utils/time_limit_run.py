@@ -11,6 +11,5 @@ def time_limit_run(timeout_s: float, func, *args, **kwargs):
         try:
             return fut.result(timeout=timeout_s)  # re-raises func's exceptions
         except FuturesTimeout:
-            # Best effort: this won't stop code already running in C extensions.
             fut.cancel()
             raise TimeoutError(f"Timeout of {timeout_s} seconds exceeded")

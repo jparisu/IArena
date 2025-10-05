@@ -8,6 +8,7 @@ from IArena.interfaces.ScoreBoard import ScoreBoard
 from IArena.interfaces.IMovement import IMovement
 from IArena.utils.decorators import override
 from IArena.utils.time_limit_run import time_limit_run
+from IArena.utils.excepting import LimitExceededError
 from IArena.players.playable_players import PlayablePlayer
 
 class GenericGame:
@@ -48,7 +49,7 @@ class GenericGame:
             moves += 1
 
             if self.max_moves is not None and moves >= self.max_moves:
-                raise TimeoutError(f'Game has exceeded the maximum number of moves: {self.max_moves}.')
+                raise LimitExceededError(f'Game has exceeded the maximum number of moves: {self.max_moves}.')
 
         return self.calculate_score_(current_position)
 

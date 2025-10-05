@@ -98,8 +98,7 @@ class NumberGuessRules(IGameRules):
     def random_secret(
                 number_values: int,
                 rng: RandomGenerator) -> int:
-        return rng.randint(0, number_values)
-
+        return rng.randint(number_values)
 
     def __init__(
             self,
@@ -184,7 +183,6 @@ class NumberGuessPlayablePlayer(IPlayer):
             self,
             position: NumberGuessPosition) -> IMovement:
 
-        code_size = position.get_rules().code_size()
         number_values = position.get_rules().number_values()
 
         print ("=" * NumberGuessPlayablePlayer.SeparatorN)

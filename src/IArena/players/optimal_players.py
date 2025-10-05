@@ -2,10 +2,22 @@
 from typing import List
 
 from IArena.utils.decorators import override
+from IArena.games.NumberGuess import NumberGuessPosition, NumberGuessRules, NumberGuessMovement
 from IArena.games.Wordle import WordlePosition, WordleRules, WordleMovement
 from IArena.games.Mastermind import MastermindPosition, MastermindRules, MastermindMovement
 from IArena.utils.RandomGenerator import RandomGenerator
 from IArena.interfaces.IPlayer import IPlayer
+
+
+class NumberGuessOptimalPlayer_norep(IPlayer):
+
+    def play(
+            self,
+            position: NumberGuessPosition) -> NumberGuessMovement:
+
+        guesses = position.guesses()
+        return NumberGuessMovement(len(guesses))
+
 
 
 class WordleOptimalPlayer_norep(IPlayer):

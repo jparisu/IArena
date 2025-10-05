@@ -33,9 +33,11 @@ def main():
     """Main entry point of the script."""
     args = parse_args()
 
-    if not args.configuration_file.exists():
-        print("Error: Configuration file not found!", file=sys.stderr)
-        sys.exit(1)
+    # If not a URL, check the file exists
+    if not args.configuration_file.startswith("http"):
+        if not args.configuration_file.exists():
+            print("Error: Configuration file not found!", file=sys.stderr)
+            sys.exit(1)
 
     if not args.code_file.exists():
         print("Error: Code file not found!", file=sys.stderr)
