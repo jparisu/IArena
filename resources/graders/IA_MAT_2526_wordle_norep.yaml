@@ -49,7 +49,7 @@ reports:
     multi_args:
       seed: [21, 63, 105]
 
-    min_score: -20
+    min_score: -10
     value: 2
 
 
@@ -89,13 +89,13 @@ reports:
     description: "Test with very big numbers."
 
     args:
-      code_size: 8
-      number_values: 13
+      code_size: 10
+      number_values: 16
       allow_repetition: false
     multi_args:
       seed: [11, 22, 33]
 
-    min_score: -30
+    min_score: -20
     max_moves: 100
     move_timeout_s: 12
     fails_allowed: 3
@@ -107,13 +107,13 @@ reports:
     description: "Excellency test."
 
     args:
-      code_size: 15
+      code_size: 20
       number_values: 30
       allow_repetition: false
     multi_args:
       seed: [1, 2]
 
-    min_score: -100
+    min_score: -30
     max_moves: 200
     repetitions: 1
     move_timeout_s: 15
