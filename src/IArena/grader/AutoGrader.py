@@ -15,8 +15,8 @@ TAG_YAML_CONF_GAME = "game"
 TAG_YAML_CONF_DEFAULT = "default"
 TAG_YAML_CONF_REPORTS = "reports"
 
-TAG_PLAYER_VAR = "students_player"
-TAG_AUTHOR = "@AUTHOR:"
+TAG_PLAYER_VAR = "PLAYER"
+TAG_AUTHOR_VAR = "AUTHORS"
 
 
 
@@ -27,7 +27,7 @@ def read_yaml(filename: str) -> Dict:
     If the filename is an url, it will be downloaded first.
     """
 
-    if filename.startswith('http://') or filename.startswith('https://'):
+    if filename.startswith('http'):
         response = requests.get(filename)
         response.raise_for_status()
         with tempfile.NamedTemporaryFile(delete=False, suffix='.yaml') as tmp_file:
@@ -61,14 +61,16 @@ def read_yaml(filename: str) -> Dict:
 PLAYER_CODE_MARKERS = [
     "CODE SOLUTION",
     "STUDENT CODE",
-    "@AUTHOR",
+    "AUTHORS",
+    "PLAYER",
 ]
 
 
-def get_player_from_file(
+def get_var_from_file(
             filename: str,
-            player_var_name: str,
-            markers: List[str] = PLAYER_CODE_MARKERS
+            var_name: str,
+            markers: List[str] = PLAYER_CODE_MARKERS,
+            types_allowed: List[type] = None
         ) -> IPlayer:
     """
     Given a local python file name, reads and execute the code.
@@ -95,23 +97,18 @@ def get_player_from_file(
     # Execute the code as a module
     module = execute_str_as_module(code_text)
 
-    # Get the player
-    if not hasattr(module, player_var_name):
-        raise ValueError(f"Variable {player_var_name} not found in file {filename}.")
-    player = getattr(module, player_var_name)
-    if not isinstance(player, IPlayer):
-        raise ValueError(f"Variable {player_var_name} is not an instance of IPlayer in file {filename}.")
-    return player
+    # Get the var
+    if not hasattr(module, var_name):
+        raise ValueError(f"Variable {var_name} not found in file {filename}.")
+    var = getattr(module, var_name)
 
+    # Check types
+    if types_allowed is not None:
+        if not any(isinstance(var, t) for t in types_allowed):
+            allowed_types_names = [t.__name__ for t in types_allowed]
+            raise ValueError(f"Variable {var_name} in file {filename} is not of allowed types: {allowed_types_names}. Found type: {type(var).__name__}")
 
-
-def read_authors_file(filename: str) -> List[str]:
-    """
-    Given a text file, look for the line containing the author tag and return the author(s).
-    The author tag is defined as TAG_AUTHOR = "@AUTHOR", and the name is after a space after the occurrence of the tag.
-    """
-
-    return extract_marker_values(filename, TAG_AUTHOR)
+    return var
 
 
 
@@ -259,7 +256,7 @@ class IndividualAutoGrader:
         grade = self.grader.calculate_final_grade()
 
         if debug:
-            print(f"Final grade: {grade * 100:.2f}%")
+            print(f"FINAL GRADE: {grade * 100:.2f}%")
             print()
 
         return grade
@@ -288,9 +285,8 @@ class IndividualCompleteAutoGrader(IndividualAutoGrader):
         ##############################
         # Read students code
 
-        authors = read_authors_file(player_filename)
-        student_player = get_player_from_file(player_filename, TAG_PLAYER_VAR)
-
+        authors, = get_var_from_file(player_filename, TAG_AUTHOR_VAR, types_allowed=[list, str])
+        student_player = get_var_from_file(player_filename, TAG_PLAYER_VAR, types_allowed=[IPlayer])
 
         ##############################
         # Reuse the parent to read configuration and prepare the grader

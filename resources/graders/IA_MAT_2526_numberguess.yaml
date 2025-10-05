@@ -1,10 +1,10 @@
-game: Wordle
+game: NumberGuess
 
 move_timeout_s: 2
 total_timeout_s: 10
 max_score: 0
 repetitions: 3
-fails_allowed: 1
+fails_allowed: 2
 max_moves: 100
 
 reports:
@@ -41,4 +41,4 @@ reports:
       seed: [42, 84, 126, 168, 210]
 
     min_score: -80
-  repetitions: 2
+    repetitions: 2

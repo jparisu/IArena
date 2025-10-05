@@ -66,7 +66,13 @@ class Grader:
                 rules_suite=report_configuration.rules_suite,
             )
 
-            report.run()
+            if debug:
+                print(f"  RUNNING: ", end="", flush=True)
+
+            report.run(debug)
+
+            if debug:
+                print()
 
             self._reports.append(report)
 
@@ -97,7 +103,7 @@ class Grader:
         return final_grade
 
 
-    def print_report_result(self, report_index: int):
+    def print_report_result(self, report_index: int, error_level: int = 1):
         if self._reports is None:
             raise RuntimeError("Grader has not been run yet. Please run the grader before printing the report result.")
 
@@ -110,13 +116,20 @@ class Grader:
         total_value = self.total_value()
         this_report_value = report_configuration.value
 
-        print(f"RESULT: [{report_configuration.name}] ({this_report_value}/{total_value}) -> ", end="")
+        g = report.calculate_grade()
+        print (f"  TEST VALUE: {this_report_value}/{total_value}  ->  {(this_report_value/total_value)*100:.2f}%")
+        print (f"  SCORE: {g*100}%  ->  {g*this_report_value*100/total_value:.2f}%")
 
-        for s in report.get_result().successes:
-            # Use small green check and small red cross
-            if s:
-                print(green_tick(), end="")  # green small check
-            else:
-                print(red_cross(), end="")  # red small cross
 
-        print (f"   SCORE: {report.calculate_grade()*100}%")
+        if error_level >= 0:
+            print (f"  RUN DETAILS:")
+            for e in report.get_result().errors:
+                print(f"   ERROR: {e}")
+
+        if error_level >= 1:
+            for w in report.get_result().warnings:
+                print(f"   WARNING: {w}")
+
+        if error_level >= 2:
+            for m in report.get_result().messages:
+                print(f"   MESSAGE: {m}")

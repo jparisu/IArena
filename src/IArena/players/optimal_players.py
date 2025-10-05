@@ -1,14 +1,159 @@
 
 from typing import List
 
-from IArena.utils.decorators import override
+from IArena.games.NumberGuess import NumberGuessPosition, NumberGuessRules, NumberGuessMovement
 from IArena.games.Wordle import WordlePosition, WordleRules, WordleMovement
 from IArena.games.Mastermind import MastermindPosition, MastermindRules, MastermindMovement
-from IArena.utils.RandomGenerator import RandomGenerator
 from IArena.interfaces.IPlayer import IPlayer
+from IArena.utils.decorators import override
+from IArena.utils.RandomGenerator import RandomGenerator
+from IArena.utils.containing import SortedList
 
 
-class WordleOptimalPlayer_norep(IPlayer):
+class NumberGuess_OptimalPlayer(IPlayer):
+
+    def play(
+            self,
+            position: NumberGuessPosition) -> NumberGuessMovement:
+
+        guesses = position.guesses()
+        return NumberGuessMovement(len(guesses))
+
+
+
+class Wordle_OptimalPlayer_norep(IPlayer):
+
+    def __init__(
+            self,
+            name: str = None):
+
+        super().__init__(name=name)
+
+        self.code_size = None
+        self.number_values = None
+        self.possibilities = None
+
+
+    def starting_game(
+            self,
+            rules: WordleRules,
+            player_index: int):
+
+        self.code_size = rules.code_size()
+        self.number_values = rules.number_values()
+
+        self.possibilities = [
+            SortedList(range(self.number_values)) for _ in range(self.code_size)
+        ]
+
+
+    def play(
+            self,
+            position: WordlePosition) -> WordleMovement:
+
+        last_guess = position.last_guess()
+        last_correct = position.last_feedback()
+
+        # First move
+        if last_guess is None:
+            return self._starting_all_numbers()
+
+        # Update possibilities
+        for i, c in enumerate(last_correct):
+            guess_i = last_guess.guess[i]
+            if c == WordlePosition.WordleFeedback.Correct:
+                self.possibilities[i] = SortedList([guess_i])
+                for j in range(self.code_size):
+                    if j != i:
+                        self.possibilities[j].remove_if_exists(guess_i)
+            elif c == WordlePosition.WordleFeedback.Wrong:
+                for j in range(self.code_size):
+                    if guess_i in self.possibilities[j]:
+                        self.possibilities[j].remove_if_exists(guess_i)
+            else:
+                if guess_i in self.possibilities[i]:
+                    self.possibilities[i].remove_if_exists(guess_i)
+
+        # If in first rounds, try to play all numbers
+        l = len(position.guesses())
+        if l < (self.number_values // self.code_size + 1):
+            return self._starting_all_numbers(l)
+
+        # If a value is unique in a position, it is correct
+        for i in range(self.code_size):
+            if len(self.possibilities[i]) == 1:
+                val = self.possibilities[i][0]
+                for j in range(self.code_size):
+                    if j != i:
+                        self.possibilities[j].remove_if_exists(val)
+
+        # If one value only appears in one position, it is correct
+        all_possibilities = []
+        for c in range(self.number_values):
+            count = 0
+            index = -1
+            for i in range(self.code_size):
+                if c in self.possibilities[i]:
+                    count += 1
+                    index = i
+            if count == 1:
+                self.possibilities[index] = SortedList([c])
+
+
+        # Else, play arbitrary valid guess
+        return self._arbitrary_guess()
+
+
+    def _starting_all_numbers(self, n: int = 0) -> WordleMovement:
+        code_size = self.code_size
+        number_values = self.number_values
+        guess = []
+        for i in range(code_size):
+            guess.append((i + n * code_size) % number_values)
+        return WordleMovement(guess)
+
+
+    def _arbitrary_guess(self) -> WordleMovement:
+
+        code_size = self.code_size
+        number_values = self.number_values
+        possibilities = self.possibilities
+
+        # Calculate number of possibilities for space
+        n_possibilities = [len(p) for p in possibilities]
+
+        # Move from the most constrained space
+        indexes = [0] * code_size
+
+        numbers_selected = set()
+        guess = []
+
+        index = 0
+
+        while index < code_size:
+
+            p = possibilities[index][indexes[index]]
+
+            if p not in numbers_selected:
+                numbers_selected.add(p)
+                guess.append(p)
+                index += 1
+
+            else:
+                indexes[index] += 1
+                while indexes[index] >= n_possibilities[index]:
+                    indexes[index] = 0
+                    index -= 1
+
+                    x = guess.pop()
+                    numbers_selected.remove(x)
+
+                    indexes[index] += 1
+
+        return WordleMovement(guess)
+
+
+class Wordle_NonOptimalPlayer_norep(IPlayer):
 
     def __init__(
             self,
@@ -66,13 +211,6 @@ class WordleOptimalPlayer_norep(IPlayer):
                 if guess_i in self.possibilities[i]:
                     self.possibilities[i].remove(guess_i)
 
-        # Check if any number is only possible in one space
-        for color in range(self.number_values):
-            possible_spaces = [i for i in range(self.code_size) if color in self.possibilities[i]]
-            if len(possible_spaces) == 1:
-                space = possible_spaces[0]
-                self.possibilities[space] = [color]
-
         return self._arbitrary_guess()
 
 
@@ -104,7 +242,7 @@ class WordleOptimalPlayer_norep(IPlayer):
         return len(guess) == len(set(guess))
 
 
-class WordleOptimalPlayer_rep():
+class Wordle_OptimalPlayer_rep():
 
     @override
     def play(
