@@ -2,7 +2,7 @@ game: Wordle
 
 move_timeout_s: 5
 total_timeout_s: 100
-max_score: 0
+max_score: -1
 repetitions: 5
 fails_allowed: 1
 max_moves: 100
