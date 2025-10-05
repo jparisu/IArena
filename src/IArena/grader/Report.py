@@ -115,9 +115,9 @@ class Report:
 
                 if debug:
                     if successes[-1]:
-                        print(green_tick(), end="")  # green small check
+                        print(green_tick(), end="", flush=True)  # green small check
                     else:
-                        print(red_cross(), end="")  # red small cross
+                        print(red_cross(), end="", flush=True)  # red small cross
 
 
         self._result = ReportResult(

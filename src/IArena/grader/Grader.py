@@ -67,7 +67,7 @@ class Grader:
             )
 
             if debug:
-                print(f"  RUNNING: ", end="")
+                print(f"  RUNNING: ", end="", flush=True)
 
             report.run(debug)
 
