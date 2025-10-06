@@ -1,54 +1,36 @@
-import signal
-import threading
-from contextlib import contextmanager
 from typing import Any, Callable, Dict, Optional, Tuple
 
-class TimeLimitExpired(TimeoutError):
-    pass
-
-@contextmanager
-def _alarm_after(timeout_s: Optional[float]):
-    if timeout_s is None:
-        yield
-        return
-    if threading.current_thread() is not threading.main_thread():
-        raise RuntimeError("time_limit_run requires the main thread when using SIGALRM.")
-    if not hasattr(signal, "setitimer"):
-        raise RuntimeError("This platform doesn't support setitimer/SIGALRM (Windows).")
-
-    old_handler = signal.getsignal(signal.SIGALRM)
-    old_timer = signal.getitimer(signal.ITIMER_REAL)
-
-    def _raise_timeout(signum, frame):
-        raise TimeLimitExpired(f"Call timed out after {timeout_s} seconds.")
-
-    try:
-        signal.signal(signal.SIGALRM, _raise_timeout)
-        signal.setitimer(signal.ITIMER_REAL, timeout_s, 0.0)
-        yield
-    finally:
-        # cancel ours
-        signal.setitimer(signal.ITIMER_REAL, 0.0, 0.0)
-        signal.signal(signal.SIGALRM, old_handler)
-        # restore previous timer if it existed
-        if old_timer[0] > 0 or old_timer[1] > 0:
-            signal.setitimer(signal.ITIMER_REAL, *old_timer)
+import threading
 
 def time_limit_run(
-    func: Callable[..., Any],
-    args: Tuple[Any, ...] = (),
-    kwargs: Optional[Dict[str, Any]] = None,
-    *,
-    timeout_s: Optional[float] = None,
-    return_on_timeout: Any = None,
-    raise_on_timeout: bool = True,
-) -> Any:
-    if kwargs is None:
-        kwargs = {}
-    try:
-        with _alarm_after(timeout_s):
-            return func(*args, **kwargs)
-    except TimeLimitExpired:
-        if raise_on_timeout:
-            raise TimeoutError(f"Call timed out after {timeout_s} seconds.")
-        return return_on_timeout
+        func: callable,
+        timeout_s: float,
+        args: Tuple[Any, ...] = (),
+        kwargs: Optional[Dict[str, Any]] = None):
+    """
+    Run a function with a time limit.
+    :param time_s: Time limit in seconds.
+    :param f: Function to run.
+    :param args: Arguments of the function.
+    :param kwargs: Keyword arguments of the function.
+    :return: The result of the function.
+    """
+    # Function to return the result as a parameter
+    def func_wrapper(result):
+        result.append(func(*args, **kwargs))
+
+    # List for the result of the function
+    result = []
+
+    # Thread with timeout
+    thread = threading.Thread(target=func_wrapper, args=(result,))
+    thread.start()
+    thread.join(timeout_s)
+
+    if thread.is_alive():
+        raise TimeoutError(f'Timeout of {timeout_s} seconds exceeded')
+    else:
+        if result:
+            return result[0]
+        else:
+            return None
