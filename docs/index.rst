@@ -41,6 +41,7 @@
    /src/games/docs/highestcard
    /src/games/docs/connect4
    /src/games/docs/compassblindwalk
+   /src/games/docs/letterwordle
 
 
 .. toctree::
