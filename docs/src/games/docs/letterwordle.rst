@@ -1,8 +1,8 @@
 .. _letterwordle_docs:
 
-######
+############
 LetterWordle
-######
+############
 
 .. figure:: /resources/images/wordle.png
     :scale: 30%

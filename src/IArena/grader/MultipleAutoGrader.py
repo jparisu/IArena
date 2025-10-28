@@ -1,12 +1,14 @@
 from typing import List, Dict
 import copy
+from __future__ import annotations
 
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.grader.Grader import ReportConfiguration, Grader
 from IArena.grader.Report import ReportCommonConfiguration
 from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite, get_rules_generator_from_name
-from IArena.utils.filing import read_yaml, get_var_from_file, read_file_or_url
 from IArena.grader.AutoGrader import IndividualCompleteAutoGrader
+from IArena.utils.filing import read_yaml, get_vars_from_file, read_file_or_url, download_tmp_file
+from IArena.utils.ziping import unzip_get_files
 
 
 class MultipleAutoGrader:
@@ -23,6 +25,10 @@ class MultipleAutoGrader:
 
         self.autograders = {}  # player_filename -> IndividualCompleteAutoGrader
         self.results = {}  # player_filename -> grade (float)
+
+        # If configuration is URL, download it once
+        if configuration_filename.startswith('http'):
+            configuration_filename = download_tmp_file(configuration_filename)
 
         for player_filename in player_filenames:
             autograder = IndividualCompleteAutoGrader(
@@ -119,3 +125,37 @@ class MultipleAutoGrader:
             csv_lines.append(",".join(row))
         csv_content = "\n".join(csv_lines)
         return csv_content
+
+    def write_csv(
+            self,
+            csv_filename: str
+    ):
+        """
+        Write the results to a CSV file.
+        """
+        csv_content = self.prepare_csv()
+        with open(csv_filename, 'w') as file:
+            file.write(csv_content)
+
+
+    def from_zip(
+            configuration_filename: str,
+            zip_filename
+    ) -> MultipleAutoGrader:
+        """
+        Create a MultipleAutoGrader from a zip file.
+        """
+        # Unzip the file
+        extracted_files = unzip_get_files(zip_filename)
+
+        # Find player files (assuming .py and .ipynb files are player files)
+        player_filenames = []
+        for file in extracted_files:
+            if file.endswith('.py') or file.endswith('.ipynb'):
+                player_filenames.append(file)
+
+        # Create the MultipleAutoGrader
+        return MultipleAutoGrader(
+            configuration_filename=configuration_filename,
+            player_filenames=player_filenames
+        )

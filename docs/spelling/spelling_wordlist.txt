@@ -11,3 +11,4 @@ conda
 NQueens
 Jupyter
 wordle
+th

@@ -80,3 +80,21 @@ def get_vars_from_file(
         vars_dict[var_name] = var
 
     return vars_dict
+
+
+def download_tmp_file(url: str) -> str:
+    """
+    Download a file from a URL and save it to a temporary file.
+
+    Returns the path to the temporary file.
+    At the end of the process, the file will be deleted.
+    """
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    tmp_file = tempfile.NamedTemporaryFile(delete=False)
+    with open(tmp_file.name, 'wb') as file:
+        file.write(response.content)
+
+    return tmp_file.name
