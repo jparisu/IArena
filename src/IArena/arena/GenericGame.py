@@ -127,7 +127,7 @@ class ClockGame(GenericGame):
             try:
                 time_limit_run(
                     func=player.starting_game,
-                    timeout_s=self.total_timeout_s,
+                    timeout_s=self.move_timeout_s,
                     args=(self.rules, i))
             except TimeoutError as e:
                 raise TimeoutError(f'Player <{self.get_player_name(i)}> has exceeded the total time limit of {self.total_timeout_s} seconds during game initialization -> {e}')
