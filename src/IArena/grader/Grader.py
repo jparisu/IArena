@@ -146,8 +146,8 @@ class Grader:
         this_report_value = report_configuration.value
 
         g = report.calculate_grade()
-        print (f"  TEST VALUE: {this_report_value}/{total_value}  ->  {(this_report_value/total_value)*100:.2f}%")
-        print (f"  SCORE: {g*100}%  ->  {g*this_report_value*100/total_value:.2f}%")
+        print (f"  TEST VALUE: {(this_report_value/total_value)*100:.2f}% of total")
+        print (f"  SCORE: {g*100}%  ->  + {g*this_report_value*100/total_value:.2f}% to total score")
 
 
         if error_level >= 0:
