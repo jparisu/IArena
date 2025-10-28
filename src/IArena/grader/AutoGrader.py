@@ -1,15 +1,11 @@
 from typing import List, Dict
-import yaml
-import os
-import tempfile
-import requests
 import copy
 
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.grader.Grader import ReportConfiguration, Grader
 from IArena.grader.Report import ReportCommonConfiguration
-from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite
-from IArena.utils.importing import import_class_from_module, get_cell_from_ipynb, execute_str_as_module, extract_marker_values
+from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite, get_rules_generator_from_name
+from IArena.utils.filing import read_yaml, get_vars_from_file, read_file_or_url
 
 TAG_YAML_CONF_GAME = "game"
 TAG_YAML_CONF_DEFAULT = "default"
@@ -18,119 +14,12 @@ TAG_YAML_CONF_REPORTS = "reports"
 TAG_PLAYER_VAR = "PLAYER"
 TAG_AUTHOR_VAR = "AUTHORS"
 
-
-
-def read_yaml(filename: str) -> Dict:
-    """
-    Read a YAML file and return its contents as a dictionary.
-
-    If the filename is an url, it will be downloaded first.
-    """
-
-    if filename.startswith('http'):
-        response = requests.get(filename)
-        response.raise_for_status()
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.yaml') as tmp_file:
-            tmp_file.write(response.content)
-            tmp_filename = tmp_file.name
-        filename_to_read = tmp_filename
-    else:
-        filename_to_read = filename
-
-    if not os.path.exists(filename_to_read):
-        raise FileNotFoundError(f"File {filename_to_read} does not exist.")
-
-    with open(filename_to_read, 'r') as file:
-        try:
-            data = yaml.safe_load(file)
-            if isinstance(data, dict):
-                return data
-            else:
-                raise ValueError(f"YAML content is not a dictionary in file {filename_to_read}.")
-        except yaml.YAMLError as e:
-            if filename.startswith('http://') or filename.startswith('https://'):
-                os.remove(tmp_filename)
-            raise ValueError(f"Error parsing YAML file {filename_to_read}: {e}")
-
-    # If not error occurs, remove the temporary file if it was created
-    if filename.startswith('http://') or filename.startswith('https://'):
-                os.remove(tmp_filename)
-
-
-
 PLAYER_CODE_MARKERS = [
     "CODE SOLUTION",
     "STUDENT CODE",
     "AUTHORS",
     "PLAYER",
 ]
-
-
-def get_var_from_file(
-            filename: str,
-            var_name: str,
-            markers: List[str] = PLAYER_CODE_MARKERS,
-            types_allowed: List[type] = None
-        ) -> IPlayer:
-    """
-    Given a local python file name, reads and execute the code.
-
-    If it is a .py file, it will be executed directly.
-    If it is a .ipynb file, find the code cell that contains any of the markers, and execute its content.
-    """
-
-    if not os.path.exists(filename):
-        raise FileNotFoundError(f"File {filename} does not exist.")
-
-    code_text = ""
-
-    if filename.endswith('.py'):
-        with open(filename, 'r') as file:
-            code_text = file.read()
-
-    elif filename.endswith('.ipynb'):
-        code_text = get_cell_from_ipynb(filename, markers)
-
-    else:
-        raise ValueError(f"Unsupported file extension for file {filename}. Only .py and .ipynb are supported.")
-
-    # Execute the code as a module
-    module = execute_str_as_module(code_text)
-
-    # Get the var
-    if not hasattr(module, var_name):
-        raise ValueError(f"Variable {var_name} not found in file {filename}.")
-    var = getattr(module, var_name)
-
-    # Check types
-    if types_allowed is not None:
-        if not any(isinstance(var, t) for t in types_allowed):
-            allowed_types_names = [t.__name__ for t in types_allowed]
-            raise ValueError(f"Variable {var_name} in file {filename} is not of allowed types: {allowed_types_names}. Found type: {type(var).__name__}")
-
-    return var
-
-
-
-
-def get_rules_generator_from_name(name: str) -> IRulesGenerator:
-    """
-    Given the name of a game, returns the generator corresponding class.
-
-    The module should be located in the IArena.games package.
-    The name of the package should be equal to the class name, and the class should be in CamelCase as:
-        <name>RulesGenerator
-    """
-
-    try:
-        rules_generator_class = import_class_from_module(f"IArena.games.{name}", f"{name}RulesGenerator")
-        if not issubclass(rules_generator_class, IRulesGenerator):
-            raise ValueError(f"Class {name}RulesGenerator is not a subclass of IRulesGenerator.")
-        return rules_generator_class()
-
-    except (ModuleNotFoundError, AttributeError) as e:
-        raise ValueError(f"Could not find rules generator for game {name}: {e}")
-
 
 
 def read_reports(default_config: ReportCommonConfiguration, test_config: Dict) -> List[ReportConfiguration]:
@@ -186,10 +75,9 @@ def read_reports(default_config: ReportCommonConfiguration, test_config: Dict) -
 
     return reports
 
-
-class IndividualAutoGrader:
+class AutoGrader:
     """
-    Class to read configurations file and player and generate a Grader for a student's player code.
+    Class to generate a Grader for a student's player code.
 
     It reads a YAML configuration file.
     It prepares the game rules generator, the player instance, and the tests to be run.
@@ -199,14 +87,14 @@ class IndividualAutoGrader:
 
     def __init__(
             self,
-            configuration_filename: str,
+            yaml_configuration: Dict,
             player: IPlayer,
             authors: List[str] = []):
 
         ##############################
         # Read configuration from YAML
 
-        self.yaml_configuration = read_yaml(configuration_filename)
+        self.yaml_configuration = yaml_configuration
 
 
         ##############################
@@ -266,6 +154,31 @@ class IndividualAutoGrader:
         return self.authors
 
 
+class IndividualAutoGrader(AutoGrader):
+    """
+    Class to read configurations file and player and generate a Grader for a student's player code.
+
+    It reads a YAML configuration file.
+    It prepares the game rules generator, the player instance, and the tests to be run.
+    It runs the tests and collects the results.
+    """
+
+
+    def __init__(
+            self,
+            configuration_filename: str,
+            player: IPlayer,
+            authors: List[str] = []):
+
+        ##############################
+        # Read configuration from YAML
+        yaml_configuration = read_yaml(read_file_or_url(configuration_filename))
+
+        ##############################
+        # Reuse the parent to read configuration and prepare the grader
+        super().__init__(yaml_configuration, player, authors)
+
+
 
 class IndividualCompleteAutoGrader(IndividualAutoGrader):
     """
@@ -285,8 +198,14 @@ class IndividualCompleteAutoGrader(IndividualAutoGrader):
         ##############################
         # Read students code
 
-        authors, = get_var_from_file(player_filename, TAG_AUTHOR_VAR, types_allowed=[list, str])
-        student_player = get_var_from_file(player_filename, TAG_PLAYER_VAR, types_allowed=[IPlayer])
+        vars = get_vars_from_file(
+            filename=player_filename,
+            var_names=[TAG_AUTHOR_VAR, TAG_PLAYER_VAR],
+            markers=PLAYER_CODE_MARKERS,
+            types_allowed={TAG_AUTHOR_VAR: [list, str], TAG_PLAYER_VAR: [IPlayer]},
+        )
+        student_player = vars[TAG_PLAYER_VAR]
+        authors = vars[TAG_AUTHOR_VAR]
 
         ##############################
         # Reuse the parent to read configuration and prepare the grader

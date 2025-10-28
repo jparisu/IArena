@@ -7,7 +7,7 @@ class SortedList:
     """
     Efficient sorted list implementation.
     Maintains a list of elements in sorted order.
-    Supports fast insertion, deletion, and search operations.
+    Supports insertion, deletion, and search operations.
     """
 
     def __init__(self, iterable=None):

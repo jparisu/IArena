@@ -42,6 +42,35 @@ class Grader:
         self._reports : List[Report] = None
 
 
+    def get_report_configurations(self) -> Iterator[ReportConfiguration]:
+        """
+        Get an iterator over the report configurations.
+        """
+        return iter(self._report_configurations)
+
+
+    def get_reports_results(self) -> Iterator[ReportResult]:
+        """
+        Get an iterator over the report results.
+        """
+        if self._reports is None:
+            raise RuntimeError("Grader has not been run yet. Please run the grader before getting the reports results.")
+
+        for report in self._reports:
+            yield report.get_result()
+
+
+    def get_report_result_values(self) -> Iterator[float]:
+        """
+        Get an iterator over the report result values.
+        """
+        if self._reports is None:
+            raise RuntimeError("Grader has not been run yet. Please run the grader before getting the reports result values.")
+
+        for report in self._reports:
+            yield report.calculate_grade()
+
+
     def total_value(self) -> float:
         """
         Calculate the total value of all reports.

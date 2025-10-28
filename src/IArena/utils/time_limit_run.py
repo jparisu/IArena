@@ -1,36 +1,63 @@
 from typing import Any, Callable, Dict, Optional, Tuple
-
 import threading
+import queue
+import sys
+
+class TimeLimitExpired(TimeoutError):
+    pass
 
 def time_limit_run(
-        func: callable,
-        timeout_s: float,
-        args: Tuple[Any, ...] = (),
-        kwargs: Optional[Dict[str, Any]] = None):
+    func: Callable[..., Any],
+    timeout_s: float,
+    args: Tuple[Any, ...] = (),
+    kwargs: Optional[Dict[str, Any]] = None,
+) -> Any:
     """
-    Run a function with a time limit.
-    :param time_s: Time limit in seconds.
-    :param f: Function to run.
-    :param args: Arguments of the function.
-    :param kwargs: Keyword arguments of the function.
-    :return: The result of the function.
+    Run `func(*args, **kwargs)` in a thread and wait up to `timeout_s` seconds.
+
+    - Returns the function's result on success.
+    - Propagates the function's exception (with original traceback).
+    - Raises TimeLimitExpired on timeout (the worker thread may keep running).
     """
-    # Function to return the result as a parameter
-    def func_wrapper(result):
-        result.append(func(*args, **kwargs))
+    if kwargs is None:
+        kwargs = {}
 
-    # List for the result of the function
-    result = []
+    q: "queue.Queue[tuple[str, Any]]" = queue.Queue(maxsize=1)
 
-    # Thread with timeout
-    thread = threading.Thread(target=func_wrapper, args=(result,))
-    thread.start()
-    thread.join(timeout_s)
+    def worker():
+        """
+        Worker function to execute the target function and store its result or exception.
 
-    if thread.is_alive():
-        raise TimeoutError(f'Timeout of {timeout_s} seconds exceeded')
+        Results are put into the queue as a tuple:
+        - (True, result) on success
+        - (False, (exception, traceback)) on failure
+        """
+        try:
+            rv = func(*args, **kwargs)
+            q.put((True, rv))
+        except BaseException as e:
+            # Preserve original traceback across the thread boundary
+            _, exc, tb = sys.exc_info()
+            q.put((False, (exc, tb)))
+
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+    t.join(timeout_s)
+
+    if t.is_alive():
+        # Thread continues in background (by design); we only time out.
+        raise TimeLimitExpired(f"Timeout of {timeout_s} seconds exceeded")
+
+    # Thread finished; fetch result or exception
+    try:
+        ok, payload = q.get_nowait()
+    except queue.Empty:
+        # Extremely unlikely, but treat as abnormal termination
+        raise RuntimeError("Worker finished without producing a result.")
+
+    if ok:
+        return payload
     else:
-        if result:
-            return result[0]
-        else:
-            return None
+        exc, tb = payload
+        # Re-raise original exception with its traceback
+        raise exc.with_traceback(tb)
