@@ -1,6 +1,7 @@
+
+from __future__ import annotations
 from typing import List, Dict
 import copy
-from __future__ import annotations
 
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.grader.Grader import ReportConfiguration, Grader
