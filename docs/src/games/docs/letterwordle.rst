@@ -54,10 +54,10 @@ A movement has a *guess* in the format of ``List[str]``.
 It must have ``N`` letters in the range ``['a',Mth letter)``.
 
 - ``guess``
-  - ``List[str]``
-  - ``len == N``
-  - ``ord('a') <= l[i] < ord('a') + M``
-  - Guess of the secret code
+    - ``List[str]``
+    - ``len == N``
+    - ``ord('a') <= l[i] < ord('a') + M``
+    - Guess of the secret code
 
 
 .. code-block:: python
@@ -162,7 +162,7 @@ Arguments for constructor are:
     # Secret code with N=4 and M=6
     rules = LetterWordleRules(
         code_size=4,
-        letters=6,
+        letters=6,   # Possible letters = ['a', 'b', 'c', 'd', 'e', 'f']
         secret=['a', 'b', 'c', 'd'],
         allow_repetition=False
     )

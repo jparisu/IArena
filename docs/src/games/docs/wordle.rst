@@ -55,10 +55,10 @@ A movement has a *guess* in the format of ``List[int]``.
 It must have ``N`` integers in the range ``[0,M)``.
 
 - ``guess``
-  - ``List[int]``
-  - ``len == N``
-  - ``0 <= l[i] < M``
-  - Guess of the secret code
+    - ``List[int]``
+    - ``len == N``
+    - ``0 <= l[i] < M``
+    - Guess of the secret code
 
 
 .. code-block:: python
