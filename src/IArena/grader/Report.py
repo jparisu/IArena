@@ -110,8 +110,8 @@ class Report:
 
                     else:
                         successes.append(False)
-                        if score < self._common_configuration.max_score:
-                            messages.append(f"Score {score} below max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+                        if score < self._common_configuration.min_score:
+                            messages.append(f"Score {score} below min {self._common_configuration.min_score} with conf {conf} repetition {i+1}")
 
                 if debug:
                     if successes[-1]:

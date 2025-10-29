@@ -134,7 +134,7 @@ class AutoGrader:
 
 
 
-    def grade(self, debug: bool = True) -> float:
+    def grade(self, debug: int = 1) -> float:
 
         if debug:
             print(f"Grading player by authors: {self.authors}")

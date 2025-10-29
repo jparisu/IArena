@@ -464,6 +464,13 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
             self,
             position: MastermindPosition) -> MastermindMovement:
 
+        # print(f"DEBUG: Strategy {self.status}")
+        # print(f"  NxV: {self.number_per_value}")
+        # print(f"  Fix: {self.fix_positions}")
+        # print(f"  Try: {self.positions_to_try}")
+        # print(f"  Pos:\n{position}")
+        # print()
+
         # Starting
         if self.status == -1:
             self.status = 0
@@ -477,8 +484,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
         elif self.status == 1:
             return self._strategy1(position)
 
-        raise ShouldNotHappenError("Mastermind_OptimalPlayer_rep: Invalid status")
-
+        raise ShouldNotHappenError(f"Mastermind_OptimalPlayer_rep: Invalid status {self.status}.\n Position: {position}")
 
     ##########################
     # STRATEGY 0
@@ -498,9 +504,18 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
         """Check if we have found the number of occurrences of all values"""
         s = 0
         for i in range(self.number_values):
-            if self.number_per_value[i] == -1:
-                s += 1
+            if self.number_per_value[i] != -1:
+                s += self.number_per_value[i]
         return s == self.code_size
+
+    def _strategy_0_only_one_remaining(self) -> bool:
+        """We can deduce the number of occurrences of the last remaining value"""
+        s = 0
+        for i in range(self.number_values):
+            if self.number_per_value[i] != -1:
+                s += self.number_per_value[i]
+        self.number_per_value[-1] = self.code_size - s
+        return self._strategy_0_pass_to_1()
 
     def _strategy_0_update(self, position: MastermindPosition):
         last_guess = position.last_guess()
@@ -511,19 +526,27 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
 
     def _strategy_0_move(self, position: MastermindPosition) -> MastermindMovement:
         val = self._strategy_0_next_non_tried()
-        return self._all_n_guess(self.code_size, val)
+        if val == self.number_values - 1:
+            return self._strategy_0_only_one_remaining()
+        return self._strategy_0_all_n_guess(val)
 
     def _strategy_0_first_move(self) -> MastermindMovement:
-        return self._all_n_guess(self.code_size, 0)
+        return self._strategy_0_all_n_guess(0)
 
     def _strategy_0(self, position: MastermindPosition) -> MastermindMovement:
         self._strategy_0_update(position)
         if self._strategy_0_should_stop():
-            self.status = 1
-            return self._strategy1_first_move(position)
+            return self._strategy_0_pass_to_1()
         else:
             return self._strategy_0_move(position)
 
+    def _strategy_0_all_n_guess(self, n: int) -> MastermindMovement:
+        guess = [n] * self.code_size
+        return MastermindMovement(guess)
+
+    def _strategy_0_pass_to_1(self) -> MastermindMovement:
+        self.status = 1
+        return self._strategy1_first_move()
 
     ##########################
     # STRATEGY 1
@@ -536,14 +559,13 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
         3. correct < Ca -> position of A is in X, position of B is not in X
     """
 
-    def _strategy1_first_move(self, position: MastermindPosition) -> MastermindMovement:
+    def _strategy1_first_move(self) -> MastermindMovement:
         """
         Starting strategy 1: set possibilities and check if only one color.
         Then, do first move.
         """
         if self._strategy1_only_one_color():
-            self.status = 2
-            return self._strategy2_first_move()
+            return self._strategy_1_pass_to_2()
         self._strategy1_set_possibilities()
 
         return self._strategy1_move()
@@ -608,7 +630,6 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
             self._strategy1_set_fixed(a, x)
             return self._strategy1_select_colors()
 
-
         return a, b, x
 
 
@@ -617,8 +638,7 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
 
         # If no more movements
         if x == -1:
-            self.status = 2
-            return self._strategy2_first_move()
+            return self._strategy_1_pass_to_2()
 
         guess = [a] * self.code_size
         guess[x] = b
@@ -633,18 +653,29 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
         # Get a, b, x
         a, b, x = self._strategy1_select_colors()
 
+        # print(f"DEBUG: colors selected: {a}, {b}, {x}")
+
         # Update fixed positions if required
         # Case 1: position x is b
         if corrects == self.number_per_value[a] + 1:
-            self.fix_positions[x] = b
-            self.positions_to_try
-            ...
+            self._strategy1_set_fixed(b, x)
 
+        elif corrects == self.number_per_value[a] and misplaced == 1:
+            # Case 2: position x is not b
+            self._strategy1_remove_possibility(b, x)
+            self._strategy1_remove_possibility(a, x)
+
+        else:
+            # Case 3: position x is a
+            self._strategy1_set_fixed(a, x)
 
 
     def _strategy1_set_fixed(self, color: int, position: int):
+
+        # print(f"DEBUG: Setting fixed color {color} in position {position}")
+
         if self.fix_positions[position] != -1:
-            raise ShouldNotHappenError("Mastermind_OptimalPlayer_rep: Trying to fix already fixed position")
+            raise ShouldNotHappenError(f"Mastermind_OptimalPlayer_rep: Trying to fix {color} in {position} in an already fixed position with {self.fix_positions[position]}.")
 
         self.fix_positions[position] = color
 
@@ -654,26 +685,39 @@ class Mastermind_OptimalPlayer_rep(IPlayer):
                 self._strategy1_remove_possibility(i, position)
 
     def _strategy1_remove_possibility(self, color: int, position: int):
+
+        # print(f"DEBUG: Removing possibility color {color} in position {position}")
+
         if position in self.positions_to_try[color]:
             self.positions_to_try[color].remove(position)
 
-        # Check how many values of this color are fixed
-        n_fixed = sum(1 for p in self.fix_positions if p == color)
+        while True:
+            # Check how many values of this color are fixed
+            n_fixed = sum(1 for p in self.fix_positions if p == color)
+            n_per_fix = self.number_per_value[color] - n_fixed
 
-        # If the values fixed plus the remaining possibilities equal the total number of occurrences,
-        # then fix all remaining possibilities
-        if n_fixed + len(self.positions_to_try[color]) == self.number_per_value[color]:
-            for p in self.positions_to_try[color][:]:
-                self._strategy1_set_fixed(color, p)
+            # If the values fixed plus the remaining possibilities equal the total number of occurrences,
+            # then fix all remaining possibilities
+            if n_per_fix > 0 and n_fixed + len(self.positions_to_try[color]) == self.number_per_value[color]:
+                self._strategy1_set_fixed(color, self.positions_to_try[color][0])
+            else:
+                break
 
 
     def _strategy1(self, position: MastermindPosition) -> MastermindMovement:
-        self._strategy1_update(position)
-        if self._strategy1_should_stop():
-            self.status = 2
-            return self._strategy2_first_move()
-        else:
-            return self._strategy1_move()
+        try:
+
+            self._strategy1_update(position)
+            if self._strategy1_should_stop():
+                return self._strategy_1_pass_to_2()
+            else:
+                return self._strategy1_move()
+        except ShouldNotHappenError as e:
+            raise ShouldNotHappenError(f"Mastermind_OptimalPlayer_rep: Error in strategy 1.\n Position: {position}") from e
+
+    def _strategy_1_pass_to_2(self) -> MastermindMovement:
+        self.status = 2
+        return self._strategy2_first_move()
 
     ##########################
     # STRATEGY 2

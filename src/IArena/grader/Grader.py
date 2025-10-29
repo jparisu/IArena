@@ -78,7 +78,7 @@ class Grader:
         return sum(report_configuration.value for report_configuration in self._report_configurations)
 
 
-    def run(self, debug: bool = False) -> Dict[str, ReportResult]:
+    def run(self, debug: int = 1) -> Dict[str, ReportResult]:
 
         self._reports = []
 
@@ -106,7 +106,7 @@ class Grader:
             self._reports.append(report)
 
             if debug:
-                self.print_report_result(i)
+                self.print_report_result(i, debug)
                 print()
 
 
