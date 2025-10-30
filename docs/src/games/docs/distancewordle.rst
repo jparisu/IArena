@@ -7,7 +7,7 @@ Distance Wordle
 .. figure:: /resources/images/wordle.png
     :scale: 30%
 
-This game is a version of the New York Times game Wordle, as 1 player guess game: `this link <https://www.nytimes.com/games/wordle/index.html>`.
+This game is a version of the New York Times game Wordle, as 1 player guess game: `this link <https://www.nytimes.com/games/wordle/index.html>`_.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (letters in the actual game) chosen from *M* numbers available ``[0,M)``.
 Each turn the player has to guess the code.
 After each guess, the game will tell the player which of the guesses appears in the code but are not correctly positioned, and which ones are correctly positioned.
@@ -107,6 +107,17 @@ or whether it is not present in the secret code (``-1``).
     ...
   elif c == -1:
     # The first value of the last guess is not in the actual code
+
+
+For example, let's imagine an scenario where ``N=4``, ``M=6``, the secret code is ``[1, 3, 5, 4]``.
+If the player makes the guess ``[1, 4, 3, 0]``, the feedback will be ``[0, 2, 1, -1]``.
+
+- The first value ``1`` is correct, so the distance to its real position is ``0``.
+- The second value ``4`` is in the secret code, but misplaced, it should be in forth position, so the distance is ``2``.
+- The third value ``3`` is in the secret code, but misplaced, it should be in second position, so the distance is ``1``.
+- The forth value ``0`` is not in the secret code, so the feedback is ``-1``.
+
+
 
 
 -------
