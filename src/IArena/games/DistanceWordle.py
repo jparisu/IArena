@@ -212,7 +212,7 @@ class DistanceWordleRules(IGameRules):
             raise ValueError("Movement must not have repetitions when allow_repetition is False")
 
         # Calculate the feedback of the new guess
-        feedback = [self.code_size() for _ in range(self.n)]
+        feedback = [self.n for _ in range(self.n)]
         already_placed = [False for _ in range(self.n)]
         possible_misplaced = []
         for i in range(self.n):

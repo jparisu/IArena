@@ -34,7 +34,7 @@ For example, a feedback of ``[0, 1, 3]`` means that:
 
 - The first value is correct (distance ``0``).
 - The second value is in the secret code, but misplaced by ``1`` position.
-- The third value is not in the secret code, ``2`` is bigger than ``N``.
+- The third value is not in the secret code, a distance equal or higher ``3`` in a code of size ``3`` means that the value is not present.
 
 
 

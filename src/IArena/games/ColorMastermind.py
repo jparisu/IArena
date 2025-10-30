@@ -146,7 +146,7 @@ class ColorMastermindRules(IGameRules):
     def default_colors(n_colors: int) -> Set[int]:
         if n_colors > len(ColorMastermindRules.Colors_):
             raise ValueError(f"n_colors must be less than or equal to {len(ColorMastermindRules.Colors_)}")
-        return {c for c in n_colors[:n_colors]}
+        return {c for c in ColorMastermindRules.Colors_[:n_colors]}
 
 
     @staticmethod
@@ -155,18 +155,20 @@ class ColorMastermindRules(IGameRules):
                 possible_colors: Set[str],
                 rng: RandomGenerator,
                 allow_repetition: bool = True) -> List[str]:
+
+        possible_colors_set = set(possible_colors)
+        possible_colors = list(possible_colors)
         number_values = len(possible_colors)
         if not allow_repetition and code_size > number_values:
             raise ValueError("n must be less than or equal to m when allow_repetition is False")
         if allow_repetition:
             indexes = [rng.randint(number_values) for _ in range(code_size)]
         else:
-            possible_colors = set(range(number_values))
             colors = []
             for _ in range(code_size):
-                color = rng.choice(list(possible_colors))
+                color = rng.choice(list(possible_colors_set))
                 colors.append(color)
-                possible_colors.remove(color)
+                possible_colors_set.remove(color)
             indexes = colors
 
         return [possible_colors[i] for i in indexes]
@@ -211,7 +213,7 @@ class ColorMastermindRules(IGameRules):
 
         self.m = number_values
         self.n = code_size
-        if len(secret) != code_size or any(x < 0 or x >= number_values for x in secret):
+        if len(secret) != code_size or any(x not in possible_colors for x in secret):
             raise ValueError("Secret must be of size n and with numbers from 0 to m-1")
         if not allow_repetition and len(set(secret)) != code_size:
             raise ValueError("Secret must not have repetitions when allow_repetition is False")
