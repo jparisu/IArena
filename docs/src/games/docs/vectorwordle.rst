@@ -7,7 +7,7 @@ Vector Wordle
 .. figure:: /resources/images/wordle.png
     :scale: 30%
 
-This game is a version of the New York Times game Wordle, as 1 player guess game: `this link <https://www.nytimes.com/games/wordle/index.html>`_.
+This game is a version of the New York Times game Wordle, as 1 player guess game.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (letters in the actual game) chosen from *M* numbers available ``[0,M)``.
 Each turn the player has to guess the code.
 After each guess, the game will tell the player which of the guesses appears in the code but are not correctly positioned, and which ones are correctly positioned.
@@ -18,7 +18,7 @@ Some changes have been made to the original game:
 - Instead of letters and words we use numbers.
 - There are 2 versions: **with repetitions** (same number could appear more than once in the code) and **without repetitions**.
 
-The online version of the game can be found at `this link <https://www.nytimes.com/games/wordle/index.htmll>`_.
+The online version of the game can be found at `this link <https://www.nytimes.com/games/wordle/index.html>`_.
 Be aware that this version differ from the game implemented here as explained before.
 
 
@@ -26,13 +26,12 @@ Be aware that this version differ from the game implemented here as explained be
 Differences with Wordle
 =======================
 
-This game is a version of the game `wordle_docs`, with the following differences:
+This game is a version of the game :ref:`wordle_docs`, with the following differences:
 
 - Instead of a feedback with values `0`, `1`, `2` (correct position, wrong position, not in code), the feedback is given by 3 different arrays, each of them representing:
-    - `positive_feedback() -> List[int]`: List of indexes in the guess that are correct.
-    - `misplaced_feedback() -> List[int]`: List of indexes in the guess that are in the code but misplaced.
-    - `negative_feedback() -> List[int]`: List of indexes in the guess that are not in the code.
-
+    - `last_positive_feedback() -> List[int]`: List of indexes in the guess that are correct.
+    - `last_misplaced_feedback() -> List[int]`: List of indexes in the guess that are in the code but misplaced.
+    - `last_negative_feedback() -> List[int]`: List of indexes in the guess that are not in the code.
 
 
 ====

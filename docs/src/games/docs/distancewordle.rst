@@ -7,10 +7,10 @@ Distance Wordle
 .. figure:: /resources/images/wordle.png
     :scale: 30%
 
-This game is a version of the New York Times game Wordle, as 1 player guess game: `this link <https://www.nytimes.com/games/wordle/index.html>`_.
+This game is a version of the New York Times game Wordle, as 1 player guess game.
 The objective of the game is to guess the *secret code*, this is a sequence of *N* numbers (letters in the actual game) chosen from *M* numbers available ``[0,M)``.
 Each turn the player has to guess the code.
-After each guess, the game will tell the player which of the guesses appears in the code but are not correctly positioned, and which ones are correctly positioned.
+After each guess, the game will tell the player how far each of the guesses is from the correct position.
 The goal is to guess the code in the fewest number of turns.
 
 Some changes have been made to the original game:
@@ -18,8 +18,24 @@ Some changes have been made to the original game:
 - Instead of letters and words we use numbers.
 - There are 2 versions: **with repetitions** (same number could appear more than once in the code) and **without repetitions**.
 
-The online version of the game can be found at `this link <https://www.nytimes.com/games/wordle/index.htmll>`_.
+The online version of the game can be found at `this link <https://www.nytimes.com/games/wordle/index.html>`_.
 Be aware that this version differ from the game implemented here as explained before.
+
+
+=======================
+Differences with Wordle
+=======================
+
+This game is a version of the game :ref:`wordle_docs`, with the following differences:
+
+- The **feedback** is no longer a list with `0s`, `1s` and `2s`, but a list of integers representing the absolute distance between the guessed value and its correct position in the secret code.
+
+For example, a feedback of ``[0, 1, 3]`` means that:
+
+- The first value is correct (distance ``0``).
+- The second value is in the secret code, but misplaced by ``1`` position.
+- The third value is not in the secret code, ``2`` is bigger than ``N``.
+
 
 
 ====
@@ -42,9 +58,9 @@ Import
 
 .. code-block:: python
 
-  from IArena.games.Wordle import WordlePosition
-  from IArena.games.Wordle import WordleMovement
-  from IArena.games.Wordle import WordleRules
+  from IArena.games.DistanceWordle import DistanceWordlePosition
+  from IArena.games.DistanceWordle import DistanceWordleMovement
+  from IArena.games.DistanceWordle import DistanceWordleRules
 
 
 ========
@@ -64,7 +80,7 @@ It must have ``N`` integers in the range ``[0,M)``.
 .. code-block:: python
 
   # A guess in a game with N=3 and M>2
-  movement = WordleMovement(guess=[0, 1, 2])
+  movement = DistanceWordleMovement(guess=[0, 1, 2])
 
 .. warning::
 
@@ -89,7 +105,7 @@ or whether it is not present in the secret code (``-1``).
 
 .. code-block:: python
 
-  # position : WordlePosition
+  # position : DistanceWordlePosition
   guesses = position.guesses()
   feedback = position.feedback()
 
@@ -110,12 +126,12 @@ or whether it is not present in the secret code (``-1``).
 
 
 For example, let's imagine an scenario where ``N=4``, ``M=6``, the secret code is ``[1, 3, 5, 4]``.
-If the player makes the guess ``[1, 4, 3, 0]``, the feedback will be ``[0, 2, 1, -1]``.
+If the player makes the guess ``[1, 4, 3, 0]``, the feedback will be ``[0, 2, 1, 4]``.
 
 - The first value ``1`` is correct, so the distance to its real position is ``0``.
 - The second value ``4`` is in the secret code, but misplaced, it should be in forth position, so the distance is ``2``.
 - The third value ``3`` is in the secret code, but misplaced, it should be in second position, so the distance is ``1``.
-- The forth value ``0`` is not in the secret code, so the feedback is ``-1``.
+- The forth value ``0`` is not in the secret code, so the feedback is ``N``.
 
 
 
@@ -124,9 +140,9 @@ If the player makes the guess ``[1, 4, 3, 0]``, the feedback will be ``[0, 2, 1,
 Methods
 -------
 
-- ``guesses() -> List[WordleMovement]``: List of guesses made so far.
+- ``guesses() -> List[DistanceWordleMovement]``: List of guesses made so far.
 - ``feedback() -> List[List[int]]``: List of feedback lists made so far.
-- ``last_guess() -> WordleMovement``: Last guess made.
+- ``last_guess() -> DistanceWordleMovement``: Last guess made.
 - ``last_feedback() -> List[int]``: Feedback of the last guess.
 - ``code_size() -> int``: Number of values in the secret code (N).
 - ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
@@ -167,7 +183,7 @@ Arguments for constructor are:
   .. code-block:: python
 
     # Secret code with N=4 and M=6
-    rules = WordleRules(
+    rules = DistanceWordleRules(
         code_size=4,
         number_values=6,
         secret=[0, 1, 2, 3],
