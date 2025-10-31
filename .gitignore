@@ -162,3 +162,9 @@ cython_debug/
 
 # .test for manual testing
 .test/
+
+# .zip files with code
+*.zip
+
+# shared directory for docker
+shared/

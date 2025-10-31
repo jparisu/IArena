@@ -25,11 +25,11 @@ Score
 -----
 
 - The player that aligns 4 tokens:
-  - ``1``
+    - ``1``
 - The other player:
-  - ``-1``
+    - ``-1``
 - In case the board is full and no player aligned 4 tokens:
-  - ``0``
+    - ``0``
 
 ======
 Import
@@ -49,9 +49,9 @@ Movement
 A movement is represented by an ``int`` representing the number of the column where to drop the token:
 
 - ``n``
-  - ``int``
-  - ``0 <= n < n_columns``
-  - Index of the column where to drop the token
+    - ``int``
+    - ``0 <= n < n_columns``
+    - Index of the column where to drop the token
 
 
 .. code-block:: python

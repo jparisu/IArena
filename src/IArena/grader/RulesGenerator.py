@@ -4,6 +4,7 @@ from itertools import product
 from IArena.interfaces.IGameRules import IGameRules
 from IArena.utils.decorators import pure_virtual
 
+from IArena.utils.importing import import_class_from_module
 
 """Dictionary with the arguments required for the RulesGenerator to generate a rule."""
 RulesGeneratorConfiguration = dict
@@ -92,3 +93,24 @@ class IRulesGenerator:
         if required:
             raise ValueError(f'One of the parameters {param_names} is required in configuration.')
         return default_value
+
+
+def get_rules_generator_from_name(name: str) -> IRulesGenerator:
+    """
+    Given the name of a game, returns the generator corresponding class.
+
+    The module should be located in the IArena.games package.
+    The name of the package should be equal to the class name, and the class should be in CamelCase as:
+        <name>RulesGenerator
+    """
+
+    class_name = f"{name}RulesGenerator"
+
+    try:
+        rules_generator_class = import_class_from_module(f"IArena.games.{name}", f"{class_name}")
+        if not issubclass(rules_generator_class, IRulesGenerator):
+            raise ValueError(f"Class {class_name} is not a subclass of IRulesGenerator.")
+        return rules_generator_class()
+
+    except (ModuleNotFoundError, AttributeError) as e:
+        raise ValueError(f"Could not find rules generator for game {name}: {e}")

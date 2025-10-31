@@ -34,6 +34,7 @@ The games follow a series of interfaces for making scalable in order to test dif
 
 This library is mainly written in *Python*.
 
+This library is hosted in `github <https://github.com/jparisu/IArena>`_.
 
 ===============
 Further reading

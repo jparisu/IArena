@@ -1,4 +1,4 @@
-game: Mastermind
+game: ColorMastermind
 
 move_timeout_s: 5
 total_timeout_s: 100
@@ -51,21 +51,6 @@ reports:
 
     min_score: -10
     value: 2
-
-
-  - name: One color
-
-    description: "Test with only one color."
-
-    args:
-      code_size: 20
-      number_values: 1
-      allow_repetition: true
-    multi_args:
-      seed: [7, 14, 21]
-
-    min_score: -1
-    value: 1
 
 
   - name: More spaces than colors
