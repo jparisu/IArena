@@ -22,10 +22,12 @@ class MultipleAutoGrader:
     def __init__(
             self,
             configuration_filename: str,
-            player_filenames: List[str]):
+            player_filenames: List[str],
+            repetitions: int = 1):
 
         self.autograders = {}  # player_filename -> IndividualCompleteAutoGrader
         self.results = {}  # player_filename -> grade (float)
+        self.repetitions = repetitions
 
         # If configuration is URL, download it once
         if configuration_filename.startswith('http'):
@@ -34,9 +36,10 @@ class MultipleAutoGrader:
         for player_filename in player_filenames:
             autograder = IndividualCompleteAutoGrader(
                 configuration_filename=configuration_filename,
-                player_filename=player_filename
+                player_filename=player_filename,
+                repetitions=repetitions
             )
-            self.graders[player_filename] = autograder
+            self.autograders[player_filename] = autograder
 
 
     def grade_all(self, debug: bool = True) -> Dict[str, float]:
@@ -55,7 +58,7 @@ class MultipleAutoGrader:
         Prepare a table with the results.
         """
 
-        if not self.result:
+        if not self.results:
             raise ValueError("No results available. Please run grade_all() first.")
 
         ###
@@ -63,11 +66,13 @@ class MultipleAutoGrader:
         headers = ["PlayerFile", "Author1", "Author2", "Grade"]
 
         # Get the list of report configurations for the first autograder
-        confs = self.autograders[self.autograders.keys()[0]].grader.get_report_configurations()
+        confs = self.autograders[list(self.autograders.keys())[0]].grader.get_report_configurations()
 
         for conf in confs:
             headers.append(conf.name + " (" + str(conf.value) + ")")
 
+        # Add warnings if any
+        headers.append("Inconsistency")
 
         ###
         # PREPARE TABLE RESULTS
@@ -77,7 +82,17 @@ class MultipleAutoGrader:
             row = [player_filename]
 
             # Authors
-            authors = autograder.authors
+            authors = autograder.authors()
+
+            # If any value in authors has a "," split it into multiple authors
+            expanded_authors = []
+            for author in authors:
+                if ',' in author:
+                    split_authors = [a.strip() for a in author.split(',')]
+                    expanded_authors.extend(split_authors)
+                else:
+                    expanded_authors.append(author)
+            authors = expanded_authors
 
             if len(authors) == 0:
                 print("Warning: No authors found for player file:", player_filename)
@@ -102,6 +117,12 @@ class MultipleAutoGrader:
             for result in autograder.grader.get_report_result_values():
                 row.append(str(result))
 
+            # Add inconsistency warnings if any
+            if autograder.has_inconsistency():
+                row.append("INCONSISTENCY")
+            else:
+                row.append("")
+
             table.append(row)
 
         ###
@@ -110,12 +131,12 @@ class MultipleAutoGrader:
         return table
 
 
-    def prepare_csv(self) -> str:
+    def prepare_csv(self, sep=";") -> str:
         """
         Prepare a CSV string with the results.
         """
 
-        if not self.result:
+        if not self.results:
             raise ValueError("No results available. Please run grade_all() first.")
 
         table = self.prepare_result_table()
@@ -123,9 +144,10 @@ class MultipleAutoGrader:
         # Convert table into CSV string
         csv_lines = []
         for row in table:
-            csv_lines.append(",".join(row))
+            csv_lines.append(sep.join(row))
         csv_content = "\n".join(csv_lines)
         return csv_content
+
 
     def write_csv(
             self,
@@ -141,7 +163,8 @@ class MultipleAutoGrader:
 
     def from_zip(
             configuration_filename: str,
-            zip_filename
+            zip_filename,
+            repetitions: int = 1
     ) -> MultipleAutoGrader:
         """
         Create a MultipleAutoGrader from a zip file.
@@ -158,5 +181,6 @@ class MultipleAutoGrader:
         # Create the MultipleAutoGrader
         return MultipleAutoGrader(
             configuration_filename=configuration_filename,
-            player_filenames=player_filenames
+            player_filenames=player_filenames,
+            repetitions=repetitions
         )

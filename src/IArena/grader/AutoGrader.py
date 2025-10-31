@@ -89,7 +89,8 @@ class AutoGrader:
             self,
             yaml_configuration: Dict,
             player: IPlayer,
-            authors: List[str] = []):
+            authors: List[str] = [],
+            repetitions: int = 1):
 
         ##############################
         # Read configuration from YAML
@@ -101,7 +102,8 @@ class AutoGrader:
         # Read students code
 
         self.student_player = player
-        self.authors = authors
+        self.authors_ = authors
+        self.repetitions = repetitions
 
 
         ##############################
@@ -129,7 +131,8 @@ class AutoGrader:
         self.grader = Grader(
             game_rules_generator=self.rules_generator,
             player=self.student_player,
-            report_configurations=report_configurations
+            report_configurations=report_configurations,
+            repetitions=self.repetitions
         )
 
 
@@ -137,21 +140,28 @@ class AutoGrader:
     def grade(self, debug: int = 1) -> float:
 
         if debug:
-            print(f"Grading player by authors: {self.authors}")
+            print(f"Grading player by authors: {self.authors_}")
             print()
 
         self.grader.run(debug=debug)
+
         grade = self.grader.calculate_final_grade()
 
         if debug:
             print(f"FINAL GRADE: {grade * 100:.2f}%")
             print()
 
+        if self.grader.has_inconsistency() and debug:
+            print("WARNING: Inconsistencies detected during grading due to non-deterministic player behavior.")
+
         return grade
 
 
     def authors(self) -> List[str]:
-        return self.authors
+        return self.authors_
+
+    def has_inconsistency(self) -> bool:
+        return self.grader.has_inconsistency()
 
 
 class IndividualAutoGrader(AutoGrader):
@@ -168,7 +178,8 @@ class IndividualAutoGrader(AutoGrader):
             self,
             configuration_filename: str,
             player: IPlayer,
-            authors: List[str] = []):
+            authors: List[str] = [],
+            repetitions: int = 1):
 
         ##############################
         # Read configuration from YAML
@@ -176,7 +187,7 @@ class IndividualAutoGrader(AutoGrader):
 
         ##############################
         # Reuse the parent to read configuration and prepare the grader
-        super().__init__(yaml_configuration, player, authors)
+        super().__init__(yaml_configuration, player, authors, repetitions)
 
 
 
@@ -193,7 +204,8 @@ class IndividualCompleteAutoGrader(IndividualAutoGrader):
     def __init__(
             self,
             configuration_filename: str,
-            player_filename: str):
+            player_filename: str,
+            repetitions: int = 1):
 
         ##############################
         # Read students code
@@ -209,4 +221,4 @@ class IndividualCompleteAutoGrader(IndividualAutoGrader):
 
         ##############################
         # Reuse the parent to read configuration and prepare the grader
-        super().__init__(configuration_filename, student_player, authors)
+        super().__init__(configuration_filename, student_player, authors, repetitions)

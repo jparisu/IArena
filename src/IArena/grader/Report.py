@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List
 from dataclasses import dataclass
 
@@ -46,6 +48,26 @@ class ReportResult:
         return sum(1 for s in self.successes if not s)
 
 
+    def minimum_result(result1: ReportResult, result2: ReportResult) -> ReportResult:
+        """
+        Combine two ReportResults taking the minimum result for each field.
+        """
+        combined_successes = [s1 and s2 for s1, s2 in zip(result1.successes, result2.successes)]
+        combined_messages = result1.messages + result2.messages
+        combined_warnings = result1.warnings + result2.warnings
+        combined_errors = result1.errors + result2.errors
+
+        return ReportResult(
+            successes=combined_successes,
+            messages=combined_messages,
+            warnings=combined_warnings,
+            errors=combined_errors,
+        )
+
+    def __eq__(self, value):
+        return self.successes == value.successes
+
+
 class Report:
     """
     Class that represents a specific configuration or test for a given Game and Player.
@@ -68,9 +90,27 @@ class Report:
         self._rules_suite = rules_suite
 
         self._result = None
+        self._inconsistency = False
 
 
     def run(
+                self,
+                debug: bool = False,
+            ) -> ReportResult:
+
+        if self._result is None:
+            self._result = self._run(debug=debug)
+
+        else:
+            result = self._run(debug=debug)
+
+            if result != self._result:
+                self._inconsistency = True
+            self._result = ReportResult.minimum_result(self._result, result)
+
+        return self._result
+
+    def _run(
                 self,
                 debug: bool = False,
             ) -> ReportResult:
@@ -120,14 +160,14 @@ class Report:
                         print(red_cross(), end="", flush=True)  # red small cross
 
 
-        self._result = ReportResult(
+        _result = ReportResult(
                 successes=successes,
                 messages=messages,
                 warnings=warnings,
                 errors=errors,
             )
 
-        return self._result
+        return _result
 
 
     def get_result(self) -> ReportResult:
@@ -161,3 +201,6 @@ class Report:
         if grade < 0.0:
             grade = 0.0
         return grade
+
+    def has_inconsistency(self) -> bool:
+        return self._inconsistency

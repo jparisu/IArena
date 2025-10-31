@@ -97,12 +97,15 @@ class VectorWordlePosition(IPosition):
         return copy.deepcopy(self._guesses)
 
     def positive_feedback(self) -> List[List[int]]:
+        """List of all positions with correct values for each guess."""
         return copy.deepcopy(self._positive_feedback)
 
     def misplaced_feedback(self) -> List[List[int]]:
+        """List of all positions with misplaced values for each guess."""
         return copy.deepcopy(self._misplaced_feedback)
 
     def negative_feedback(self) -> List[List[int]]:
+        """List of all positions with incorrect values for each guess."""
         negative_feedback = []
         for guess_index in range(len(self._guesses)):
             negative_positions = []
@@ -121,16 +124,19 @@ class VectorWordlePosition(IPosition):
         return copy.deepcopy(self._guesses[-1])
 
     def last_positive_feedback(self) -> List[int]:
+        """Returns the list of positions with correct values for the last guess."""
         if len(self._positive_feedback) == 0:
             return None
         return copy.deepcopy(self._positive_feedback[-1])
 
     def last_misplaced_feedback(self) -> List[int]:
+        """Returns the list of positions with misplaced values for the last guess."""
         if len(self._misplaced_feedback) == 0:
             return None
         return copy.deepcopy(self._misplaced_feedback[-1])
 
     def last_negative_feedback(self) -> List[int]:
+        """Returns the list of positions with incorrect values for the last guess."""
         if len(self._guesses) == 0:
             return None
         last_guess = self._guesses[-1].guess

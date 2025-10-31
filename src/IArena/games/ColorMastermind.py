@@ -127,9 +127,11 @@ class ColorMastermindPosition(IPosition):
         return self.get_rules().number_values()
 
     def allow_repetition(self) -> bool:
+        """Returns whether repetition of colors is allowed."""
         return self.get_rules().allow_repetition()
 
-    def possible_colors(self) -> Set[int]:
+    def possible_colors(self) -> List[int]:
+        """List of strings representing the possible colors in the game."""
         return self.get_rules().possible_colors()
 
 
@@ -143,7 +145,7 @@ class ColorMastermindRules(IGameRules):
                'indigo', 'ivory', 'lavender', 'salmon', 'turquoise', 'violet', 'amber', 'crimson', 'emerald', 'jade']
 
     @staticmethod
-    def default_colors(n_colors: int) -> Set[int]:
+    def default_colors(n_colors: int) -> List[int]:
         if n_colors > len(ColorMastermindRules.Colors_):
             raise ValueError(f"n_colors must be less than or equal to {len(ColorMastermindRules.Colors_)}")
         return {c for c in ColorMastermindRules.Colors_[:n_colors]}
@@ -152,12 +154,11 @@ class ColorMastermindRules(IGameRules):
     @staticmethod
     def random_secret(
                 code_size: int,
-                possible_colors: Set[str],
+                possible_colors: List[str],
                 rng: RandomGenerator,
                 allow_repetition: bool = True) -> List[str]:
 
         possible_colors_set = set(possible_colors)
-        possible_colors = list(possible_colors)
         number_values = len(possible_colors)
         if not allow_repetition and code_size > number_values:
             raise ValueError("n must be less than or equal to m when allow_repetition is False")
@@ -177,7 +178,7 @@ class ColorMastermindRules(IGameRules):
     def __init__(
             self,
             code_size: int = DefaultCodeSize,
-            possible_colors: Set[str] = None,
+            possible_colors: List[str] = None,
             number_values: int = None,
             secret: List[str] = None,
             allow_repetition: bool = True):
@@ -202,6 +203,9 @@ class ColorMastermindRules(IGameRules):
                 raise ValueError("Either possible_colors or number_values must be provided")
             else:
                 possible_colors = ColorMastermindRules.default_colors(number_values)
+
+        if len(set(possible_colors)) != len(possible_colors):
+            raise ValueError("possible_colors must not have repetitions")
 
         if secret is None:
             secret = ColorMastermindRules.random_secret(
@@ -230,7 +234,7 @@ class ColorMastermindRules(IGameRules):
     def allow_repetition(self) -> bool:
         return self.allow_repetition_
 
-    def possible_colors(self) -> Set[int]:
+    def possible_colors(self) -> List[int]:
         return copy.deepcopy(self.possible_colors_)
 
     @override
@@ -361,8 +365,9 @@ class ColorMastermindRulesGenerator(IRulesGenerator):
         else:
 
             if possible_colors:
-                possible_colors = set(possible_colors)
-                if len(possible_colors) != number_values:
+                if len(set(possible_colors)) != len(possible_colors):
+                    raise ValueError("possible_colors must not have repetitions")
+                elif len(possible_colors) != number_values:
                     raise ValueError("Length of possible_colors must be equal to number_values")
             else:
                 possible_colors = ColorMastermindRules.default_colors(number_values)

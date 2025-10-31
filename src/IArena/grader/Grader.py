@@ -34,12 +34,15 @@ class Grader:
                 game_rules_generator: IRulesGenerator,
                 player: IPlayer,
                 report_configurations: List[ReportConfiguration],
+                repetitions: int = 1,
             ):
         self._game_rules_generator = game_rules_generator
         self._player = player
         self._report_configurations = report_configurations
 
         self._reports : List[Report] = None
+        self._inconsistent = False
+        self._repetitions = repetitions
 
 
     def get_report_configurations(self) -> Iterator[ReportConfiguration]:
@@ -98,10 +101,10 @@ class Grader:
             if debug:
                 print(f"  RUNNING: ", end="", flush=True)
 
-            report.run(debug)
-
-            if debug:
-                print()
+            for _ in range(self._repetitions):
+                report.run(debug)
+                if debug:
+                    print()
 
             self._reports.append(report)
 
@@ -162,3 +165,6 @@ class Grader:
         if error_level >= 2:
             for m in report.get_result().messages:
                 print(f"   MESSAGE: {m}")
+
+    def has_inconsistency(self) -> bool:
+        return any(r.has_inconsistency() for r in self._reports)

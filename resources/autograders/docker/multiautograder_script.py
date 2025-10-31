@@ -45,6 +45,13 @@ def parse_args() -> argparse.Namespace:
         help="Keep temporary extracted files for debugging.",
     )
 
+    parser.add_argument(
+        "-rep", "--repetitions",
+        type=int,
+        default=1,
+        help="Number of repetitions for each grading.",
+    )
+
     return parser.parse_args()
 
 
@@ -57,12 +64,14 @@ def main():
     zip_file_str = str(args.zip_file)
     result_file_str = str(args.result_file)
     debug_mode = args.debug
-    keep_tmp = args.keep_tmp
+    keep_tmp = args.keep_tmp  # TODO: Currently not used
+    repetitions = args.repetitions
 
     # Build and run multi autograder
     grader = MultipleAutoGrader.from_zip(
         configuration_filename=configuration_file_str,
         zip_filename=zip_file_str,
+        repetitions=repetitions,
     )
 
     # Grade all

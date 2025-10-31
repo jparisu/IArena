@@ -116,7 +116,7 @@ Methods
 - ``code_size() -> int``: Number of values in the secret code (N).
 - ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
-- ``possible_colors() -> Set[str]``: Set of possible colors available in the game.
+- ``possible_colors() -> List[str]``: List of possible colors available in the game (no repeated values).
 
 
 =====
@@ -126,7 +126,7 @@ Rules
 This object defines the rules of the game, including the secret code.
 When constructed, it sets the secret code, the number of values in the code (N), and the number of different values available (M), and whether repetitions are allowed.
 
-Within the rules, the value ``possible_colors_`` is defined, which is a set of strings representing the available strings in the game.
+Within the rules, the value ``possible_colors_`` is defined, which is a list of different strings representing the available strings in the game.
 Each of the strings is meant to represent a different color.
 However, no required format is imposed on the strings, so they can be any string values, as long as it is that each value belongs to the possible values given by ``possible_colors()``.
 
@@ -138,7 +138,7 @@ Methods
 - ``code_size() -> int``: Number of values in the secret code (N).
 - ``number_values() -> int``: Number of different values available (M). If no repetitions allowed, M >= N.
 - ``allow_repetition() -> bool``: Whether the secret code can have repeated values.
-- ``possible_colors() -> Set[str]``: Set of possible colors available in the game.
+- ``possible_colors() -> List[str]``: List of possible colors available in the game.
 
 
 -----------
@@ -149,7 +149,7 @@ Arguments for constructor are:
 
 - ``code_size: int``: N
 - ``number_values: int``: M
-- ``possible_colors: Set[str]``: List of M different strings representing the possible colors.
+- ``possible_colors: List[str]``: List of M different strings representing the possible colors.
 - ``secret: List[str]``: List of N values in ``possible_colors`` representing the secret code.
 - ``allow_repetition: bool``: Whether the secret code can have repeated values.
 
@@ -171,7 +171,7 @@ Arguments for constructor are:
 Default Colors
 ^^^^^^^^^^^^^^
 
-There is a function ``ColorMastermindRules.default_colors(number_values: int) -> Set[str]`` that returns a set of default colors (strings) for a given ``M``.
+There is a function ``ColorMastermindRules.default_colors(number_values: int) -> List[str]`` that returns a list of default colors (strings) for a given ``M``.
 
   .. code-block:: python
 
