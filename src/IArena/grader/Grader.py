@@ -34,12 +34,44 @@ class Grader:
                 game_rules_generator: IRulesGenerator,
                 player: IPlayer,
                 report_configurations: List[ReportConfiguration],
+                repetitions: int = 1,
             ):
         self._game_rules_generator = game_rules_generator
         self._player = player
         self._report_configurations = report_configurations
 
         self._reports : List[Report] = None
+        self._inconsistent = False
+        self._repetitions = repetitions
+
+
+    def get_report_configurations(self) -> Iterator[ReportConfiguration]:
+        """
+        Get an iterator over the report configurations.
+        """
+        return iter(self._report_configurations)
+
+
+    def get_reports_results(self) -> Iterator[ReportResult]:
+        """
+        Get an iterator over the report results.
+        """
+        if self._reports is None:
+            raise RuntimeError("Grader has not been run yet. Please run the grader before getting the reports results.")
+
+        for report in self._reports:
+            yield report.get_result()
+
+
+    def get_report_result_values(self) -> Iterator[float]:
+        """
+        Get an iterator over the report result values.
+        """
+        if self._reports is None:
+            raise RuntimeError("Grader has not been run yet. Please run the grader before getting the reports result values.")
+
+        for report in self._reports:
+            yield report.calculate_grade()
 
 
     def total_value(self) -> float:
@@ -49,7 +81,7 @@ class Grader:
         return sum(report_configuration.value for report_configuration in self._report_configurations)
 
 
-    def run(self, debug: bool = False) -> Dict[str, ReportResult]:
+    def run(self, debug: int = 1) -> Dict[str, ReportResult]:
 
         self._reports = []
 
@@ -69,15 +101,15 @@ class Grader:
             if debug:
                 print(f"  RUNNING: ", end="", flush=True)
 
-            report.run(debug)
-
-            if debug:
-                print()
+            for _ in range(self._repetitions):
+                report.run(debug)
+                if debug:
+                    print()
 
             self._reports.append(report)
 
             if debug:
-                self.print_report_result(i)
+                self.print_report_result(i, debug)
                 print()
 
 
@@ -117,8 +149,8 @@ class Grader:
         this_report_value = report_configuration.value
 
         g = report.calculate_grade()
-        print (f"  TEST VALUE: {this_report_value}/{total_value}  ->  {(this_report_value/total_value)*100:.2f}%")
-        print (f"  SCORE: {g*100}%  ->  {g*this_report_value*100/total_value:.2f}%")
+        print (f"  TEST VALUE: {(this_report_value/total_value)*100:.2f}% of total")
+        print (f"  SCORE: {g*100}%  ->  + {g*this_report_value*100/total_value:.2f}% to total score")
 
 
         if error_level >= 0:
@@ -133,3 +165,6 @@ class Grader:
         if error_level >= 2:
             for m in report.get_result().messages:
                 print(f"   MESSAGE: {m}")
+
+    def has_inconsistency(self) -> bool:
+        return any(r.has_inconsistency() for r in self._reports)

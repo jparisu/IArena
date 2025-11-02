@@ -35,8 +35,7 @@ class GenericGame:
     def play(self) -> ScoreBoard:
 
         # Initialize the players in the game
-        for i, player in enumerate(self.players):
-            player.starting_game(self.rules, i)
+        self.starting_game_()
 
         current_position = self.rules.first_position()
         finished = self.rules.finished(current_position)
@@ -52,6 +51,12 @@ class GenericGame:
                 raise LimitExceededError(f'Game has exceeded the maximum number of moves: {self.max_moves}.')
 
         return self.calculate_score_(current_position)
+
+
+    def starting_game_(self):
+        # Initialize the players in the game
+        for i, player in enumerate(self.players):
+            player.starting_game(self.rules, i)
 
 
     def next_movement_(self, current_position: IPosition) -> IPosition:
@@ -112,6 +117,22 @@ class ClockGame(GenericGame):
         self.total_timeout_s = total_timeout_s
 
         # TODO: handle total_timeout_s
+
+
+    @override
+    def starting_game_(self):
+        # Initialize the players in the game with timeout
+        for i, player in enumerate(self.players):
+
+            try:
+                time_limit_run(
+                    func=player.starting_game,
+                    timeout_s=self.move_timeout_s,
+                    args=(self.rules, i))
+            except TimeoutError as e:
+                raise TimeoutError(f'Player <{self.get_player_name(i)}> has exceeded the total time limit of {self.total_timeout_s} seconds during game initialization -> {e}')
+
+
 
     @override
     def next_player_move_(self, current_position: IPosition) -> IMovement:

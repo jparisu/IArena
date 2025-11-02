@@ -1,54 +1,63 @@
-import signal
-import threading
-from contextlib import contextmanager
 from typing import Any, Callable, Dict, Optional, Tuple
+import threading
+import queue
+import sys
 
 class TimeLimitExpired(TimeoutError):
     pass
 
-@contextmanager
-def _alarm_after(timeout_s: Optional[float]):
-    if timeout_s is None:
-        yield
-        return
-    if threading.current_thread() is not threading.main_thread():
-        raise RuntimeError("time_limit_run requires the main thread when using SIGALRM.")
-    if not hasattr(signal, "setitimer"):
-        raise RuntimeError("This platform doesn't support setitimer/SIGALRM (Windows).")
-
-    old_handler = signal.getsignal(signal.SIGALRM)
-    old_timer = signal.getitimer(signal.ITIMER_REAL)
-
-    def _raise_timeout(signum, frame):
-        raise TimeLimitExpired(f"Call timed out after {timeout_s} seconds.")
-
-    try:
-        signal.signal(signal.SIGALRM, _raise_timeout)
-        signal.setitimer(signal.ITIMER_REAL, timeout_s, 0.0)
-        yield
-    finally:
-        # cancel ours
-        signal.setitimer(signal.ITIMER_REAL, 0.0, 0.0)
-        signal.signal(signal.SIGALRM, old_handler)
-        # restore previous timer if it existed
-        if old_timer[0] > 0 or old_timer[1] > 0:
-            signal.setitimer(signal.ITIMER_REAL, *old_timer)
-
 def time_limit_run(
     func: Callable[..., Any],
+    timeout_s: float,
     args: Tuple[Any, ...] = (),
     kwargs: Optional[Dict[str, Any]] = None,
-    *,
-    timeout_s: Optional[float] = None,
-    return_on_timeout: Any = None,
-    raise_on_timeout: bool = True,
 ) -> Any:
+    """
+    Run `func(*args, **kwargs)` in a thread and wait up to `timeout_s` seconds.
+
+    - Returns the function's result on success.
+    - Propagates the function's exception (with original traceback).
+    - Raises TimeLimitExpired on timeout (the worker thread may keep running).
+    """
     if kwargs is None:
         kwargs = {}
+
+    q: "queue.Queue[tuple[str, Any]]" = queue.Queue(maxsize=1)
+
+    def worker():
+        """
+        Worker function to execute the target function and store its result or exception.
+
+        Results are put into the queue as a tuple:
+        - (True, result) on success
+        - (False, (exception, traceback)) on failure
+        """
+        try:
+            rv = func(*args, **kwargs)
+            q.put((True, rv))
+        except BaseException as e:
+            # Preserve original traceback across the thread boundary
+            _, exc, tb = sys.exc_info()
+            q.put((False, (exc, tb)))
+
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+    t.join(timeout_s)
+
+    if t.is_alive():
+        # Thread continues in background (by design); we only time out.
+        raise TimeLimitExpired(f"Timeout of {timeout_s} seconds exceeded")
+
+    # Thread finished; fetch result or exception
     try:
-        with _alarm_after(timeout_s):
-            return func(*args, **kwargs)
-    except TimeLimitExpired:
-        if raise_on_timeout:
-            raise TimeoutError(f"Call timed out after {timeout_s} seconds.")
-        return return_on_timeout
+        ok, payload = q.get_nowait()
+    except queue.Empty:
+        # Extremely unlikely, but treat as abnormal termination
+        raise RuntimeError("Worker finished without producing a result.")
+
+    if ok:
+        return payload
+    else:
+        exc, tb = payload
+        # Re-raise original exception with its traceback
+        raise exc.with_traceback(tb)

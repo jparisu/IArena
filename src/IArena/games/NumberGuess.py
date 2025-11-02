@@ -186,7 +186,7 @@ class NumberGuessPlayablePlayer(IPlayer):
         number_values = position.get_rules().number_values()
 
         print ("=" * NumberGuessPlayablePlayer.SeparatorN)
-        print (position)
+        print (f"Previous guesses: {position}")
         print ("-" * NumberGuessPlayablePlayer.SeparatorN)
         print (f"Values: {list(range(number_values))})")
 
