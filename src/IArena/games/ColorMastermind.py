@@ -148,7 +148,7 @@ class ColorMastermindRules(IGameRules):
     def default_colors(n_colors: int) -> List[int]:
         if n_colors > len(ColorMastermindRules.Colors_):
             raise ValueError(f"n_colors must be less than or equal to {len(ColorMastermindRules.Colors_)}")
-        return {c for c in ColorMastermindRules.Colors_[:n_colors]}
+        return [c for c in ColorMastermindRules.Colors_[:n_colors]]
 
 
     @staticmethod
