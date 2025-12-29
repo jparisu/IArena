@@ -1,0 +1,136 @@
+game: Wordle
+
+move_timeout_s: 5
+total_timeout_s: 100
+max_score: -1
+repetitions: 5
+fails_allowed: 3
+max_moves: 100
+
+reports:
+
+  - name: Basic Test
+
+    description: "Simple Test with 3 spaces and 4 values."
+
+    args:
+      code_size: 3
+      number_values: 4
+      allow_repetition: true
+    multi_args:
+      seed: [42, 84, 126]
+
+    min_score: -30
+
+
+  - name: Std Test
+
+    description: "Default Test with 5 spaces and 8 values."
+
+    args:
+      code_size: 5
+      number_values: 8
+      allow_repetition: true
+    multi_args:
+      seed: [42, 84, 126, 168, 210]
+
+    min_score: -50
+    value: 4
+
+
+  - name: One space
+
+    description: "Test with only one space for color."
+
+    args:
+      code_size: 1
+      number_values: 10
+      allow_repetition: true
+    multi_args:
+      seed: [7, 14, 21]
+
+    min_score: -10
+    value: 2
+
+
+  - name: One color
+
+    description: "Test with only one color."
+
+    args:
+      code_size: 20
+      number_values: 1
+      allow_repetition: true
+    multi_args:
+      seed: [7, 14, 21]
+
+    min_score: -1
+    value: 1
+
+
+  - name: More spaces than colors
+
+    description: "Test with more spaces than colors."
+
+    args:
+      code_size: 10
+      number_values: 5
+      allow_repetition: true
+    multi_args:
+      seed: [5, 10, 15]
+
+    min_score: -55
+    value: 2
+
+
+  - name: Optimize Turns
+
+    description: "Test forcing optimal solutions."
+
+    args:
+      code_size: 4
+      number_values: 10
+      allow_repetition: true
+    multi_args:
+      seed: [11, 22, 33]
+
+    min_score: -20
+    move_timeout_s: 10
+    fails_allowed: 3
+    value: 3
+
+
+  - name: Huge Test
+
+    description: "Test with very big numbers."
+
+    args:
+      code_size: 10
+      number_values: 16
+      allow_repetition: true
+    multi_args:
+      seed: [11, 22, 33]
+
+    min_score: -200
+    max_moves: 300
+    move_timeout_s: 12
+    fails_allowed: 4
+    value: 2
+
+
+  - name: Remarkable Test
+
+    description: "Excellency test."
+
+    args:
+      code_size: 20
+      number_values: 30
+      allow_repetition: true
+    multi_args:
+      seed: [1, 2]
+
+    min_score: -400
+    max_moves: 600
+    repetitions: 1
+    move_timeout_s: 15
+    fails_allowed: 1
