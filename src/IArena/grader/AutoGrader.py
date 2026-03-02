@@ -113,7 +113,7 @@ class AutoGrader:
         if TAG_YAML_CONF_GAME in self.yaml_configuration:
             game_name = self.yaml_configuration[TAG_YAML_CONF_GAME]
         else:
-            raise ValueError(f"<TAG_YAML_CONF_GAME> must be specified in the configuration file.")
+            raise ValueError(f"<{TAG_YAML_CONF_GAME}> must be specified in the configuration file.")
 
         # Get the rules generator
         self.rules_generator = get_rules_generator_from_name(game_name)

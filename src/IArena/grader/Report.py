@@ -8,6 +8,7 @@ from IArena.arena.GenericGame import ClockGame
 from IArena.grader.RulesGenerator import IRulesGenerator, RulesGeneratorSuite
 from IArena.utils.YamlMixing import YamlMixing
 from IArena.utils.printing import green_tick, red_cross
+from IArena.games.solvers.Solver import Solver, get_solver_from_name
 
 
 
@@ -20,13 +21,30 @@ class ReportCommonConfiguration(YamlMixing):
 
     move_timeout_s: float = 5
     total_timeout_s: float = 10
-    max_score: float = float('inf')
-    min_score: float = float('-inf')
+    max_score: float = None
+    min_score: float = None
     repetitions: int = 1
     fails_allowed: int = 0
     max_moves: int = 1000
+    solver_configuration: YamlMixing = None  # Whether to use specific solver to calculate max and min score
+    _solver: Solver = None
 
+    def use_solver(self) -> bool:
+        return self.max_score is None or self.min_score is None and self.solver_configuration is not None
 
+    def solver(self):
+
+        if self._solver is not None:
+            return self._solver
+
+        if self.solver_configuration is None:
+            raise ValueError("Solver configuration is not set, but use_solver() is True.")
+        self._solver = get_solver_from_name(
+            name=self.solver_configuration.get("name", None),
+            args=self.solver_configuration.get("args", None))
+        return self._solver
+
+    def max_min_score()
 
 
 @dataclass
@@ -84,10 +102,10 @@ class Report:
                 rules_suite: RulesGeneratorSuite,
             ):
 
-        self._rules_generator = rules_generator
-        self._player = player
-        self._common_configuration = common_configuration
-        self._rules_suite = rules_suite
+        self._rules_generator : IRulesGenerator = rules_generator
+        self._player : IPlayer = player
+        self._common_configuration : ReportCommonConfiguration = common_configuration
+        self._rules_suite : RulesGeneratorSuite = rules_suite
 
         self._result = None
         self._inconsistency = False
@@ -110,6 +128,7 @@ class Report:
 
         return self._result
 
+
     def _run(
                 self,
                 debug: bool = False,
@@ -123,6 +142,18 @@ class Report:
         for conf in self._rules_suite.get_configuration_iterator():
 
             rules = self._rules_generator.generate(conf)
+
+            # If max_score and min_score are not set (None), calculate them using a solver
+            if self._common_configuration.max_score is None or self._common_configuration.min_score is None:
+
+                # Check solver configuration
+                sconf = self._common_configuration.solver_configuration
+
+                # Create Solver object
+                solver = get_solver_from_name(name=self)
+                max_score, min_score = self._rules_generator.calculate_max_min_score(rules, self._common_configuration.solver_configuration)
+
+
 
             for i in range(self._common_configuration.repetitions):
 

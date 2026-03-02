@@ -14,9 +14,6 @@ class RandomGenerator:
     def random(self):
         return self.rand()
 
-    def randint(self, a, b):
-        return self.rng.randint(a, b)
-
     def choice(self, seq):
         return self.rng.choice(seq)
 
@@ -36,3 +33,6 @@ class RandomGenerator:
         WARNING: high is not choosable
         """
         return self.rng.randint(low, high-1)
+
+    def any_int(self) -> int:
+        return self.rng.randint(0, 2**31 - 1)

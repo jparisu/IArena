@@ -57,8 +57,9 @@ class IRulesGenerator:
         """Generates a game rules instance based on the provided configuration dictionary."""
         pass
 
-
+    @classmethod
     def _get_param(
+                cls,
                 configuration: RulesGeneratorConfiguration,
                 param_name: str = None,
                 param_names: List[str] = None,
@@ -72,7 +73,8 @@ class IRulesGenerator:
         """
 
         def __type_cast(value, type_cast):
-            if type_cast is not None:
+
+            if type_cast is not None and value is not None and not isinstance(value, type_cast) and type(value) != type_cast:
                 try:
                     value = type_cast(value)
                 except Exception as e:
