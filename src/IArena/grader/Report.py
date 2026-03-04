@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import Any, List, Tuple
 from dataclasses import dataclass
 
 from IArena.interfaces.IPlayer import IPlayer
@@ -26,25 +26,63 @@ class ReportCommonConfiguration(YamlMixing):
     repetitions: int = 1
     fails_allowed: int = 0
     max_moves: int = 1000
-    solver_configuration: YamlMixing = None  # Whether to use specific solver to calculate max and min score
+    solver_configuration: dict = None  # Preferred YAML key for solver configuration
+    solver: dict = None  # Backward-compatible YAML key
     _solver: Solver = None
 
     def use_solver(self) -> bool:
-        return self.max_score is None or self.min_score is None and self.solver_configuration is not None
+        return (self.max_score is None or self.min_score is None) and self.solver_configuration_data() is not None
 
-    def solver(self):
+    def solver_instance(self):
 
         if self._solver is not None:
             return self._solver
 
-        if self.solver_configuration is None:
+        conf = self.solver_configuration_data()
+        if conf is None:
             raise ValueError("Solver configuration is not set, but use_solver() is True.")
+
         self._solver = get_solver_from_name(
-            name=self.solver_configuration.get("name", None),
-            args=self.solver_configuration.get("args", None))
+            name=conf["name"],
+            args=conf["args"],
+        )
         return self._solver
 
-    def max_min_score()
+    def solver_configuration_data(self) -> dict | None:
+        conf = self.solver_configuration
+        if conf is None:
+            conf = self.solver
+        if conf is None:
+            return None
+        if not isinstance(conf, dict):
+            raise ValueError(f"Solver configuration must be a dictionary, got: {type(conf)}")
+
+        # Support both {"name": "..."} and {"class": "..."} keys in YAML.
+        name = conf.get("name")
+        if name is None:
+            name = conf.get("class")
+        if name is None:
+            raise ValueError("Solver configuration must include either 'name' or 'class'.")
+
+        args = conf.get("args", {})
+        if args is None:
+            args = {}
+        if not isinstance(args, dict):
+            raise ValueError(f"Solver 'args' must be a dictionary, got: {type(args)}")
+
+        return {
+            "name": name,
+            "args": args,
+        }
+
+    def solver_cache_signature(self) -> Tuple[str, tuple[tuple[str, Any], ...]]:
+        conf = self.solver_configuration_data()
+        if conf is None:
+            return ("", ())
+        return (
+            conf["name"],
+            Report._freeze(conf["args"]),
+        )
 
 
 @dataclass
@@ -94,6 +132,10 @@ class Report:
     It runs multiple games with different configurations and repetitions, and collects the results.
     """
 
+    # Cache solver scores globally for this process.
+    # Keyed by (rules_generator_class, solver signature, concrete configuration).
+    _SOLVER_SCORE_CACHE = {}
+
     def __init__(
                 self,
                 rules_generator: IRulesGenerator,
@@ -109,6 +151,50 @@ class Report:
 
         self._result = None
         self._inconsistency = False
+
+    @staticmethod
+    def _freeze(value: Any):
+        """Convert nested structures into hashable deterministic tuples."""
+        if isinstance(value, dict):
+            return tuple(sorted((str(k), Report._freeze(v)) for k, v in value.items()))
+        if isinstance(value, (list, tuple)):
+            return tuple(Report._freeze(v) for v in value)
+        if isinstance(value, set):
+            return tuple(sorted(Report._freeze(v) for v in value))
+        return value
+
+    def _resolve_score_limits(
+                self,
+                conf: dict,
+                rules,
+            ) -> tuple[float, float]:
+        min_score = self._common_configuration.min_score
+        max_score = self._common_configuration.max_score
+
+        if not self._common_configuration.use_solver():
+            return (
+                float("-inf") if min_score is None else min_score,
+                float("inf") if max_score is None else max_score,
+            )
+
+        cache_key = (
+            self._rules_generator.__class__.__module__,
+            self._rules_generator.__class__.__name__,
+            self._common_configuration.solver_cache_signature(),
+            Report._freeze(conf),
+        )
+
+        if cache_key not in Report._SOLVER_SCORE_CACHE:
+            solver = self._common_configuration.solver_instance()
+            Report._SOLVER_SCORE_CACHE[cache_key] = solver.min_max_allowed_score(rules)
+
+        solver_min, solver_max = Report._SOLVER_SCORE_CACHE[cache_key]
+        if min_score is None:
+            min_score = solver_min
+        if max_score is None:
+            max_score = solver_max
+
+        return min_score, max_score
 
 
     def run(
@@ -143,17 +229,7 @@ class Report:
 
             rules = self._rules_generator.generate(conf)
 
-            # If max_score and min_score are not set (None), calculate them using a solver
-            if self._common_configuration.max_score is None or self._common_configuration.min_score is None:
-
-                # Check solver configuration
-                sconf = self._common_configuration.solver_configuration
-
-                # Create Solver object
-                solver = get_solver_from_name(name=self)
-                max_score, min_score = self._rules_generator.calculate_max_min_score(rules, self._common_configuration.solver_configuration)
-
-
+            min_score, max_score = self._resolve_score_limits(conf=conf, rules=rules)
 
             for i in range(self._common_configuration.repetitions):
 
@@ -174,15 +250,15 @@ class Report:
                     errors.append(f"Game crashed with conf {conf} repetition {i+1}: {{{e}}}")
 
                 if correct_execution:
-                    if score >= self._common_configuration.min_score:
+                    if score >= min_score:
                         successes.append(True)
-                        if score > self._common_configuration.max_score:
-                            warnings.append(f"Score {score} above max {self._common_configuration.max_score} with conf {conf} repetition {i+1}")
+                        if score > max_score:
+                            warnings.append(f"Score {score} above max {max_score} with conf {conf} repetition {i+1}")
 
                     else:
                         successes.append(False)
-                        if score < self._common_configuration.min_score:
-                            messages.append(f"Score {score} below min {self._common_configuration.min_score} with conf {conf} repetition {i+1}")
+                        if score < min_score:
+                            messages.append(f"Score {score} below min {min_score} with conf {conf} repetition {i+1}")
 
                 if debug:
                     if successes[-1]:

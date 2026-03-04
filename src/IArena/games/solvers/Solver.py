@@ -27,10 +27,14 @@ def get_solver_from_name(name: str, args: dict = None) -> Solver:
 
     args = args or {}
 
-    class_name = f"{name}Solver"
+    if name is None:
+        raise ValueError("Solver name cannot be None.")
+
+    base_name = name[:-6] if name.endswith("Solver") else name
+    class_name = f"{base_name}Solver"
 
     try:
-        rules_generator_class = import_class_from_module(f"IArena.games.solver.{name}Solver", f"{class_name}")
+        rules_generator_class = import_class_from_module(f"IArena.games.solvers.{class_name}", f"{class_name}")
         if not issubclass(rules_generator_class, Solver):
             raise ValueError(f"Class {class_name} is not a subclass of Solver.")
         return rules_generator_class(**args)

@@ -1,8 +1,7 @@
 
 from IArena.arena.GenericGame import GenericGame
-from IArena.games.GoldMine import GoldMineGameRules
 from IArena.games.solvers.Solver import Solver
-from IArena.games.GoldMine import GoldMinePosition, GoldMineGameRules, GoldMineMovement, GoldMineCoordinate, GoldMineDirection
+from IArena.games.GoldMine import GoldMinePosition, GoldMineGameRules, GoldMineMovement, GoldMineCoordinate
 from IArena.interfaces.IPlayer import IPlayer
 from IArena.utils.decorators import override
 from IArena.utils.RandomGenerator import RandomGenerator
@@ -138,11 +137,11 @@ class GoldMineSolver(Solver):
     def min_max_allowed_score(self, rules: GoldMineGameRules) -> tuple[float, float]:
         mi, ma = 0, 0
         if rules.compass_activated():
-            mi, ma = self._min_max_allowed_score_with_compass()
+            mi, ma = self._min_max_allowed_score_with_compass(rules)
         elif rules.proximity_activated():
-            mi, ma = self._min_max_allowed_score_with_proximity()
+            mi, ma = self._min_max_allowed_score_with_proximity(rules)
         else:
-            mi, ma = self._min_max_allowed_score_without_help()
+            mi, ma = self._min_max_allowed_score_without_help(rules)
 
         return (mi * self._min_p, ma * self._max_p)
 
@@ -165,10 +164,12 @@ class GoldMineSolver(Solver):
 
 
     def _min_max_allowed_score_with_compass(self, rules: GoldMineGameRules) -> tuple[float, float]:
-
-        # TODO
-        return (0, self.__map.sum())
+        # TODO: implement a tighter bound using compass information.
+        # Fallback to no-hint bound to keep grading functional.
+        return self._min_max_allowed_score_without_help(rules)
 
 
     def _min_max_allowed_score_with_proximity(self, rules: GoldMineGameRules) -> tuple[float, float]:
-        return self._min_max_allowed_score_with_compass()
+        # TODO: implement a tighter bound using proximity information.
+        # Fallback to compass/no-hint bound to keep grading functional.
+        return self._min_max_allowed_score_with_compass(rules)
