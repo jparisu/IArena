@@ -1,0 +1,34 @@
+site_name: iarena Documentation
+site_description: Python framework for building turn-based games and AI players
+site_author: jparisu
+site_url: https://iarena.readthedocs.io/
+
+repo_name: jparisu/iarena
+repo_url: https://github.com/jparisu/iarena
+edit_uri: edit/main/docs
+
+# Theme
+theme:
+  name: readthedocs
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            docstring_style: google
+            show_source: true
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Getting Started: getting-started.md
+  - API Reference: api/index.md

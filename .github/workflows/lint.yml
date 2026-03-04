@@ -1,0 +1,79 @@
+name: Soft checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Test Python linter
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[lint]"
+
+    - name: Lint with ruff
+      run: |
+        ruff check src/
+
+    - name: Format check with ruff
+      run: |
+        ruff format --check src/
+
+
+  types:
+    name: Test Python types
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[lint]"
+
+    - name: Type check with mypy
+      run: |
+        mypy --config-file=pyproject.toml src/iarena
+
+
+  spell-checker:
+    name: Test Python spelling
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[lint]"
+
+    - name: Spell check (codespell)
+      run: codespell --config .spelling/.codespellrc .
