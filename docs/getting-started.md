@@ -15,6 +15,19 @@ Next implementation milestones:
 3. Add one baseline player and tournament runner.
 4. Expand tests for core game loop and player contracts.
 
+## Generic players
+
+The `iarena.playing` module provides reusable players that can be plugged into
+any game rules implementation:
+
+- `RandomPlayer`: samples uniformly from `rules.possible_movements(position)`.
+  You can pass:
+  - a `RandomGenerator` instance,
+  - a `seed`,
+  - or neither (it creates an unseeded generator, so runs differ over time).
+- `TerminalPlayer`: lists legal movements in the terminal and asks the user to
+  choose one by number. This is useful for debugging and non-graphical play.
+
 ## Optional capabilities
 
 Games can optionally implement extra capabilities from
