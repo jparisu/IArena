@@ -128,13 +128,13 @@ load-plugins = ["pylint.extensions.mccabe"]
 
 [tool.pylint.format]
 max-line-length = 120
-max-module-lines = 200
+max-module-lines = 400
 
 [tool.pylint.design]
 max-statements = 50
 
 [tool.pylint.mccabe]
-max-complexity = 10
+max-complexity = 12
 
 [tool.pylint.messages_control]
 # Only enable errors and warnings

@@ -14,10 +14,11 @@ from iarena.interfacing.IGameRules import IGameRules
 from iarena.interfacing.IMovement import IMovement
 from iarena.interfacing.IPosition import IPosition
 from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.utilizing.protocoling import ITextRenderable
 from iarena.utilizing.square_map.draw_square_map import plot_square_map
 
 
-class GoldMineGameRules(IGameRules):
+class GoldMineGameRules(IGameRules, ITextRenderable):
     """Implement state transitions and scoring for GoldMine."""
 
     def __init__(
@@ -266,3 +267,34 @@ class GoldMineGameRules(IGameRules):
             empty_tiles=set(position.dug_tiles),
             **kwargs,
         )
+
+    def to_text(self) -> str:
+        """Render rules configuration as terminal-friendly text.
+
+        Args:
+            None.
+
+        Returns:
+            Multi-line summary of GoldMine rules configuration.
+        """
+        rows, cols = self._cost_map.size()
+        return "\n".join(
+            [
+                "GoldMine Rules:",
+                f"  - map size: {rows} x {cols}",
+                f"  - start: ({self._start.x}, {self._start.y})",
+                f"  - target: ({self._target.x}, {self._target.y})",
+                f"  - hint mode: {self._hint_mode.value}",
+            ]
+        )
+
+    def __str__(self) -> str:
+        """Render rules using the text-rendering protocol.
+
+        Args:
+            None.
+
+        Returns:
+            Same value as :meth:`to_text`.
+        """
+        return self.to_text()

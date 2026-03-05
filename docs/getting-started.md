@@ -54,11 +54,24 @@ helpers to detect optional interfaces.
 
 ## Arena loop
 
-Use `iarena.interfacing.IArena` as an abstract base game loop object. It stores:
+Use `iarena.arening.GenericArena` for a concrete reusable game loop.
+`GenericArena` stores:
 
 - one rules object,
 - one current position,
 - and one ordered collection of players.
 
-Children implement `play() -> ScoreBoard`, and can reuse the default
-`_play_loop()` helper to execute turns until `rules.finished(position)`.
+It asks the active player (`position.next_player()`) to choose one movement,
+validates legality, applies the movement, and repeats until finish.
+When a stop condition is triggered, it raises `ArenaStoppedError` by default.
+Set `raise_on_stop=False` to return the failure score instead.
+
+Use `iarena.arening.ArenaFactory` to compose optional behavior blocks:
+
+- per-turn timeout (`PerTurnTimeLimitCondition`),
+- whole-game timeout (`GameTimeLimitCondition`),
+- turn cap (`TurnLimitCondition`),
+- score threshold stop (`ScoreLimitCondition`),
+- history storage (`GameHistoryObserver`).
+
+Use `iarena.arening.TerminalArena` for terminal rendering and debugging.

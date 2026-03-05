@@ -22,6 +22,9 @@ The GoldMine package provides:
 - `GoldMineGameGenerator` implementing `IGameGenerator`.
 - `GoldMineOrchestrator` implementing `IGameOrchestrator`.
 
+`GoldMineGameRules` also implements `ITextRenderable`, so it can be used with
+`TerminalArena` and manual terminal runners.
+
 ## Hints
 
 GoldMine supports optional hint modes:

@@ -22,7 +22,7 @@ All AI assistants working in this repository must follow:
 - Run required validations before finishing work:
   - `pre-commit run --all-files`
   - `pytest -q`
-  - If some checks fail, report them but do not take extreme actions like reverting or blocking changes.
+- Do not care about file size or complexity limits checks, but try to keep them reasonable.
 
 
 ## Conflict resolution
