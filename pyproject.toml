@@ -23,12 +23,15 @@ classifiers = [
 ]
 keywords = ["games", "game-framework", "ai-players", "turn-based", "tournaments", "iarena"]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "numpy>=1.26.0",
+]
 
 [project.optional-dependencies]
 lint = [
     "ruff>=0.14.0",
     "mypy>=1.0.0",
+    "pylint>=3.3.0",
     "codespell>=2.0.0",
     "pre-commit>=3.8.0",
 ]
@@ -47,6 +50,7 @@ app = [
 dev = [
     "ruff>=0.14.0",
     "mypy>=1.0.0",
+    "pylint>=3.3.0",
     "codespell>=2.0.0",
     "pre-commit>=3.8.0",
     "pytest>=7.0.0",
@@ -117,6 +121,27 @@ select = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["iarena"]
+
+[tool.pylint.main]
+py-version = "3.12"
+load-plugins = ["pylint.extensions.mccabe"]
+
+[tool.pylint.format]
+max-line-length = 120
+max-module-lines = 200
+
+[tool.pylint.design]
+max-statements = 50
+
+[tool.pylint.mccabe]
+max-complexity = 10
+
+[tool.pylint.messages_control]
+# Only enable errors and warnings
+disable = [
+    "C", # Disable all Convention messages (formatting, naming, etc.)
+    "R", # Disable all Refactor messages (too many arguments, etc.)
+]
 
 [tool.mypy]
 python_version = "3.12"

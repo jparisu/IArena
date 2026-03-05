@@ -7,7 +7,7 @@ from iarena.utilizing.protocoling import (
     supports_plotting,
     supports_text_rendering,
 )
-from iarena.utilizing.RandomGenerator import RandomGenerator
+from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 from iarena.utilizing.Timer import Timer
 
 __all__ = [

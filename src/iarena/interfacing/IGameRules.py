@@ -27,12 +27,12 @@ class IGameRules(ABC):
     @abstractmethod
     def n_players(self) -> int:
         """Return how many players participate in this game."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def first_position(self) -> IPosition:
         """Build and return the initial position of a new game."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def next_position(self, movement: IMovement, position: IPosition) -> IPosition:
@@ -45,22 +45,22 @@ class IGameRules(ABC):
         Returns:
             The resulting position after the movement.
         """
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def possible_movements(self, position: IPosition) -> Iterator[IMovement]:
         """Yield legal movements available from a given position."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def finished(self, position: IPosition) -> bool:
         """Return `True` when the game is terminal for the given position."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def score(self, position: IPosition) -> ScoreBoard:
         """Evaluate and return the scoreboard for a given position."""
-        ...
+        raise NotImplementedError
 
     def current_score(self, position: IPosition) -> ScoreBoard:
         """Return the current scoreboard for a given position.
@@ -85,7 +85,7 @@ class IGameGenerator(Protocol):
 
     def build_game(self, values: Mapping[str, Any]) -> IGameRules:
         """Create and return game rules configured by `values`."""
-        ...
+        raise NotImplementedError
 
 
 @runtime_checkable
@@ -94,4 +94,4 @@ class IGameSolver(Protocol):
 
     def score_bounds(self, rules: IGameRules) -> tuple[ScoreBoard, ScoreBoard]:
         """Return minimum and maximum scoreboards reachable by game rules."""
-        ...
+        raise NotImplementedError

@@ -30,9 +30,10 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        additional_dependencies:
-        - types-setuptools
-        - types-PyYAML
+        language: system
+        # additional_dependencies:
+        # - types-setuptools
+        # - types-PyYAML
         args: ["--config-file=pyproject.toml", "src/iarena"]
         exclude: (^tests/)|(^\.dev/)|(^docs/)
 
@@ -44,11 +45,30 @@ repos:
       - id: codespell
         args: ["--config", ".spelling/.codespellrc"]
 
-  # mkdocs build check
+  # policy and docs checks
   - repo: local
     hooks:
+      - id: pylint-size-and-complexity
+        name: pylint size and complexity limits
+        entry: pylint --recursive=y --disable=all --enable=line-too-long,too-many-lines,too-many-statements,too-complex --score=n src/iarena
+        language: python
+        additional_dependencies: ["pylint>=3.3.0"]
+        pass_filenames: false
+        exclude: (^tests/)|(^\.dev/)|(^docs/)
       - id: mkdocs
         name: mkdocs build (docs must compile)
         entry: mkdocs build --strict --quiet
         language: system
         pass_filenames: false
+
+  # pylint
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.1.0  # Use the latest version
+    hooks:
+    -   id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        # This tells pre-commit to check your specific source folder
+        files: ^src/iarena/

@@ -11,7 +11,7 @@ class ITextRenderable(Protocol):
 
     def to_text(self) -> str:
         """Render this object as plain text."""
-        ...
+        raise NotImplementedError
 
 
 @runtime_checkable
@@ -24,7 +24,7 @@ class IPlotRenderable(Protocol):
 
     def plot(self, target: Any | None = None) -> Any:
         """Draw this object on an optional backend-specific target."""
-        ...
+        raise NotImplementedError
 
 
 def supports_text_rendering(value: object) -> TypeGuard[ITextRenderable]:

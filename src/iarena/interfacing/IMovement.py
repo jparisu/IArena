@@ -11,5 +11,3 @@ class IMovement:
     The interface is intentionally empty: movement structure is fully defined by
     concrete games.
     """
-
-    pass

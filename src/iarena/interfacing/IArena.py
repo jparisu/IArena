@@ -57,4 +57,4 @@ class IArena(ABC):
     @abstractmethod
     def play(self) -> ScoreBoard:
         """Run the game and return its resulting scoreboard."""
-        ...
+        raise NotImplementedError

@@ -24,22 +24,22 @@ class IGameOrchestrator(ABC):
     @abstractmethod
     def game_rules_class(self) -> type[IGameRules]:
         """Return the game rules class used by this game."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def position_class(self) -> type[IPosition]:
         """Return the position class used by this game."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def movement_class(self) -> type[IMovement]:
         """Return the movement class used by this game."""
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def player_class(self) -> type[IPlayer]:
         """Return the default player class used by this game."""
-        ...
+        raise NotImplementedError
 
     def terminal_player_class(self) -> type[ITerminalPlayer] | None:
         """Return terminal-playable player class when available."""

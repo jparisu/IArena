@@ -47,7 +47,7 @@ class IPlayer(ABC):
         Returns:
             Selected movement to be applied by the arena.
         """
-        ...
+        raise NotImplementedError
 
     def starting_game(self, rules: IGameRules, player_index: PlayerIndex) -> None:
         """Lifecycle hook called once before a game starts.
@@ -59,6 +59,7 @@ class IPlayer(ABC):
             rules: Rules object that governs the upcoming game.
             player_index: Index assigned to this player in the match.
         """
+        del rules, player_index
         return None
 
 
@@ -68,7 +69,7 @@ class ITerminalPlayer(Protocol):
 
     def play_from_terminal(self, position: IPosition) -> IMovement:
         """Select a movement by interacting through the terminal."""
-        ...
+        raise NotImplementedError
 
 
 @runtime_checkable
@@ -77,4 +78,4 @@ class IGraphicalPlayer(Protocol):
 
     def play_from_ui(self, position: IPosition, ui_context: Any | None = None) -> IMovement:
         """Select a movement by interacting through a UI backend."""
-        ...
+        raise NotImplementedError

@@ -15,6 +15,9 @@ class RandomGenerator:
 
         Args:
             seed: Initial seed. If ``None``, a random seed is generated.
+
+        Returns:
+            `None`.
         """
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
@@ -56,13 +59,20 @@ class RandomGenerator:
             seed: New seed value.
             consistent: Whether to also update the stored seed used for
                 consistency tracking.
+
+        Returns:
+            `None`.
         """
         if consistent:
             self.seed = seed
         self.rng = random.Random(seed)
 
     def reset_seed(self) -> None:
-        """Reset the generator to the initial seed."""
+        """Reset the generator to the initial seed.
+
+        Returns:
+            `None`.
+        """
         self.set_seed(self.initial_seed, consistent=False)
 
     def shuffle(self, x: MutableSequence[T]) -> None:
@@ -70,6 +80,9 @@ class RandomGenerator:
 
         Args:
             x: Sequence to shuffle.
+
+        Returns:
+            `None`.
         """
         self.rng.shuffle(x)
 

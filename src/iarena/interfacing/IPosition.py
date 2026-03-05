@@ -29,4 +29,4 @@ class IPosition(ABC):
         Returns:
             Index of the player whose turn is next.
         """
-        ...
+        raise NotImplementedError

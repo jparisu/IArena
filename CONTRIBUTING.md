@@ -2,6 +2,15 @@
 
 Thank you for your interest in contributing to `iarena`! This document provides guidelines and instructions for contributing to this project.
 
+## Mandatory Standards
+
+All contributors (human and AI) must read and follow:
+
+1. [AGENTS.md](AGENTS.md)
+2. This file (`CONTRIBUTING.md`)
+
+If there is a conflict, direct maintainer instructions for the current task take priority.
+
 ## Getting Started
 
 1. Fork the repository on GitHub
@@ -43,8 +52,15 @@ We use several tools to maintain code quality:
 - **ruff**: For linting and formatting
 - **mypy**: For type checking
 - **pytest**: For testing
+- **pre-commit**: As the mandatory quality gate
 
-Run these checks before committing:
+Run this mandatory check before committing:
+
+```bash
+pre-commit run --all-files
+```
+
+You can additionally run these checks directly:
 
 ```bash
 # Format code
@@ -65,7 +81,8 @@ pytest tests/
 All contributions should include tests:
 
 1. Write tests in the `tests/` directory
-2. Follow existing test patterns
+2. Add tests for every new class and every new public method/function
+3. Follow existing test patterns
 3. Ensure all tests pass:
    ```bash
    pytest tests/ -v
@@ -80,8 +97,9 @@ All contributions should include tests:
 Update documentation when adding or changing features:
 
 1. Add/update docstrings in code (Google style)
-2. Update relevant documentation files in `docs/`
-3. Build documentation locally:
+2. Document all user-facing classes/features in `docs/`
+3. Update relevant documentation files in `docs/`
+4. Build documentation locally:
    ```bash
    mkdocs serve
    ```
@@ -90,10 +108,11 @@ Update documentation when adding or changing features:
 ## Pull Request Process
 
 1. Update CHANGELOG.md with your changes
-2. Ensure all tests pass
-3. Ensure code meets style guidelines
-4. Update documentation as needed
-5. Submit a pull request with:
+2. Run `pre-commit run --all-files`
+3. Ensure all tests pass
+4. Ensure code meets style guidelines
+5. Update documentation as needed
+6. Submit a pull request with:
    - Clear description of changes
    - Reference to related issues
    - Screenshots for UI changes (if applicable)
@@ -102,9 +121,11 @@ Update documentation when adding or changing features:
 
 - [ ] Code follows style guidelines
 - [ ] Tests added/updated and passing
+- [ ] Tests cover new classes/public methods
 - [ ] Documentation updated
+- [ ] User-facing changes documented in `docs/`
 - [ ] CHANGELOG.md updated
-- [ ] Pre-commit hooks pass
+- [ ] `pre-commit run --all-files` passes
 - [ ] All CI checks pass
 
 ## Code Review Process
