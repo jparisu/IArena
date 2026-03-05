@@ -184,6 +184,50 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         """
         return tuple(self._cost_map.possible_directions(coordinate))
 
+    def cost_map(self) -> GoldMineSquareMap:
+        """Return a defensive copy of the digging-cost map.
+
+        Args:
+            None.
+
+        Returns:
+            Copy of the configured cost map.
+        """
+        return self._cost_map.copy()
+
+    def start_coordinate(self) -> GoldMineCoordinate:
+        """Return configured start coordinate.
+
+        Args:
+            None.
+
+        Returns:
+            Start coordinate.
+        """
+        return self._start
+
+    def target_coordinate(self) -> GoldMineCoordinate:
+        """Return configured target coordinate.
+
+        Args:
+            None.
+
+        Returns:
+            Target coordinate.
+        """
+        return self._target
+
+    def heuristic_map(self) -> GoldMineSquareMap:
+        """Return a defensive copy of the heuristic map.
+
+        Args:
+            None.
+
+        Returns:
+            Copy of heuristic map.
+        """
+        return self._heuristic_map.copy()
+
     def cost_at(self, coordinate: GoldMineCoordinate) -> CostType:
         """Return digging cost at coordinate.
 

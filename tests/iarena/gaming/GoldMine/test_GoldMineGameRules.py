@@ -124,6 +124,31 @@ def test_rules_finished_score_cost_and_accumulated_cost() -> None:
     assert rules.accumulated_cost([Coordinate(0, 0), Coordinate(1, 0)]) == 4.0
 
 
+def test_rules_expose_copy_accessors_for_maps_and_coordinates() -> None:
+    """Rules should expose start/target coordinates and defensive map copies.
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
+    rules = _build_rules(
+        hint_mode=GoldMineHintMode.DENSITY,
+        heuristic_map=SquareMap([[10.0, 20.0], [30.0, 40.0]]),
+    )
+
+    cost_map_copy = rules.cost_map()
+    heuristic_map_copy = rules.heuristic_map()
+    assert rules.start_coordinate() == Coordinate(0, 0)
+    assert rules.target_coordinate() == Coordinate(1, 1)
+
+    cost_map_copy[(0, 1)] = 999.0
+    heuristic_map_copy[(1, 0)] = 777.0
+    assert rules.cost_at(Coordinate(0, 1)) == 2.0
+    assert rules.density_hint(Coordinate(1, 0)) == 30.0
+
+
 def test_rules_hint_mode_and_enabled_helper() -> None:
     """Rules should expose active hint mode and enablement checks.
 

@@ -75,3 +75,14 @@ Use `iarena.arening.ArenaFactory` to compose optional behavior blocks:
 - history storage (`GameHistoryObserver`).
 
 Use `iarena.arening.TerminalArena` for terminal rendering and debugging.
+
+## Streamlit apps
+
+Use `iarena.apping` to build interactive Streamlit frontends for single-player
+optimization games.
+
+- `OptimizationGamePage` defines one game page (left config + center rendering).
+- `StreamlitGameIndex` and `render_games_index_page` provide the main index page
+  with a sidebar game selector.
+- `run_single_player_optimization_game` runs the full game and stores replay
+  frames for progression controls (play/pause/step/seek).

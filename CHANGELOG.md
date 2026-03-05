@@ -19,5 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ArenaStoppedError` by default, with optional `raise_on_stop=False` fallback
 - New thread timeout utility in `utilizing.threadinging` to run/interrupt player
   turns with exception propagation to arena main thread
+- New `apping` module with generic Streamlit helpers for single-player
+  optimization games, replay controls, and a multi-game index page
+- New GoldMine Streamlit page builder reusing generic `apping` components
+- Apping UI update: left-panel tabs (`Game`, `Players`, `Controls`) and
+  interactive playable-player flow before replay mode
 
 [Unreleased]: https://github.com/jparisu/iarena/compare/v0.1.0...HEAD

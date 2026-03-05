@@ -31,6 +31,8 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Getting Started: getting-started.md
+  - Apps:
+      - Overview: apps/overview.md
   - Arenas:
       - Overview: arenas/overview.md
   - Games:

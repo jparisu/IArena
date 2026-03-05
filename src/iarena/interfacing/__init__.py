@@ -18,6 +18,7 @@ from iarena.interfacing.IGameRules import IGameGenerator, IGameRules, IGameSolve
 from iarena.interfacing.IMovement import IMovement
 from iarena.interfacing.IPlayer import IGraphicalPlayer, IPlayer, ITerminalPlayer, PlayerIndex
 from iarena.interfacing.IPosition import IPosition
+from iarena.interfacing.VisualGame import VisualGame, VisualGameState
 from iarena.interfacing.ScoreBoard import Score, ScoreBoard
 from iarena.utilizing.protocoling import (
     IPlotRenderable,
@@ -39,6 +40,8 @@ __all__ = [
     "IPlotRenderable",
     "IPosition",
     "ITerminalPlayer",
+    "VisualGame",
+    "VisualGameState",
     "ITextRenderable",
     "PlayerIndex",
     "Score",

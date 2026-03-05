@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
+
+from iarena.interfacing.VisualGame import VisualGame, VisualGameState
 
 if TYPE_CHECKING:
     from iarena.interfacing.IGameRules import IGameGenerator, IGameRules, IGameSolver
@@ -13,7 +16,7 @@ if TYPE_CHECKING:
     from iarena.utilizing.protocoling import IPlotRenderable, ITextRenderable
 
 
-class IGameOrchestrator(ABC):
+class IGameOrchestrator(ABC, VisualGame):
     """Describe which classes are used by one concrete game family.
 
     This interface returns class objects only (never instances), so external
@@ -88,3 +91,72 @@ class IGameOrchestrator(ABC):
     def has_plotting(self) -> bool:
         """Return whether this game exposes plot-renderable state/actions."""
         return self.plot_renderable_class() is not None
+
+    def visual_configuration(self, container: object) -> Mapping[str, object]:
+        """Render game-specific visual configuration controls.
+
+        Args:
+            container: Streamlit-like container.
+
+        Returns:
+            Empty mapping for orchestrators without visual controls.
+        """
+        del container
+        return {}
+
+    def visual_description(self, container: object, configuration: Mapping[str, object]) -> None:
+        """Render visual description in configuration mode.
+
+        Args:
+            container: Streamlit-like container.
+            configuration: Current game configuration.
+
+        Returns:
+            None.
+        """
+        del configuration
+        if hasattr(container, "write"):
+            container.write("No visual description available for this game.")
+
+    def visual_position(self, container: object, view_state: object) -> None:
+        """Render visual position in playing/reviewing modes.
+
+        Args:
+            container: Streamlit-like container.
+            view_state: Visual frame/view state.
+
+        Returns:
+            None.
+        """
+        del view_state
+        if hasattr(container, "write"):
+            container.write("No visual position renderer available for this game.")
+
+    def visual_movements(self, container: object, view_state: object, state: VisualGameState) -> None:
+        """Render visual movement information.
+
+        Args:
+            container: Streamlit-like container.
+            view_state: Visual frame/view state.
+            state: Current visual game state.
+
+        Returns:
+            None.
+        """
+        del view_state
+        if hasattr(container, "write"):
+            container.write(f"No visual movements renderer available in state {state.value}.")
+
+    def visual_scoreboard(self, container: object, view_state: object) -> None:
+        """Render visual scoreboard details.
+
+        Args:
+            container: Streamlit-like container.
+            view_state: Visual frame/view state.
+
+        Returns:
+            None.
+        """
+        del view_state
+        if hasattr(container, "write"):
+            container.write("No visual scoreboard renderer available for this game.")
