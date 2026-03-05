@@ -11,5 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial project structure
 - Documentation
 - CI/CD workflows with GitHub Actions
+- New `GoldMine` reference game with modular classes, orchestrator, and tests
 
 [Unreleased]: https://github.com/jparisu/iarena/compare/v0.1.0...HEAD

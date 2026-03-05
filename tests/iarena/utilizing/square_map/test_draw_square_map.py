@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from iarena.utilizing.square_map.SquareMap import Coordinate, SquareMap
 from iarena.utilizing.square_map.draw_square_map import plot_square_map
+from iarena.utilizing.square_map.SquareMap import Coordinate, SquareMap
 
 
 class FakeFigure:

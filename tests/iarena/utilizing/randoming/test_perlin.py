@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 from iarena.utilizing.randoming.perlin import perlin_generator, perlin_value_generator
+from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 
 
 def test_perlin_value_generator_uses_noise_module(monkeypatch) -> None:

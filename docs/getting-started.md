@@ -4,12 +4,14 @@ Current repository status:
 
 - package layout with `src/` structure,
 - quality tooling (`ruff`, `mypy`, `pytest`, `codespell`),
-- MkDocs documentation setup.
+- MkDocs documentation setup,
+- one reference game (`GoldMine`) with rules, position, movement, generator,
+  baseline player, and game orchestrator.
 
 Next implementation milestones:
 
 1. Define game interfaces and abstract base classes.
-2. Add one reference game implementation.
+2. Expand the GoldMine reference game with additional player strategies.
 3. Add one baseline player and tournament runner.
 4. Expand tests for core game loop and player contracts.
 

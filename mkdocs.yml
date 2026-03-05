@@ -31,4 +31,6 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Getting Started: getting-started.md
+  - Games:
+      - GoldMine: games/goldmine.md
   - API Reference: api/index.md
