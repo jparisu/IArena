@@ -12,23 +12,23 @@ from iarena.arening.ArenaBehaviors import (
     IArenaStopCondition,
 )
 from iarena.arening.GenericArenaLifecycle import GenericArenaLifecycleMixin
-from iarena.interfacing.IArena import IArena
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.arening.Arena import Arena
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.playing.Player import Player
 from iarena.utilizing.Timer import Timer
 
 
-class GenericArenaBase(GenericArenaLifecycleMixin, IArena):
+class GenericArenaBase(GenericArenaLifecycleMixin, Arena):
     """Provide shared context, hook, and observer helpers for concrete arenas."""
 
     def __init__(
         self,
-        rules: IGameRules,
-        players: Sequence[IPlayer],
-        position: IPosition | None = None,
+        rules: GameRules,
+        players: Sequence[Player],
+        position: Position | None = None,
         stop_conditions: Sequence[IArenaStopCondition] | None = None,
         observers: Sequence[IArenaObserver] | None = None,
         raise_on_stop: bool = True,
@@ -130,7 +130,7 @@ class GenericArenaBase(GenericArenaLifecycleMixin, IArena):
             current_score=current_score,
         )
 
-    def _request_movement(self, player: IPlayer, player_index: int) -> IMovement:
+    def _request_movement(self, player: Player, player_index: int) -> Movement:
         """Request one movement from active player.
 
         Args:

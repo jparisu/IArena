@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.playing.Player import Player
 from iarena.gaming.GoldMine.GoldMineMovement import GoldMineMovement
 from iarena.gaming.GoldMine.GoldMinePosition import GoldMinePosition
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer
-from iarena.interfacing.IPosition import IPosition
 
 
-class GoldMinePlayer(IPlayer):
+class GoldMinePlayer(Player):
     """Greedy baseline player that minimizes immediate digging cost."""
 
-    def play(self, position: IPosition) -> IMovement:
+    def play(self, position: Position) -> Movement:
         """Choose one legal movement from the provided position.
 
         Args:

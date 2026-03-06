@@ -7,9 +7,9 @@ import time
 from iarena.arening.ArenaBehaviors import ArenaContext, ArenaStopDecision, ArenaTurnRecord, PerTurnTimeLimitCondition
 from iarena.arening.ArenaExceptions import ArenaStoppedError
 from iarena.arening.GenericArenaBase import GenericArenaBase
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.playing.Player import Player
 from iarena.utilizing.threadinging import ThreadCallTimeoutError, run_callable_in_worker_thread
 
 
@@ -53,7 +53,7 @@ class GenericArena(GenericArenaBase):
             condition for condition in self._stop_conditions if isinstance(condition, PerTurnTimeLimitCondition)
         )
 
-    def _request_movement_timed(self, player: IPlayer, player_index: int) -> tuple[IMovement, float]:
+    def _request_movement_timed(self, player: Player, player_index: int) -> tuple[Movement, float]:
         """Request one movement, enforcing thread timeout when configured.
 
         Args:

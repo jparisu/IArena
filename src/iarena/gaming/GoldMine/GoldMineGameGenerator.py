@@ -5,14 +5,17 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from iarena.desining.gaming.GameConfiguration import GameConfiguration
+from iarena.desining.gaming.GameGenerator import GameGenerator
+from iarena.desining.gaming.GameRules import GameRules
 from iarena.gaming.GoldMine.GoldMine import GoldMineCoordinate, GoldMineSquareMap
+from iarena.gaming.GoldMine.GoldMineGameConfiguration import GoldMineGameConfiguration
 from iarena.gaming.GoldMine.GoldMineGameRules import GoldMineGameRules
 from iarena.gaming.GoldMine.GoldMineHintMode import GoldMineHintMode
-from iarena.interfacing.IGameRules import IGameGenerator, IGameRules
 from iarena.utilizing.square_map.SquareMap import Coordinate, SquareMap
 
 
-class GoldMineGameGenerator(IGameGenerator):
+class GoldMineGameGenerator(GameGenerator):
     """Build GoldMine rules from a plain dictionary configuration."""
 
     def _require(self, values: Mapping[str, Any], key: str) -> Any:
@@ -78,28 +81,42 @@ class GoldMineGameGenerator(IGameGenerator):
             return GoldMineHintMode.from_value(raw)
         raise TypeError("hint_mode must be GoldMineHintMode or string")
 
-    def build_game(self, values: Mapping[str, Any]) -> IGameRules:
-        """Build a ``GoldMineGameRules`` object from dictionary values.
+    def _as_goldmine_configuration(
+        self,
+        configuration: GameConfiguration | GoldMineGameConfiguration | Mapping[str, Any],
+    ) -> GoldMineGameConfiguration:
+        """Normalize supported configuration values into GoldMine configuration.
 
         Args:
-            values: Configuration dictionary. Required keys are ``map`` and ``target``.
+            configuration: Generic or game-specific configuration value.
+
+        Returns:
+            Parsed GoldMine configuration instance.
+        """
+        if isinstance(configuration, GoldMineGameConfiguration):
+            return configuration
+        if isinstance(configuration, GameConfiguration):
+            return GoldMineGameConfiguration.from_game_configuration(configuration)
+        return GoldMineGameConfiguration.from_dict(configuration)
+
+    def build_game(
+        self,
+        configuration: GameConfiguration | GoldMineGameConfiguration | Mapping[str, Any],
+    ) -> GameRules:
+        """Build a ``GoldMineGameRules`` object from a configuration payload.
+
+        Args:
+            configuration: Generic or game-specific configuration payload.
 
         Returns:
             Configured GoldMine rules object.
         """
-        cost_map = self._parse_map(self._require(values, "map"), "map")
-        target = self._parse_coordinate(self._require(values, "target"), "target")
-        start = self._parse_coordinate(values.get("start", (0, 0)), "start")
-        hint_mode = self._parse_hint_mode(values.get("hint_mode"))
-
-        heuristic_map: GoldMineSquareMap | None = None
-        if "heuristic_map" in values:
-            heuristic_map = self._parse_map(values["heuristic_map"], "heuristic_map")
+        parsed_configuration = self._as_goldmine_configuration(configuration)
 
         return GoldMineGameRules(
-            cost_map=cost_map,
-            target=target,
-            start=start,
-            hint_mode=hint_mode,
-            heuristic_map=heuristic_map,
+            cost_map=parsed_configuration.cost_map,
+            target=parsed_configuration.target,
+            start=parsed_configuration.start,
+            hint_mode=parsed_configuration.hint_mode,
+            heuristic_map=parsed_configuration.heuristic_map,
         )

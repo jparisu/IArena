@@ -1,5 +1,6 @@
 """Utility helpers for IArena runtime support."""
 
+from iarena.utilizing.colors import Color
 from iarena.utilizing.protocoling import (
     IPlotRenderable,
     ITextRenderable,
@@ -8,10 +9,25 @@ from iarena.utilizing.protocoling import (
     supports_text_rendering,
 )
 from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
+from iarena.utilizing.structuring import (
+    Factory,
+    GenericEnumRegistry,
+    GenericFactory,
+    GenericParameter,
+    GenericRegistry,
+    GenericSingleton,
+)
 from iarena.utilizing.threadinging import ThreadCallTimeoutError, run_callable_in_worker_thread
 from iarena.utilizing.Timer import Timer
 
 __all__ = [
+    "Color",
+    "Factory",
+    "GenericEnumRegistry",
+    "GenericFactory",
+    "GenericParameter",
+    "GenericRegistry",
+    "GenericSingleton",
     "IPlotRenderable",
     "ITextRenderable",
     "RandomGenerator",

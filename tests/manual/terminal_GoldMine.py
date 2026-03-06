@@ -21,8 +21,8 @@ if str(SRC_PATH) not in sys.path:
 
 from iarena.arening import ArenaFactory, ArenaStoppedError, GenericArena
 from iarena.gaming.GoldMine import GoldMineGameGenerator
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IPlayer import IPlayer
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.playing.Player import Player
 from iarena.playing.TerminalPlayer import TerminalPlayer
 
 
@@ -85,7 +85,7 @@ def _build_default_map(rows: int, cols: int, default_cost: float) -> list[list[f
     return [[default_cost for _ in range(cols)] for _ in range(rows)]
 
 
-def _build_rules_and_players(arguments: argparse.Namespace) -> tuple[IGameRules, list[IPlayer]]:
+def _build_rules_and_players(arguments: argparse.Namespace) -> tuple[GameRules, list[Player]]:
     """Build GoldMine rules and terminal player from CLI arguments.
 
     Args:

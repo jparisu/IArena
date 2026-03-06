@@ -1,0 +1,129 @@
+@startuml
+title IArena Desining - Class Diagram
+
+skinparam classAttributeIconSize 0
+
+abstract class Arena {
+  +play() : ScoreBoard
+}
+
+abstract class GameRules {
+  +n_players() : int
+  +first_position() : Position
+  +next_position(movement: Movement, position: Position) : Position
+  +possible_movements(position: Position) : Iterator<Movement>
+  +finished(position: Position) : bool
+  +score(position: Position) : ScoreBoard
+  +current_score(position: Position) : ScoreBoard
+  +is_movement_possible(movement: Movement, position: Position) : bool
+}
+
+class GameConfiguration {
+  +from_dict(values: Mapping[str, Any]) : GameConfiguration
+  +from_yaml(yaml_content: str) : GameConfiguration
+  +from_yaml_file(file_path: str | Path) : GameConfiguration
+  +to_dict() : dict[str, Any]
+}
+
+interface GameGenerator {
+  +build_game(configuration: GameConfiguration) : GameRules
+}
+
+interface GameSolver {
+  +score_bounds(rules: GameRules) : tuple<ScoreBoard, ScoreBoard>
+}
+
+class Movement
+
+interface StrMovement {
+  +to_str() : str
+}
+
+abstract class Player {
+  +name() : str
+  +play(position: Position) : Movement
+  +starting_game(rules: GameRules, player_index: int) : None
+}
+
+abstract class Position {
+  +next_player() : int
+}
+
+abstract class GameOrchestrator {
+  +game_rules_class() : type<GameRules>
+  +position_class() : type<Position>
+  +movement_class() : type<Movement>
+  +player_class() : type<Player>
+  +game_configuration_class() : type<GameConfiguration>?
+  +game_generator_class() : type<GameGenerator>?
+  +game_solver_class() : type<GameSolver>?
+  +terminal_game_class() : type<TerminalGame>?
+  +streamlit_game_class() : type<StreamlitGame>?
+}
+
+interface ITextRenderable
+interface IPlotRenderable
+
+class ScoreBoard {
+  +define_score(player: int, score: float) : None
+  +get_score(player: int) : float
+  +add_score(player: int, score: float) : None
+  +winner() : int?
+  +join(score_board: ScoreBoard) : None
+  +n_players() : int
+}
+
+abstract class TerminalGame {
+  +position_to_terminal(position: Position) : str
+  +terminal_instructions() : str?
+  +movement_from_terminal(raw_movement: str, possible_movements: Sequence<Movement>) : Movement
+  +movement_to_terminal(movement: Movement) : str
+}
+
+interface StreamlitGame {
+  +streamlit_instructions(streamlit_container: Any) : None
+  +render_streamlit_position(position: Position, streamlit_container: Any) : None
+  +render_streamlit_configuration(streamlit_container: Any) : GameConfiguration
+  +select_streamlit_movement(position: Position, streamlit_container: Any) : Movement
+}
+
+StrMovement ..|> Movement
+
+Arena --> GameRules : uses
+Arena --> Player : uses
+Arena --> Position : holds current
+Arena --> ScoreBoard : returns
+
+Player --> Position : reads
+Player --> Movement : returns
+Player --> GameRules : lifecycle hook
+
+GameRules --> Position : reads/writes
+GameRules --> Movement : consumes
+GameRules --> ScoreBoard : returns
+
+GameGenerator --> GameConfiguration : consumes
+GameGenerator --> GameRules : builds
+GameSolver --> GameRules : analyzes
+GameSolver --> ScoreBoard : returns bounds
+
+GameOrchestrator --> GameRules : exposes class
+GameOrchestrator --> Position : exposes class
+GameOrchestrator --> Movement : exposes class
+GameOrchestrator --> Player : exposes class
+GameOrchestrator --> GameConfiguration : optional
+GameOrchestrator --> GameGenerator : optional
+GameOrchestrator --> GameSolver : optional
+GameOrchestrator --> TerminalGame : optional
+GameOrchestrator --> StreamlitGame : optional
+GameOrchestrator --> ITextRenderable : optional
+GameOrchestrator --> IPlotRenderable : optional
+
+TerminalGame --> Position : renders
+TerminalGame --> Movement : parses/renders
+
+StreamlitGame --> Position : renders/selects
+StreamlitGame --> Movement : returns
+StreamlitGame --> GameConfiguration : renders
+
+@enduml

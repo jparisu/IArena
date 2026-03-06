@@ -15,9 +15,9 @@ from iarena.arening.ArenaBehaviors import (
 )
 from iarena.arening.GenericArena import GenericArena
 from iarena.arening.TerminalArena import OutputFunction, TerminalArena
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IPlayer import IPlayer
-from iarena.interfacing.IPosition import IPosition
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Position import Position
+from iarena.desining.playing.Player import Player
 
 
 class ArenaFactory:
@@ -25,9 +25,9 @@ class ArenaFactory:
 
     @staticmethod
     def build(
-        rules: IGameRules,
-        players: Sequence[IPlayer],
-        position: IPosition | None = None,
+        rules: GameRules,
+        players: Sequence[Player],
+        position: Position | None = None,
         *,
         per_turn_time_limit_seconds: float | None = None,
         game_time_limit_seconds: float | None = None,

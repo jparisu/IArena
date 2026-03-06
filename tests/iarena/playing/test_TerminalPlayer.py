@@ -7,21 +7,21 @@ from dataclasses import dataclass
 
 import pytest
 
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
 from iarena.playing.TerminalPlayer import TerminalPlayer
 
 
 @dataclass(frozen=True, slots=True)
-class DummyMovement(IMovement):
+class DummyMovement(Movement):
     """Minimal movement for terminal-player tests."""
 
     value: str
 
 
-class DummyPosition(IPosition):
+class DummyPosition(Position):
     """Minimal position for terminal-player tests."""
 
     def next_player(self) -> int:
@@ -36,7 +36,7 @@ class DummyPosition(IPosition):
         return 0
 
 
-class DummyRules(IGameRules):
+class DummyRules(GameRules):
     """Simple rules exposing a predefined list of legal movements."""
 
     def __init__(self, movements: list[DummyMovement]) -> None:
@@ -61,7 +61,7 @@ class DummyRules(IGameRules):
         """
         return 1
 
-    def first_position(self) -> IPosition:
+    def first_position(self) -> Position:
         """Return an initial position.
 
         Args:
@@ -72,7 +72,7 @@ class DummyRules(IGameRules):
         """
         return DummyPosition()
 
-    def next_position(self, movement: IMovement, position: IPosition) -> IPosition:
+    def next_position(self, movement: Movement, position: Position) -> Position:
         """Return unchanged position.
 
         Args:
@@ -85,7 +85,7 @@ class DummyRules(IGameRules):
         del movement
         return position
 
-    def possible_movements(self, position: IPosition) -> Iterator[IMovement]:
+    def possible_movements(self, position: Position) -> Iterator[Movement]:
         """Yield legal movements for a position.
 
         Args:
@@ -97,7 +97,7 @@ class DummyRules(IGameRules):
         del position
         yield from self._movements
 
-    def finished(self, position: IPosition) -> bool:
+    def finished(self, position: Position) -> bool:
         """Return whether game is finished.
 
         Args:
@@ -109,7 +109,7 @@ class DummyRules(IGameRules):
         del position
         return False
 
-    def score(self, position: IPosition) -> ScoreBoard:
+    def score(self, position: Position) -> ScoreBoard:
         """Return a zero scoreboard.
 
         Args:

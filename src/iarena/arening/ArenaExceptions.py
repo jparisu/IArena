@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
 
 
 class ArenaStoppedError(RuntimeError):

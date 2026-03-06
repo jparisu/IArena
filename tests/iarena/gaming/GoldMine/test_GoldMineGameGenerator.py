@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from iarena.desining.gaming.GameConfiguration import GameConfiguration
+from iarena.gaming.GoldMine.GoldMineGameConfiguration import GoldMineGameConfiguration
 from iarena.gaming.GoldMine.GoldMineGameGenerator import GoldMineGameGenerator
 from iarena.gaming.GoldMine.GoldMineGameRules import GoldMineGameRules
 from iarena.gaming.GoldMine.GoldMineHintMode import GoldMineHintMode
@@ -59,6 +61,43 @@ def test_generator_supports_coordinate_dict_and_square_map_inputs() -> None:
     assert isinstance(rules, GoldMineGameRules)
     assert rules.hint_mode() is GoldMineHintMode.DENSITY
     assert rules.density_hint(Coordinate(0, 0)) == 9.0
+
+
+def test_generator_accepts_generic_and_typed_configuration_objects() -> None:
+    """Generator should support both generic and game-specific configuration classes.
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
+    generator = GoldMineGameGenerator()
+
+    generic_configuration = GameConfiguration.from_dict(
+        {
+            "map": [[1.0, 2.0], [3.0, 4.0]],
+            "start": (0, 0),
+            "target": (1, 1),
+            "hint_mode": "none",
+        }
+    )
+    typed_configuration = GoldMineGameConfiguration.from_dict(
+        {
+            "map": [[1.0, 2.0], [3.0, 4.0]],
+            "start": (0, 0),
+            "target": (1, 1),
+            "hint_mode": GoldMineHintMode.COMPASS,
+        }
+    )
+
+    rules_from_generic = generator.build_game(generic_configuration)
+    rules_from_typed = generator.build_game(typed_configuration)
+
+    assert isinstance(rules_from_generic, GoldMineGameRules)
+    assert isinstance(rules_from_typed, GoldMineGameRules)
+    assert rules_from_generic.hint_mode() is GoldMineHintMode.NONE
+    assert rules_from_typed.hint_mode() is GoldMineHintMode.COMPASS
 
 
 def test_generator_validates_required_and_typed_inputs() -> None:

@@ -3,22 +3,24 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from typing import Any
 
+from iarena.desining.gaming.GameConfiguration import GameConfiguration
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.visualing import StreamlitGame, TerminalGame
 from iarena.gaming.GoldMine.GoldMine import CostType, GoldMineCoordinate, GoldMineDirection, GoldMineSquareMap
 from iarena.gaming.GoldMine.GoldMineHintMode import GoldMineHintMode
 from iarena.gaming.GoldMine.GoldMineMovement import GoldMineMovement
 from iarena.gaming.GoldMine.GoldMinePosition import GoldMinePosition
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
 from iarena.utilizing.protocoling import ITextRenderable
 from iarena.utilizing.square_map.draw_square_map import plot_square_map
 
 
-class GoldMineGameRules(IGameRules, ITextRenderable):
+class GoldMineGameRules(GameRules, ITextRenderable, TerminalGame, StreamlitGame):
     """Implement state transitions and scoring for GoldMine."""
 
     def __init__(
@@ -57,7 +59,7 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         if self._heuristic_map.size() != self._cost_map.size():
             raise ValueError("heuristic_map must have the same shape as cost_map")
 
-    def _as_position(self, position: IPosition) -> GoldMinePosition:
+    def _as_position(self, position: Position) -> GoldMinePosition:
         """Validate and cast a generic position.
 
         Args:
@@ -92,7 +94,7 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         """
         return GoldMinePosition(rules=self, current_position=self._start, dug_tiles=frozenset({self._start}))
 
-    def next_position(self, movement: IMovement, position: IPosition) -> GoldMinePosition:
+    def next_position(self, movement: Movement, position: Position) -> GoldMinePosition:
         """Apply one movement and return the successor position.
 
         Args:
@@ -112,7 +114,7 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         dug_tiles.add(destination)
         return GoldMinePosition(rules=self, current_position=destination, dug_tiles=frozenset(dug_tiles))
 
-    def possible_movements(self, position: IPosition) -> Iterator[GoldMineMovement]:
+    def possible_movements(self, position: Position) -> Iterator[GoldMineMovement]:
         """Yield legal movements for a position.
 
         Args:
@@ -125,7 +127,7 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         for direction in self.valid_directions(state.current_position):
             yield GoldMineMovement(direction=direction)
 
-    def finished(self, position: IPosition) -> bool:
+    def finished(self, position: Position) -> bool:
         """Return whether the target has been dug.
 
         Args:
@@ -137,7 +139,7 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
         state = self._as_position(position)
         return self._target in state.dug_tiles
 
-    def score(self, position: IPosition) -> ScoreBoard:
+    def score(self, position: Position) -> ScoreBoard:
         """Compute score board for a position.
 
         Args:
@@ -298,3 +300,189 @@ class GoldMineGameRules(IGameRules, ITextRenderable):
             Same value as :meth:`to_text`.
         """
         return self.to_text()
+
+    def terminal_instructions(self) -> str | None:
+        """Return terminal instructions for GoldMine games.
+
+        Args:
+            None.
+
+        Returns:
+            Multi-line textual description of game rules.
+        """
+        return self.to_text()
+
+    def position_to_terminal(self, position: Position) -> str:
+        """Convert one position into terminal-friendly text.
+
+        Args:
+            position: Position to convert.
+
+        Returns:
+            Multi-line text rendering for the provided position.
+        """
+        return self._as_position(position).to_text()
+
+    def movement_from_terminal(self, raw_movement: str, possible_movements: Sequence[Movement]) -> Movement:
+        """Parse a terminal input into a movement.
+
+        GoldMine accepts either:
+        - direction names (for example ``UP`` or ``Left``),
+        - or a numeric index handled by the default terminal behavior.
+
+        Args:
+            raw_movement: Raw user input string.
+            possible_movements: Legal movements for the current position.
+
+        Returns:
+            Selected movement.
+        """
+        normalized = raw_movement.strip().upper()
+        for movement in possible_movements:
+            if isinstance(movement, GoldMineMovement) and movement.direction.name == normalized:
+                return movement
+        return TerminalGame.movement_from_terminal(self, raw_movement, possible_movements)
+
+    def movement_to_terminal(self, movement: Movement) -> str:
+        """Convert one movement into terminal-friendly text.
+
+        Args:
+            movement: Movement to convert.
+
+        Returns:
+            String representation of ``movement``.
+        """
+        if isinstance(movement, GoldMineMovement):
+            return movement.to_text()
+        return str(movement)
+
+    def streamlit_instructions(self, streamlit_container: Any) -> None:
+        """Render game instructions in a Streamlit container.
+
+        Args:
+            streamlit_container: Streamlit container used to render content.
+
+        Returns:
+            None.
+        """
+        instructions = self.terminal_instructions() or ""
+        if hasattr(streamlit_container, "markdown"):
+            streamlit_container.markdown(f"```\\n{instructions}\\n```")
+            return
+        if hasattr(streamlit_container, "write"):
+            streamlit_container.write(instructions)
+
+    def render_streamlit_position(self, position: Position, streamlit_container: Any) -> None:
+        """Render one position in a Streamlit container.
+
+        Args:
+            position: Position to render.
+            streamlit_container: Streamlit container used to render content.
+
+        Returns:
+            None.
+        """
+        position_text = self.position_to_terminal(position)
+        if hasattr(streamlit_container, "text"):
+            streamlit_container.text(position_text)
+            return
+        if hasattr(streamlit_container, "markdown"):
+            streamlit_container.markdown(f"```\\n{position_text}\\n```")
+            return
+        if hasattr(streamlit_container, "write"):
+            streamlit_container.write(position_text)
+
+    def render_streamlit_configuration(self, streamlit_container: Any) -> GameConfiguration:
+        """Render Streamlit controls and return selected configuration values.
+
+        Args:
+            streamlit_container: Streamlit container used to render controls.
+
+        Returns:
+            Selected configuration object.
+        """
+        rows, cols = self._cost_map.size()
+        configuration_values: dict[str, Any] = {
+            "map": self._cost_map.copy(),
+            "start": (self._start.x, self._start.y),
+            "target": (self._target.x, self._target.y),
+            "hint_mode": self._hint_mode.value,
+        }
+        if self._heuristic_map is not None:
+            configuration_values["heuristic_map"] = self._heuristic_map.copy()
+
+        if hasattr(streamlit_container, "number_input") and hasattr(streamlit_container, "selectbox"):
+            start_x = int(
+                streamlit_container.number_input(
+                    "Start row",
+                    min_value=0,
+                    max_value=rows - 1,
+                    value=int(self._start.x),
+                    step=1,
+                )
+            )
+            start_y = int(
+                streamlit_container.number_input(
+                    "Start column",
+                    min_value=0,
+                    max_value=cols - 1,
+                    value=int(self._start.y),
+                    step=1,
+                )
+            )
+            target_x = int(
+                streamlit_container.number_input(
+                    "Target row",
+                    min_value=0,
+                    max_value=rows - 1,
+                    value=int(self._target.x),
+                    step=1,
+                )
+            )
+            target_y = int(
+                streamlit_container.number_input(
+                    "Target column",
+                    min_value=0,
+                    max_value=cols - 1,
+                    value=int(self._target.y),
+                    step=1,
+                )
+            )
+            hint_mode = streamlit_container.selectbox(
+                "Hint mode",
+                options=[mode.value for mode in GoldMineHintMode],
+                index=[mode.value for mode in GoldMineHintMode].index(self._hint_mode.value),
+            )
+            configuration_values["start"] = (start_x, start_y)
+            configuration_values["target"] = (target_x, target_y)
+            configuration_values["hint_mode"] = str(hint_mode)
+        elif hasattr(streamlit_container, "write"):
+            streamlit_container.write("Interactive controls are unavailable. Using current game configuration.")
+
+        return GameConfiguration.from_dict(configuration_values)
+
+    def select_streamlit_movement(self, position: Position, streamlit_container: Any) -> Movement:
+        """Render movement controls in Streamlit and return selected movement.
+
+        Args:
+            position: Current position.
+            streamlit_container: Streamlit container used to render controls.
+
+        Returns:
+            Selected movement.
+        """
+        possible_movements = tuple(self.possible_movements(position))
+        if not possible_movements:
+            raise RuntimeError("no legal movement available for Streamlit selection")
+
+        if hasattr(streamlit_container, "selectbox"):
+            labels = [self.movement_to_terminal(movement) for movement in possible_movements]
+            selected_label = streamlit_container.selectbox("Select movement", options=labels)
+            selected_index = labels.index(str(selected_label))
+            return possible_movements[selected_index]
+
+        if hasattr(streamlit_container, "write"):
+            streamlit_container.write(
+                "Interactive movement controls are unavailable. Falling back to the first legal movement."
+            )
+        return possible_movements[0]

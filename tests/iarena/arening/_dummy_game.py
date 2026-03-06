@@ -6,16 +6,17 @@ import time
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer, PlayerIndex
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.playing.Player import Player, PlayerIndex
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.visualing.TerminalGame import TerminalGame
 from iarena.utilizing.protocoling import ITextRenderable
 
 
 @dataclass(frozen=True, slots=True)
-class DummyMovement(IMovement, ITextRenderable):
+class DummyMovement(Movement, ITextRenderable):
     """Simple movement used for arena tests."""
 
     label: str
@@ -34,7 +35,7 @@ class DummyMovement(IMovement, ITextRenderable):
 
 
 @dataclass(frozen=True, slots=True)
-class DummyPosition(IPosition, ITextRenderable):
+class DummyPosition(Position, ITextRenderable):
     """Simple position with round-robin turns and cumulative per-player scores."""
 
     scores: tuple[float, ...]
@@ -64,7 +65,7 @@ class DummyPosition(IPosition, ITextRenderable):
         return f"turn={self.turn_count}, next_player={self.next_player_index}, scores={self.scores}"
 
 
-class DummyRules(IGameRules, ITextRenderable):
+class DummyRules(GameRules, ITextRenderable, TerminalGame):
     """Minimal deterministic rules for arena tests."""
 
     def __init__(
@@ -112,7 +113,7 @@ class DummyRules(IGameRules, ITextRenderable):
         """
         return DummyPosition(scores=tuple(0.0 for _ in range(self._n_players)), turn_count=0, next_player_index=0)
 
-    def next_position(self, movement: IMovement, position: IPosition) -> DummyPosition:
+    def next_position(self, movement: Movement, position: Position) -> DummyPosition:
         """Apply movement and return next position.
 
         Args:
@@ -136,7 +137,7 @@ class DummyRules(IGameRules, ITextRenderable):
             next_player_index=(active_player + 1) % self._n_players,
         )
 
-    def possible_movements(self, position: IPosition) -> Iterator[DummyMovement]:
+    def possible_movements(self, position: Position) -> Iterator[DummyMovement]:
         """Yield legal movements.
 
         Args:
@@ -148,7 +149,7 @@ class DummyRules(IGameRules, ITextRenderable):
         del position
         yield from self._allowed_movements
 
-    def finished(self, position: IPosition) -> bool:
+    def finished(self, position: Position) -> bool:
         """Return whether the game reached its turn cap.
 
         Args:
@@ -161,7 +162,7 @@ class DummyRules(IGameRules, ITextRenderable):
             raise TypeError("position must be DummyPosition")
         return position.turn_count >= self._max_turns
 
-    def score(self, position: IPosition) -> ScoreBoard:
+    def score(self, position: Position) -> ScoreBoard:
         """Build score board from position scores.
 
         Args:
@@ -191,8 +192,45 @@ class DummyRules(IGameRules, ITextRenderable):
             f"movements={[movement.label for movement in self._allowed_movements]})"
         )
 
+    def terminal_instructions(self) -> str | None:
+        """Return terminal instructions for this dummy game.
 
-class FixedMovementPlayer(IPlayer):
+        Args:
+            None.
+
+        Returns:
+            Rules description text.
+        """
+        return self.to_text()
+
+    def position_to_terminal(self, position: Position) -> str:
+        """Convert one position into terminal-friendly text.
+
+        Args:
+            position: Position to convert.
+
+        Returns:
+            Position text representation.
+        """
+        if not isinstance(position, DummyPosition):
+            raise TypeError("position must be DummyPosition")
+        return position.to_text()
+
+    def movement_to_terminal(self, movement: Movement) -> str:
+        """Convert one movement into terminal-friendly text.
+
+        Args:
+            movement: Movement to convert.
+
+        Returns:
+            Movement text representation.
+        """
+        if not isinstance(movement, DummyMovement):
+            raise TypeError("movement must be DummyMovement")
+        return movement.to_text()
+
+
+class FixedMovementPlayer(Player):
     """Player that always returns the same movement."""
 
     def __init__(self, movement: DummyMovement, sleep_seconds: float = 0.0, name: str | None = None) -> None:
@@ -210,7 +248,7 @@ class FixedMovementPlayer(IPlayer):
         self._movement = movement
         self._sleep_seconds = sleep_seconds
 
-    def play(self, position: IPosition) -> IMovement:
+    def play(self, position: Position) -> Movement:
         """Return the configured movement.
 
         Args:
@@ -225,37 +263,7 @@ class FixedMovementPlayer(IPlayer):
         return self._movement
 
 
-class TerminalCapablePlayer(FixedMovementPlayer):
-    """Fixed player that also supports terminal interaction protocol."""
-
-    def __init__(self, movement: DummyMovement, sleep_seconds: float = 0.0, name: str | None = None) -> None:
-        """Initialize terminal-capable player.
-
-        Args:
-            movement: Movement returned by every call.
-            sleep_seconds: Optional delay to simulate slow turns.
-            name: Optional display name.
-
-        Returns:
-            None.
-        """
-        super().__init__(movement=movement, sleep_seconds=sleep_seconds, name=name)
-        self.terminal_calls = 0
-
-    def play_from_terminal(self, position: IPosition) -> IMovement:
-        """Return configured movement through terminal-capable entry point.
-
-        Args:
-            position: Current position.
-
-        Returns:
-            Configured movement.
-        """
-        self.terminal_calls += 1
-        return self.play(position)
-
-
-class FailingPlayer(IPlayer):
+class FailingPlayer(Player):
     """Player that always raises an exception when asked to play."""
 
     def __init__(self, error_message: str) -> None:
@@ -270,7 +278,7 @@ class FailingPlayer(IPlayer):
         super().__init__(name="FailingPlayer")
         self._error_message = error_message
 
-    def play(self, position: IPosition) -> IMovement:
+    def play(self, position: Position) -> Movement:
         """Raise a runtime error when the arena asks for a movement.
 
         Args:

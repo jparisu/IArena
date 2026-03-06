@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import cast
 
 from iarena.arening.ArenaBehaviors import ArenaContext, ArenaTurnRecord, IArenaObserver, IArenaStopCondition
 from iarena.arening.GenericArena import GenericArena
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer, ITerminalPlayer
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
-from iarena.utilizing.protocoling import as_text, supports_text_rendering
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.playing.Player import Player
+from iarena.desining.visualing.TerminalGame import TerminalGame
 
 OutputFunction = Callable[[str], object]
 
@@ -21,15 +21,15 @@ class TerminalArena(GenericArena):
 
     def __init__(
         self,
-        rules: IGameRules,
-        players: Sequence[IPlayer],
-        position: IPosition | None = None,
+        rules: GameRules,
+        players: Sequence[Player],
+        position: Position | None = None,
         stop_conditions: Sequence[IArenaStopCondition] | None = None,
         observers: Sequence[IArenaObserver] | None = None,
         raise_on_stop: bool = True,
         output_function: OutputFunction = print,
     ) -> None:
-        """Initialize terminal arena and validate text-rendering requirements.
+        """Initialize terminal arena and validate terminal-interface requirements.
 
         Args:
             rules: Rules object that defines game mechanics.
@@ -52,11 +52,10 @@ class TerminalArena(GenericArena):
             raise_on_stop=raise_on_stop,
         )
         self._output_function = output_function
-        self._require_text_rendering(self.rules, value_name="rules")
-        self._require_text_rendering(self.position, value_name="position")
+        self._require_terminal_interface(self.rules, value_name="rules")
 
-    def _require_text_rendering(self, value: object, value_name: str) -> None:
-        """Validate that one value implements the text-rendering protocol.
+    def _require_terminal_interface(self, value: object, value_name: str) -> None:
+        """Validate that one value implements the terminal-game protocol.
 
         Args:
             value: Value to validate.
@@ -65,8 +64,20 @@ class TerminalArena(GenericArena):
         Returns:
             None.
         """
-        if not supports_text_rendering(value):
-            raise TypeError(f"TerminalArena requires {value_name} to implement ITextRenderable")
+        if not isinstance(value, TerminalGame):
+            raise TypeError(f"TerminalArena requires {value_name} to implement TerminalGame")
+
+    def _as_terminal_game(self, rules: GameRules) -> TerminalGame:
+        """Return rules typed as terminal interface after runtime validation.
+
+        Args:
+            rules: Rules instance to validate.
+
+        Returns:
+            Same rules instance typed as ``TerminalGame``.
+        """
+        self._require_terminal_interface(rules, value_name="rules")
+        return cast(TerminalGame, rules)
 
     def _on_game_start(self, context: ArenaContext) -> None:
         """Print game rules when a terminal game starts.
@@ -77,8 +88,11 @@ class TerminalArena(GenericArena):
         Returns:
             None.
         """
-        self._output_function("Rules:")
-        self._output_function(as_text(context.rules))
+        terminal_rules = self._as_terminal_game(context.rules)
+        instructions = terminal_rules.terminal_instructions()
+        if instructions is not None:
+            self._output_function("Rules:")
+            self._output_function(instructions)
 
     def _on_turn_start(self, context: ArenaContext, player_index: int) -> None:
         """Print turn header and current position before requesting movement.
@@ -90,9 +104,9 @@ class TerminalArena(GenericArena):
         Returns:
             None.
         """
-        self._require_text_rendering(context.position, value_name="position")
+        terminal_rules = self._as_terminal_game(context.rules)
         self._output_function(f"Turn {context.turn_count + 1}, player {player_index}")
-        self._output_function(as_text(context.position))
+        self._output_function(terminal_rules.position_to_terminal(context.position))
 
     def _on_turn_end(self, turn_record: ArenaTurnRecord, context: ArenaContext) -> None:
         """Print selected movement after a turn has been applied.
@@ -104,11 +118,11 @@ class TerminalArena(GenericArena):
         Returns:
             None.
         """
-        del context
-        self._require_text_rendering(turn_record.movement, value_name="movement")
-        self._output_function(f"Player {turn_record.player_index} selected movement: {as_text(turn_record.movement)}")
+        terminal_rules = self._as_terminal_game(context.rules)
+        movement_text = terminal_rules.movement_to_terminal(turn_record.movement)
+        self._output_function(f"Player {turn_record.player_index} selected movement: {movement_text}")
 
-    def _on_game_end(self, final_position: IPosition, final_score: ScoreBoard, reason: str | None) -> None:
+    def _on_game_end(self, final_position: Position, final_score: ScoreBoard, reason: str | None) -> None:
         """Print final game result and optional early-stop reason.
 
         Args:
@@ -124,17 +138,3 @@ class TerminalArena(GenericArena):
         self._output_function(f"Final score: {final_score}")
         if reason is not None:
             self._output_function(f"End reason: {reason}")
-
-    def _request_movement(self, player: IPlayer, player_index: int) -> IMovement:
-        """Request one movement, preferring terminal-capable players when available.
-
-        Args:
-            player: Active player instance.
-            player_index: Index of the active player.
-
-        Returns:
-            Movement selected by the active player.
-        """
-        if isinstance(player, ITerminalPlayer):
-            return player.play_from_terminal(self.position)
-        return super()._request_movement(player=player, player_index=player_index)

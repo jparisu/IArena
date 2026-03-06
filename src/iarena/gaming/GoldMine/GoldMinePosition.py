@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from iarena.desining.gaming.Position import Position
+from iarena.desining.playing.Player import PlayerIndex
 from iarena.gaming.GoldMine.GoldMine import CostType, GoldMineCoordinate, GoldMineDirection
 from iarena.gaming.GoldMine.GoldMineHintMode import GoldMineHintMode
-from iarena.interfacing.IPlayer import PlayerIndex
-from iarena.interfacing.IPosition import IPosition
 from iarena.utilizing.protocoling import IPlotRenderable, ITextRenderable
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True)
-class GoldMinePosition(IPosition, ITextRenderable, IPlotRenderable):
+class GoldMinePosition(Position, ITextRenderable, IPlotRenderable):
     """Store one full GoldMine state."""
 
     rules: GoldMineGameRules = field(compare=False, repr=False)

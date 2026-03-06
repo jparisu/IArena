@@ -8,7 +8,7 @@ from iarena.arening.ArenaFactory import ArenaFactory
 from iarena.arening.ArenaExceptions import ArenaStoppedError
 from iarena.arening.GenericArena import GenericArena
 from iarena.arening.TerminalArena import TerminalArena
-from ._dummy_game import DummyMovement, DummyRules, FixedMovementPlayer, TerminalCapablePlayer
+from ._dummy_game import DummyMovement, DummyRules, FixedMovementPlayer
 
 
 def test_factory_builds_generic_arena_with_history_and_limits() -> None:
@@ -51,7 +51,7 @@ def test_factory_builds_terminal_arena_when_requested() -> None:
     outputs: list[str] = []
     movement = DummyMovement(label="inc", amount=1.0)
     rules = DummyRules(n_players=1, max_turns=1, allowed_movements=(movement,))
-    players = [TerminalCapablePlayer(movement=movement)]
+    players = [FixedMovementPlayer(movement=movement)]
     arena = ArenaFactory.build(
         rules=rules,
         players=players,

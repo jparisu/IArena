@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from iarena.gaming.GoldMine.GoldMineGameConfiguration import GoldMineGameConfiguration
 from iarena.gaming.GoldMine.GoldMineGameGenerator import GoldMineGameGenerator
 from iarena.gaming.GoldMine.GoldMineGameRules import GoldMineGameRules
 from iarena.gaming.GoldMine.GoldMineMovement import GoldMineMovement
@@ -25,7 +26,10 @@ def test_orchestrator_returns_goldmine_component_classes() -> None:
     assert orchestrator.position_class() is GoldMinePosition
     assert orchestrator.movement_class() is GoldMineMovement
     assert orchestrator.player_class() is GoldMinePlayer
+    assert orchestrator.game_configuration_class() is GoldMineGameConfiguration
     assert orchestrator.game_generator_class() is GoldMineGameGenerator
+    assert orchestrator.terminal_game_class() is GoldMineGameRules
+    assert orchestrator.streamlit_game_class() is GoldMineGameRules
     assert orchestrator.text_renderable_class() is GoldMinePosition
     assert orchestrator.plot_renderable_class() is GoldMinePosition
 
@@ -41,9 +45,10 @@ def test_orchestrator_capability_flags_match_exposed_classes() -> None:
     """
     orchestrator = GoldMineOrchestrator()
 
+    assert orchestrator.has_game_configuration() is True
     assert orchestrator.has_game_generator() is True
+    assert orchestrator.has_terminal_interface() is True
+    assert orchestrator.has_streamlit_interface() is True
     assert orchestrator.has_text_rendering() is True
     assert orchestrator.has_plotting() is True
-    assert orchestrator.has_terminal_player() is False
-    assert orchestrator.has_graphical_player() is False
     assert orchestrator.has_game_solver() is False

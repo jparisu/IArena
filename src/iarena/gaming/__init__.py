@@ -1,6 +1,7 @@
 """Game implementations built on top of IArena interfaces."""
 
 from iarena.gaming.GoldMine import (
+    GoldMineGameConfiguration,
     GoldMineGameGenerator,
     GoldMineGameRules,
     GoldMineHintMode,
@@ -9,8 +10,18 @@ from iarena.gaming.GoldMine import (
     GoldMinePlayer,
     GoldMinePosition,
 )
+from iarena.gaming.Hanoi import (
+    HanoiGameConfiguration,
+    HanoiGameGenerator,
+    HanoiGameRules,
+    HanoiMovement,
+    HanoiOrchestrator,
+    HanoiPlayer,
+    HanoiPosition,
+)
 
 __all__ = [
+    "GoldMineGameConfiguration",
     "GoldMineGameGenerator",
     "GoldMineGameRules",
     "GoldMineHintMode",
@@ -18,4 +29,11 @@ __all__ = [
     "GoldMineOrchestrator",
     "GoldMinePlayer",
     "GoldMinePosition",
+    "HanoiGameConfiguration",
+    "HanoiGameGenerator",
+    "HanoiGameRules",
+    "HanoiMovement",
+    "HanoiOrchestrator",
+    "HanoiPlayer",
+    "HanoiPosition",
 ]

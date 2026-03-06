@@ -6,16 +6,16 @@ from typing import Protocol
 
 from iarena.arening.ArenaBehaviors import ArenaContext, ArenaTurnRecord
 from iarena.arening.ArenaCommon import IArenaObserver
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
 
 
 class _ArenaLifecycleHost(Protocol):
     """Protocol describing runtime attributes required by lifecycle mixin."""
 
-    rules: IGameRules
-    position: IPosition
+    rules: GameRules
+    position: Position
     _observers: tuple[IArenaObserver, ...]
     _end_reason: str | None
 
@@ -53,7 +53,7 @@ class _ArenaLifecycleHost(Protocol):
         """
         raise NotImplementedError
 
-    def _on_game_end(self, final_position: IPosition, final_score: ScoreBoard, reason: str | None) -> None:
+    def _on_game_end(self, final_position: Position, final_score: ScoreBoard, reason: str | None) -> None:
         """Hook called when game ends.
 
         Args:
@@ -105,7 +105,7 @@ class GenericArenaLifecycleMixin:
         """
         del turn_record, context
 
-    def _on_game_end(self, final_position: IPosition, final_score: ScoreBoard, reason: str | None) -> None:
+    def _on_game_end(self, final_position: Position, final_score: ScoreBoard, reason: str | None) -> None:
         """Hook called when game ends.
 
         Args:

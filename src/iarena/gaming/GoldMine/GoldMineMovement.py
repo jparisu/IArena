@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from iarena.desining.gaming.Movement import Movement
 from iarena.gaming.GoldMine.GoldMine import GoldMineDirection
-from iarena.interfacing.IMovement import IMovement
 from iarena.utilizing.protocoling import ITextRenderable
 
 
 @dataclass(frozen=True, slots=True)
-class GoldMineMovement(IMovement, ITextRenderable):
+class GoldMineMovement(Movement, ITextRenderable):
     """Represent a one-step movement in a cardinal direction."""
 
     direction: GoldMineDirection

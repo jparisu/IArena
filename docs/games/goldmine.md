@@ -15,15 +15,16 @@
 
 The GoldMine package provides:
 
-- `GoldMineGameRules` implementing `IGameRules`.
-- `GoldMinePosition` implementing `IPosition`, `ITextRenderable`, and `IPlotRenderable`.
-- `GoldMineMovement` implementing `IMovement` and `ITextRenderable`.
+- `GoldMineGameRules` implementing `GameRules`.
+- `GoldMinePosition` implementing `Position`, `ITextRenderable`, and `IPlotRenderable`.
+- `GoldMineMovement` implementing `Movement` and `ITextRenderable`.
 - `GoldMinePlayer` as a baseline greedy player.
-- `GoldMineGameGenerator` implementing `IGameGenerator`.
-- `GoldMineOrchestrator` implementing `IGameOrchestrator`.
+- `GoldMineGameConfiguration` as a typed configuration class (`from_dict`, `from_yaml`).
+- `GoldMineGameGenerator` implementing `GameGenerator`.
+- `GoldMineOrchestrator` implementing `GameOrchestrator`.
 
-`GoldMineGameRules` also implements `ITextRenderable`, so it can be used with
-`TerminalArena` and manual terminal runners.
+`GoldMineGameRules` also implements `TerminalGame` and `StreamlitGame`, so it
+can be used with both `TerminalArena` and Streamlit frontends.
 
 ## Hints
 

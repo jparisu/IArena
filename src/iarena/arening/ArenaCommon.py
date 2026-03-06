@@ -5,11 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer, PlayerIndex
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
+from iarena.desining.playing.Player import Player, PlayerIndex
 
 PENALTY_SCORE = -float("inf")
 
@@ -51,9 +51,9 @@ class ArenaTurnRecord:
 
     turn_index: int
     player_index: PlayerIndex
-    position_before: IPosition
-    movement: IMovement
-    position_after: IPosition
+    position_before: Position
+    movement: Movement
+    position_after: Position
     elapsed_seconds: float
 
 
@@ -61,9 +61,9 @@ class ArenaTurnRecord:
 class ArenaContext:
     """Expose current arena state to behavior plugins."""
 
-    rules: IGameRules
-    players: tuple[IPlayer, ...]
-    position: IPosition
+    rules: GameRules
+    players: tuple[Player, ...]
+    position: Position
     turn_count: int
     game_elapsed_seconds: float
     current_score: ScoreBoard
@@ -109,7 +109,7 @@ class IArenaStopCondition(Protocol):
 class IArenaObserver(Protocol):
     """Protocol for arena lifecycle observers."""
 
-    def on_game_start(self, initial_position: IPosition) -> None:
+    def on_game_start(self, initial_position: Position) -> None:
         """Receive game-start event.
 
         Args:
@@ -132,7 +132,7 @@ class IArenaObserver(Protocol):
         """
         raise NotImplementedError
 
-    def on_game_end(self, final_position: IPosition, final_score: ScoreBoard, reason: str | None) -> None:
+    def on_game_end(self, final_position: Position, final_score: ScoreBoard, reason: str | None) -> None:
         """Receive game-end event.
 
         Args:

@@ -5,22 +5,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from iarena.arening.ArenaCommon import ArenaContext, ArenaTurnRecord, clone_score_board
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPosition import IPosition
-from iarena.interfacing.ScoreBoard import ScoreBoard
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.gaming.ScoreBoard import ScoreBoard
 
 
 @dataclass(frozen=True, slots=True)
 class ArenaGameRecord:
     """Store one immutable full-game trace."""
 
-    initial_position: IPosition
+    initial_position: Position
     turn_records: tuple[ArenaTurnRecord, ...]
-    final_position: IPosition
+    final_position: Position
     final_score: ScoreBoard
     end_reason: str | None
 
-    def positions(self) -> tuple[IPosition, ...]:
+    def positions(self) -> tuple[Position, ...]:
         """Return ordered positions from start to end.
 
         Args:
@@ -33,7 +33,7 @@ class ArenaGameRecord:
         sequence.extend(turn_record.position_after for turn_record in self.turn_records)
         return tuple(sequence)
 
-    def movements(self) -> tuple[IMovement, ...]:
+    def movements(self) -> tuple[Movement, ...]:
         """Return ordered movements in turn order.
 
         Args:
@@ -57,13 +57,13 @@ class GameHistoryObserver:
         Returns:
             None.
         """
-        self._initial_position: IPosition | None = None
+        self._initial_position: Position | None = None
         self._turn_records: list[ArenaTurnRecord] = []
-        self._final_position: IPosition | None = None
+        self._final_position: Position | None = None
         self._final_score: ScoreBoard | None = None
         self._end_reason: str | None = None
 
-    def on_game_start(self, initial_position: IPosition) -> None:
+    def on_game_start(self, initial_position: Position) -> None:
         """Reset storage and store initial position.
 
         Args:
@@ -91,7 +91,7 @@ class GameHistoryObserver:
         del context
         self._turn_records.append(turn_record)
 
-    def on_game_end(self, final_position: IPosition, final_score: ScoreBoard, reason: str | None) -> None:
+    def on_game_end(self, final_position: Position, final_score: ScoreBoard, reason: str | None) -> None:
         """Store final game data.
 
         Args:

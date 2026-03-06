@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from iarena.utilizing.square_map.SquareMap import Coordinate, Direction, SquareMap
 
 if TYPE_CHECKING:
+    from iarena.gaming.GoldMine.GoldMineGameConfiguration import GoldMineGameConfiguration
     from iarena.gaming.GoldMine.GoldMineGameGenerator import GoldMineGameGenerator
     from iarena.gaming.GoldMine.GoldMineGameRules import GoldMineGameRules
     from iarena.gaming.GoldMine.GoldMineHintMode import GoldMineHintMode
@@ -22,6 +23,7 @@ GoldMineDirection = Direction
 GoldMineSquareMap = SquareMap[float]
 
 _LAZY_EXPORTS: dict[str, tuple[str, str]] = {
+    "GoldMineGameConfiguration": ("iarena.gaming.GoldMine.GoldMineGameConfiguration", "GoldMineGameConfiguration"),
     "GoldMineGameGenerator": ("iarena.gaming.GoldMine.GoldMineGameGenerator", "GoldMineGameGenerator"),
     "GoldMineGameRules": ("iarena.gaming.GoldMine.GoldMineGameRules", "GoldMineGameRules"),
     "GoldMineHintMode": ("iarena.gaming.GoldMine.GoldMineHintMode", "GoldMineHintMode"),
@@ -62,6 +64,7 @@ def __dir__() -> list[str]:
 
 __all__ = [
     "CostType",
+    "GoldMineGameConfiguration",
     "GoldMineGameGenerator",
     "GoldMineGameRules",
     "GoldMineCoordinate",

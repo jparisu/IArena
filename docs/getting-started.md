@@ -31,23 +31,37 @@ any game rules implementation:
 ## Optional capabilities
 
 Games can optionally implement extra capabilities from
-`iarena.utilizing.protocoling`, `iarena.interfacing.IPlayer`,
-and `iarena.interfacing.IGameRules`:
+`iarena.utilizing.protocoling` and `iarena.desining`:
 
 - `ITextRenderable` for terminal output (`to_text`).
 - `IPlotRenderable` for matplotlib/Streamlit-like plotting (`plot`).
-- `IGameGenerator` to build rules from a dictionary (`build_game`).
-- `ITerminalPlayer` for terminal-human play (`play_from_terminal`).
-- `IGraphicalPlayer` for GUI-human play (`play_from_ui`).
-- `IGameSolver` to expose min/max score bounds (`score_bounds`).
+- `GameConfiguration` to build typed configurations from dict/YAML payloads.
+- `GameGenerator` to build rules from configuration objects (`build_game`).
+- `GameSolver` to expose min/max score bounds (`score_bounds`).
+- `TerminalGame` for terminal rendering/input (`position_to_terminal`,
+  `movement_from_terminal`, and related methods).
+- `StreamlitGame` for Streamlit interaction (`streamlit_instructions`,
+  `render_streamlit_position`, `render_streamlit_configuration`,
+  `select_streamlit_movement`).
 
 These are opt-in `Protocol`s, so games only implement what they need.
 
+## Structuring utilities
+
+`iarena.utilizing` also exposes reusable structuring primitives:
+
+- `GenericRegistry` for alias-based object lookup.
+- `GenericFactory` / `Factory` for named constructor registration.
+- `GenericEnumRegistry` for normalized enum lookup from strings.
+- `GenericParameter` for dataclass parameter parsing/conversion from dicts.
+- `GenericSingleton` for thread-safe singleton wrappers.
+- `Color` for normalized hexadecimal color values, including RGB tuple input.
+
 ## Game orchestrator
 
-Use `iarena.interfacing.IGameOrchestrator` to expose class references for one
+Use `iarena.desining.GameOrchestrator` to expose class references for one
 game (rules, position, movement, player) and optional capabilities
-(`terminal/gui player`, `solver`, `generator`, `text/plot`).
+(`configuration`, `generator`, `solver`, `terminal`, `streamlit`, `text/plot`).
 
 The orchestrator returns classes only, never instances, and provides `has_*`
 helpers to detect optional interfaces.

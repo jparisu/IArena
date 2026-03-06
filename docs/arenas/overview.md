@@ -5,7 +5,7 @@ arena behaviors.
 
 ## GenericArena
 
-`GenericArena` is the default loop implementation for any `IGameRules` game.
+`GenericArena` is the default loop implementation for any `GameRules` game.
 It iterates turns by asking the active player (`position.next_player()`) for a
 movement via `play(position)`, validates legality, applies the movement, and
 returns a final `ScoreBoard`.
@@ -35,14 +35,13 @@ arena thread.
 `TerminalArena` extends `GenericArena` with terminal rendering. It prints game
 rules at start, prints position each turn, and logs selected movements.
 
-`TerminalArena` requires text-renderable objects:
+`TerminalArena` requires rules to implement `TerminalGame` from
+`iarena.desining.visualing`. That interface requires:
 
-- rules must implement `ITextRenderable` (`to_text`),
-- positions must implement `ITextRenderable`,
-- movements used during play must implement `ITextRenderable`.
-
-When a player implements `ITerminalPlayer`, `TerminalArena` calls
-`play_from_terminal(position)` so terminal-input players can be used directly.
+- `position_to_terminal(position)` (required),
+- optional `terminal_instructions()`,
+- optional `movement_from_terminal(raw_movement, possible_movements)`,
+- optional `movement_to_terminal(movement)`.
 
 ## Factory usage
 

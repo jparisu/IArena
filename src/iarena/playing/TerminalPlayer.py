@@ -4,16 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from iarena.interfacing.IGameRules import IGameRules
-from iarena.interfacing.IMovement import IMovement
-from iarena.interfacing.IPlayer import IPlayer, PlayerIndex
-from iarena.interfacing.IPosition import IPosition
+from iarena.desining.gaming.GameRules import GameRules
+from iarena.desining.gaming.Movement import Movement
+from iarena.desining.gaming.Position import Position
+from iarena.desining.playing.Player import Player, PlayerIndex
+from iarena.desining.visualing.TerminalGame import TerminalGame
 
 InputFunction = Callable[[str], str]
 OutputFunction = Callable[[str], object]
 
 
-class TerminalPlayer(IPlayer):
+class TerminalPlayer(Player):
     """Human-controlled player that picks movements from terminal prompts."""
 
     def __init__(
@@ -33,11 +34,11 @@ class TerminalPlayer(IPlayer):
             None.
         """
         super().__init__(name=name)
-        self._rules: IGameRules | None = None
+        self._rules: GameRules | None = None
         self._input_function = input_function
         self._output_function = output_function
 
-    def starting_game(self, rules: IGameRules, player_index: PlayerIndex) -> None:
+    def starting_game(self, rules: GameRules, player_index: PlayerIndex) -> None:
         """Store rules reference before the game starts.
 
         Args:
@@ -50,7 +51,7 @@ class TerminalPlayer(IPlayer):
         del player_index
         self._rules = rules
 
-    def play(self, position: IPosition) -> IMovement:
+    def play(self, position: Position) -> Movement:
         """Request one movement by prompting in the terminal.
 
         Args:
@@ -61,7 +62,7 @@ class TerminalPlayer(IPlayer):
         """
         return self.play_from_terminal(position)
 
-    def play_from_terminal(self, position: IPosition) -> IMovement:
+    def play_from_terminal(self, position: Position) -> Movement:
         """Request one movement by prompting in the terminal.
 
         Args:
@@ -77,12 +78,24 @@ class TerminalPlayer(IPlayer):
         if not movements:
             raise RuntimeError("no legal movement available for TerminalPlayer")
 
+        terminal_rules = self._rules if isinstance(self._rules, TerminalGame) else None
+
         self._output_function("Possible movements:")
         for index, movement in enumerate(movements, start=1):
-            self._output_function(f"{index}. {movement}")
+            movement_text = (
+                terminal_rules.movement_to_terminal(movement) if terminal_rules is not None else str(movement)
+            )
+            self._output_function(f"{index}. {movement_text}")
 
         while True:
             raw_choice = self._input_function("Choose movement number: ").strip()
+            if terminal_rules is not None:
+                try:
+                    return terminal_rules.movement_from_terminal(raw_choice, movements)
+                except ValueError:
+                    self._output_function(f"Invalid movement. Enter a valid option between 1 and {len(movements)}.")
+                    continue
+
             try:
                 movement_index = int(raw_choice)
             except ValueError:

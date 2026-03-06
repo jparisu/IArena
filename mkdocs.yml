@@ -35,4 +35,5 @@ nav:
       - Overview: arenas/overview.md
   - Games:
       - GoldMine: games/goldmine.md
+      - Hanoi: games/hanoi.md
   - API Reference: api/index.md
