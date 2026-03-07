@@ -1,5 +1,0 @@
-# API Reference
-
-## Package
-
-::: iarena

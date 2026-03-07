@@ -1,36 +1,94 @@
-# Agent Instructions
+# AGENTS.md
 
-All AI assistants working in this repository must follow:
+Purpose: define minimal rules for AI agents working in this repository.
 
-1. `AGENTS.md`
-2. `CONTRIBUTING.md`
+Keep behavior predictable, safe, and consistent with existing code.
 
-## Mandatory behavior
+---
 
-- Apply these standards as hard requirements, not suggestions.
-- Every Python file must include a module-level docstring.
-- Every class must include a docstring.
-- Every function/method must include a docstring with:
-  - description
-  - arguments
-  - return value
-- All function/method arguments and return values must be strongly typed.
-- Add/update unit tests for every new class and every new method/function.
-- Follow `tests/` structure to mirror `src/` structure.
-- Reuse existing code when possible. If shared behavior is needed, create generic classes in `src/iarena/utilizing` and reuse them across modules.
-- Update `docs/` for any user-facing behavior or API change.
-- Run required validations before finishing work:
-  - `pre-commit run --all-files`
-  - `pytest -q`
-  - If some checks fail, report them but do not take extreme actions like reverting or blocking changes.
+## Priorities
 
+Follow these in order:
 
-## Conflict resolution
+1. Correctness and safety
+2. Follow existing repository patterns
+3. Complete the requested task
+4. Tests
+5. Documentation
 
-If instructions conflict, use this order:
+---
 
-1. Direct maintainer/user request for the current task.
-2. `AGENTS.md`
-3. `CONTRIBUTING.md`
+## Repository baseline principles
 
-If a rule cannot be satisfied, state it explicitly and explain the constraint in the final response.
+Agents must preserve the overall design of the repository.
+
+Guidelines:
+
+* Prefer small, readable functions.
+* Prefer explicit behavior over hidden side effects.
+* Reuse existing utilities and abstractions.
+* Keep documentation in files, classes and functions.
+* Keep tests aligned with the structure of the source code.
+* Abstract classes, protocols, interface and imports/exports do not require tests.
+
+When unsure, follow the patterns already present in the codebase.
+
+---
+
+## Tasks
+
+The user may specify a task to guide the agent.
+If no task is provided, infer it from the request.
+
+### task:generic
+
+Generic default task that may include any combination of the rest of the tasks.
+
+### task:design
+
+Used for architecture and structural changes.
+
+* Analyze the current structure first.
+* Propose or implement improvements to modules, boundaries, or abstractions.
+* Avoid unnecessary churn outside the design scope.
+
+### task:develop
+
+Used for implementing functionality.
+
+* Implement the requested behavior.
+* Edit the necessary files.
+* Reuse existing patterns and utilities.
+
+### task:docs
+
+Used for documentation work.
+
+* Add or improve docstrings.
+* Update README or documentation files when relevant.
+* Avoid modifying functional code unless necessary.
+
+### task:test
+
+Used for creating or improving tests.
+
+* Add focused tests for the requested behavior.
+* Mirror the structure of the source code when possible.
+* Prefer deterministic tests.
+
+### task:check
+
+Used for validation and repository health.
+
+* Run tests `pytest -q`
+* Run linters `pre-commit run`
+* Fix failures or lint issues.
+* Do not introduce new features.
+
+### task:query
+
+Used for answering questions about the repository.
+
+* Prefer explanation over code changes.
+* Reference relevant files, classes, or modules.
+* Default to read-only unless edits are explicitly requested.

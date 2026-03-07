@@ -1,5 +1,8 @@
 # tests/test_import.py
 
+
+from __future__ import annotations
+
 import importlib
 import pkgutil
 

@@ -1,0 +1,56 @@
+@startuml
+
+skinparam MessageAlign center
+
+actor User as "User/External"
+participant ARENA as "ARENA\n(Orchestrator)"
+participant RULES as "RULES\n(Logic)"
+participant VIEW as "VIEW\n(Terminal/Streamlit/Web)"
+participant PLAYER as "PLAYER\n(Human)"
+
+title Generic game loop with visualization and human interaction
+
+== Initialization ==
+User -> ARENA : play(rules, players, view)
+activate ARENA
+ARENA -> PLAYER : starting_game(rules, player_index)
+PLAYER --> ARENA : ready
+ARENA -> RULES : first_position()
+RULES --> ARENA : p0
+
+== The Visual Loop ==
+loop while not is_finished
+    ' 1. Rendering Phase
+    ARENA -> VIEW : render_state(p0, canvas)
+    activate VIEW
+    note right: This renders ASCII, Streamlit containers, or HTML
+    VIEW --> ARENA : done
+    deactivate VIEW
+
+    ' 2. Input Phase
+    ARENA -> PLAYER : play(p0)
+    activate PLAYER
+    PLAYER -> VIEW : capture_input(ui_state)
+    note right: Human interaction
+    VIEW --> PLAYER : mov
+    PLAYER --> ARENA : mov
+    deactivate PLAYER
+
+    ' 3. Logic Phase
+    ARENA -> RULES : next_position(p0, mov)
+    RULES --> ARENA : p1
+
+    ARENA -> RULES : is_finished(p1)
+    RULES --> ARENA : isFinished
+
+    note right of ARENA: p0 = p1
+end loop
+
+== Termination ==
+ARENA -> RULES : get_score(p1)
+RULES --> ARENA : score
+ARENA -> VIEW : render_state(p1, canvas)
+ARENA --> User : score
+deactivate ARENA
+
+@enduml
