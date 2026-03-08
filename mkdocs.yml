@@ -31,4 +31,19 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Getting Started: getting-started.md
-  - API Reference: api/index.md
+  - API Reference:
+      - Overview: api/index.md
+      - Gaming: api/gaming.md
+      - Apps: api/apps.md
+      - Playing: api/playing.md
+      - Arening: api/arening.md
+      - Grading: api/grading.md
+      - Utilizing:
+          - Protocoling: api/utilizing/protocoling.md
+          - Randoming: api/utilizing/randoming.md
+          - Filing: api/utilizing/filing.md
+          - Reading: api/utilizing/reading.md
+          - Timing: api/utilizing/timing.md
+          - Structuring: api/utilizing/structuring.md
+          - Square Map: api/utilizing/square_map.md
+          - Generators: api/utilizing/generators.md

@@ -1,0 +1,85 @@
+game: Hanoi
+
+move_timeout_s: 3
+total_timeout_s: 100
+repetitions: 3
+fails_allowed: 3
+max_moves: 1000
+
+reports:
+
+  - name: Trivial Test
+
+    description: "3x3 empty space starting top-left and finishing bottom-right."
+
+    args:
+      n: 3
+      m: 3
+      target_position:
+        x: 2
+        y: 2
+      map_generator: "empty"
+
+
+  - name: Inverse Test
+
+    description: "3x3 empty space starting bottom-right and finishing top-left."
+
+    args:
+      n: 3
+      m: 3
+      starting_position:
+        x: 2
+        y: 2
+      target_position:
+        x: 0
+        y: 0
+      map_generator: "empty"
+
+
+  - name: Random 5x5 Test
+
+    description: "5x5 random positions."
+
+    args:
+      n: 5
+      m: 5
+      starting_position:
+        x: -1
+        y: -1
+      map_generator: "empty"
+    multi_args:
+      seed: [1, 2, 3]
+
+
+  - name: Unique row map
+
+    description: "1 row map."
+
+    args:
+      n: 1
+      map_generator: "empty"
+    multi_args:
+      m: [5, 10, 15]
+    repetitions: 2
+
+
+  - name: Random 15x15 Test
+
+    description: "15x15 random positions."
+
+    args:
+      n: 15
+      m: 15
+      starting_position:
+        x: -1
+        y: -1
+      map_generator: "empty"
+    multi_args:
+      seed: [11, 12, 13]
+    repetitions: 2
+
+    solver_configuration:
+      class: "GoldMineSolver"
+      args:
+        repetitions: 10

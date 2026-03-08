@@ -35,6 +35,31 @@ When unsure, follow the patterns already present in the codebase.
 
 ---
 
+## Repository design decisions
+
+* Files
+    * Every class has its own file, named after the class.
+    * Every file has a docstring describing its purpose and use.
+* Classes
+    * Every class has a docstring describing its purpose and use.
+    * Every class has a clear public API in `docs`
+* Functions
+    * Every method has a docstring describing its purpose, arguments and return type.
+    * Every method will be typed with type hints.
+    * Types must be set in signature without quotes, using TYPE_CHECKING if necessary.
+* Tests
+    * Every test file is located in `tests` and follows the same directory structure as the source code.
+    * Every method will have one or several unittests describing its expected behavior.
+    * Abstract methods or visualization methods do not require tests.
+    * No need for tests for __init__ files.
+* Documentation
+    * Every file, class and method has a docstring describing its purpose and use.
+    * Every class and method is documented in `docs` with API docs.
+    * README and documentation files are updated when relevant.
+
+---
+
+
 ## Tasks
 
 The user may specify a task to guide the agent.
