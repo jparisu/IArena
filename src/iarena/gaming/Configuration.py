@@ -17,3 +17,12 @@ class Configuration(GenericParameter, ABC):
     Public Attributes:
         None declared at class level in this base definition.
     """
+
+    def __str__(self) -> str:
+        """Return one compact string representation of this configuration.
+
+        Returns:
+            str: Class name and serialized public fields.
+        """
+        parts = [f"{field_name}={field_value!r}" for field_name, field_value in sorted(self.to_dict().items())]
+        return f"{type(self).__name__}({', '.join(parts)})"

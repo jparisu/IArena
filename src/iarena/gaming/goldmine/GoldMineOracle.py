@@ -34,6 +34,7 @@ class GoldMineOracle(BestPlayerOracle):
         higher_limit_ratio: float = 0.0,
         lower_limit_ratio: float = 1.2,
         player_seed: int | None = 0,
+
     ) -> None:
         """Create one GoldMine oracle with configurable stochastic simulation.
 
@@ -44,11 +45,11 @@ class GoldMineOracle(BestPlayerOracle):
             player_seed: Seed used by the internal perfect player.
         """
         super().__init__(
-            best_player=GoldMinePerfectPlayer(seed=player_seed),
             higher_limit_ratio=higher_limit_ratio,
             lower_limit_ratio=lower_limit_ratio,
             repetitions=repetitions,
         )
+        self._seed = player_seed if player_seed is not None else 0
 
     @classmethod
     def default(cls) -> BestPlayerOracle:
@@ -72,3 +73,14 @@ class GoldMineOracle(BestPlayerOracle):
         if not isinstance(rules, GoldMineRules):
             raise TypeError("rules must be an instance of GoldMineRules.")
         return super().reckon_solution_score(rules=rules)
+
+    def _create_best_player(self, iteration: int) -> GoldMinePerfectPlayer:
+        """Create one instance of the configured best player for the given iteration.
+
+        Args:
+            iteration: Index of the current repetition (starting from 0).
+
+        Returns:
+            Player: New instance of the configured best player.
+        """
+        return GoldMinePerfectPlayer(seed=self._seed + iteration)

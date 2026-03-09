@@ -8,6 +8,7 @@ from typing import Any
 from iarena.gaming.Configuration import Configuration
 from iarena.utilizing.mapping.square_map.SquareMap import SquareMap
 from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate
+from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 
 
 class GoldMineConfiguration(Configuration):
@@ -76,13 +77,14 @@ class GoldMineConfiguration(Configuration):
 
         self.n_rows = resolved_n_rows
         self.n_cols = resolved_n_cols
-        self.start = self._parse_coordinate(start)
-        self.target = self._parse_coordinate(target)
+        self.seed = seed
+        parsed_start = self._parse_coordinate(start)
+        parsed_target = self._parse_coordinate(target)
+        self.start, self.target = self._resolve_coordinates(parsed_start, parsed_target)
         self.map_data = parsed_map_data
         self.map_generator = map_generator.strip().lower()
         self.map_generator_params = dict(map_generator_params or {})
         self.integer = bool(integer)
-        self.seed = seed
         self.compass_activated = bool(compass_activated)
         self.proximity_activated = bool(proximity_activated)
         self.density_activated = bool(density_activated)
@@ -138,6 +140,27 @@ class GoldMineConfiguration(Configuration):
         resolved_n_rows = int(n_rows) if n_rows is not None else inferred_n_rows if inferred_n_rows is not None else 6
         resolved_n_cols = int(n_cols) if n_cols is not None else inferred_n_cols if inferred_n_cols is not None else 6
         return resolved_n_rows, resolved_n_cols
+
+    def _resolve_coordinates(
+        self,
+        start: SquareMapCoordinate | None,
+        target: SquareMapCoordinate | None,
+    ) -> tuple[SquareMapCoordinate, SquareMapCoordinate]:
+        """Resolve start and target coordinates from special/default values."""
+        rng = RandomGenerator(self.seed)
+        if start is None:
+            resolved_start = SquareMapCoordinate(0, 0)
+        elif start.x == -1 and start.y == -1:
+            resolved_start = self._generate_random_coordinate(rng)
+        else:
+            resolved_start = start
+
+        resolved_target = target if target is not None else self._generate_random_coordinate(rng)
+        return resolved_start, resolved_target
+
+    def _generate_random_coordinate(self, rng: RandomGenerator) -> SquareMapCoordinate:
+        """Generate one random in-bounds coordinate."""
+        return SquareMapCoordinate(rng.randint(self.n_rows), rng.randint(self.n_cols))
 
     @staticmethod
     def _parse_coordinate(raw: Any) -> SquareMapCoordinate | None:

@@ -31,11 +31,11 @@ def test_from_mapping_builds_exam_with_expanded_trials_and_limits() -> None:
             "move_timeout_s": 0.2,
             "total_timeout_s": 1.0,
             "repetitions": 2,
-            "fails_allowed": 1,
             "max_moves": 10,
             "trials": [
                 {
                     "name": "suite-trial",
+                    "value": 2.5,
                     "args": {"n_pegs": 3},
                     "multi_args": {"n_disks": [1, 2]},
                 },
@@ -47,7 +47,7 @@ def test_from_mapping_builds_exam_with_expanded_trials_and_limits() -> None:
     assert exam.game.name() == "hanoi"
     assert len(exam.trial_configurations) == 2
     assert all(configuration.repetitions == 2 for configuration in exam.trial_configurations)
-    assert all(configuration.allow_fails == 1 for configuration in exam.trial_configurations)
+    assert all(configuration.value == 2.5 for configuration in exam.trial_configurations)
     assert all(configuration.min_score <= configuration.max_score for configuration in exam.trial_configurations)
     assert all(configuration.min_score == configuration.max_score for configuration in exam.trial_configurations)
 
@@ -59,7 +59,6 @@ def test_from_file_reads_trials_configuration(tmp_path: Path) -> None:
             [
                 "game: hanoi",
                 "repetitions: 3",
-                "fails_allowed: 2",
                 "trials:",
                 "  - args:",
                 "      n_pegs: 3",
@@ -73,7 +72,7 @@ def test_from_file_reads_trials_configuration(tmp_path: Path) -> None:
 
     assert len(exam.trial_configurations) == 1
     assert exam.trial_configurations[0].repetitions == 3
-    assert exam.trial_configurations[0].allow_fails == 2
+    assert exam.trial_configurations[0].value == 1.0
 
 
 def test_from_mapping_raises_when_game_has_no_oracle() -> None:

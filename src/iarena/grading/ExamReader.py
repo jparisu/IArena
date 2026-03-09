@@ -62,7 +62,6 @@ class ExamReader:
         oracle_class = cls._resolve_oracle_class(game=game)
 
         global_repetitions = max(1, int(configuration.get("repetitions", 1)))
-        global_allow_fails = int(configuration.get("fails_allowed", 0))
         global_move_timeout_s = float(configuration.get("move_timeout_s", 1.0))
         global_total_timeout_s = float(configuration.get("total_timeout_s", 60.0))
         global_max_turns = int(configuration.get("max_moves", 10_000))
@@ -79,7 +78,6 @@ class ExamReader:
                     player=player,
                     trialing_player_index=trialing_player_index,
                     global_repetitions=global_repetitions,
-                    global_allow_fails=global_allow_fails,
                     global_move_timeout_s=global_move_timeout_s,
                     global_total_timeout_s=global_total_timeout_s,
                     global_max_turns=global_max_turns,
@@ -94,6 +92,7 @@ class ExamReader:
         exam.player = player
         exam.trial_configurations = trial_configurations
         exam.trials = []
+        exam.trial_results = []
         exam.trial_value = []
         return exam
 
@@ -185,7 +184,6 @@ class ExamReader:
         player: Player,
         trialing_player_index: PlayerIndex,
         global_repetitions: int,
-        global_allow_fails: int,
         global_move_timeout_s: float,
         global_total_timeout_s: float,
         global_max_turns: int,
@@ -202,7 +200,6 @@ class ExamReader:
             player: Graded player instance.
             trialing_player_index: Player index to score.
             global_repetitions: Root repetition multiplier.
-            global_allow_fails: Root maximum allowed failed matches.
             global_move_timeout_s: Root per-move timeout.
             global_total_timeout_s: Root per-match timeout.
             global_max_turns: Root maximum turns per match.
@@ -219,7 +216,7 @@ class ExamReader:
         base_args = dict(raw_base_args)
 
         per_trial_repetitions = max(1, int(trial_entry.get("repetitions", 1))) * global_repetitions
-        allow_fails = int(trial_entry.get("fails_allowed", global_allow_fails))
+        trial_value = float(trial_entry.get("value", 1.0))
         move_timeout_s = float(trial_entry.get("move_timeout_s", global_move_timeout_s))
         total_timeout_s = float(trial_entry.get("total_timeout_s", global_total_timeout_s))
         max_turns = int(trial_entry.get("max_moves", global_max_turns))
@@ -247,6 +244,7 @@ class ExamReader:
         trial_configurations: list[TrialConfiguration] = []
         for expanded_args in cls._expand_args(base_args=base_args, multi_args=trial_entry.get("multi_args", {})):
             configuration = configuration_class.from_dict(expanded_args)
+            trial_description = str(trial_entry.get("description", trial_entry.get("name", f"Configuration {configuration}")))
             rules = game.generate_rules(configuration)
             best_board, worst_board = oracle_class.reckon_solution_score(rules=rules)
             best_score = float(best_board.get_score(trialing_player_index))
@@ -276,7 +274,9 @@ class ExamReader:
                     rules=rules,
                     players=[player for _ in range(n_players)],
                     repetitions=per_trial_repetitions,
-                    allow_fails=allow_fails,
+                    description=trial_description,
+                    game_configuration=configuration,
+                    value=trial_value,
                     min_score=trial_min_score,
                     max_score=trial_max_score,
                 ),

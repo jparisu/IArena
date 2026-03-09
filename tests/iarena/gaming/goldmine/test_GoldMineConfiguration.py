@@ -7,6 +7,7 @@ import pytest
 from iarena.gaming.goldmine.GoldMineConfiguration import GoldMineConfiguration
 from iarena.utilizing.mapping.square_map.SquareMap import SquareMap
 from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate
+from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 
 
 def test_init_stores_configuration_values() -> None:
@@ -81,6 +82,45 @@ def test_init_accepts_square_map_data() -> None:
     )
 
     assert configuration.map_data is map_data
+
+
+def test_init_defaults_start_to_origin_when_start_is_none() -> None:
+    configuration = GoldMineConfiguration(
+        n_rows=3,
+        n_cols=3,
+        start=None,
+        target=(2, 2),
+    )
+
+    assert configuration.start == SquareMapCoordinate(0, 0)
+
+
+def test_init_uses_random_start_when_start_is_minus_one_minus_one() -> None:
+    seed = 7
+    configuration = GoldMineConfiguration(
+        n_rows=4,
+        n_cols=5,
+        start=(-1, -1),
+        target=(3, 4),
+        seed=seed,
+    )
+    rng = RandomGenerator(seed)
+
+    assert configuration.start == SquareMapCoordinate(rng.randint(4), rng.randint(5))
+
+
+def test_init_uses_random_target_when_target_is_none() -> None:
+    seed = 11
+    configuration = GoldMineConfiguration(
+        n_rows=4,
+        n_cols=5,
+        start=(0, 0),
+        target=None,
+        seed=seed,
+    )
+    rng = RandomGenerator(seed)
+
+    assert configuration.target == SquareMapCoordinate(rng.randint(4), rng.randint(5))
 
 
 def test_init_infers_dimensions_from_matrix_map_data() -> None:

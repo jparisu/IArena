@@ -34,6 +34,7 @@ class Exam:
     suite_configuration: ConfigurationSuite
     trial_configurations: list[TrialConfiguration]
     trials: list[Trial]
+    trial_results: list[float]
     trial_value: list[float]
 
     def _iter_configurations(self) -> list[Configuration]:
@@ -84,7 +85,9 @@ class Exam:
             rules=rules,
             players=self._build_players(n_players=n_players),
             repetitions=1,
-            allow_fails=0,
+            description=f"Configuration {configuration}",
+            game_configuration=configuration,
+            value=1.0,
         )
 
     def _iter_trial_configurations(self) -> list[TrialConfiguration]:
@@ -120,6 +123,7 @@ class Exam:
                 contains reports for one executed trial.
         """
         self.trials = []
+        self.trial_results = []
         self.trial_value = []
         grouped_reports: list[list[MatchReport]] = []
 
@@ -130,7 +134,8 @@ class Exam:
             reports = trial.trial(debug_level=debug_level)
             grouped_reports.append(reports)
             self.trials.append(trial)
-            self.trial_value.append(trial.score())
+            self.trial_results.append(trial.score())
+            self.trial_value.append(float(trial_configuration.value))
 
         return grouped_reports
 
@@ -148,9 +153,45 @@ class Exam:
         Returns:
             float: Final score of the evaluated player for this exam.
         """
-        trial_scores = list(getattr(self, "trial_value", []))
-        if not trial_scores:
-            trial_scores = [trial.score() for trial in getattr(self, "trials", [])]
-        if not trial_scores:
+        trial_results = list(getattr(self, "trial_results", []))
+        trial_values = list(getattr(self, "trial_value", []))
+        if trial_results and len(trial_results) == len(trial_values):
+            total_score = float(sum(result * value for result, value in zip(trial_results, trial_values, strict=False)))
+
+        else:
+            trials = list(getattr(self, "trials", []))
+            configurations = self._iter_trial_configurations() if trials else []
+            if not trials or not configurations:
+                return 0.0
+
+            total_score = float(
+                sum(
+                    trial.score() * float(configuration.value)
+                    for trial, configuration in zip(trials, configurations, strict=False)
+                ),
+            )
+
+        return total_score / self.max_score()
+
+    def max_score(self) -> float:
+        """Compute the maximum possible score across all trials.
+
+        What it does:
+            Produces the maximum achievable score for the exam from all trial
+            configurations.
+        How it works:
+            Aggregates trial-level maximum numeric values based on the exam
+            scoring policy applied by concrete implementations.
+        Args:
+            None.
+        Returns:
+            float: Maximum possible score for the evaluated player in this exam.
+        """
+        trial_values = list(getattr(self, "trial_value", []))
+        if trial_values:
+            return float(sum(trial_values))
+
+        configurations = self._iter_trial_configurations()
+        if not configurations:
             return 0.0
-        return float(sum(trial_scores) / len(trial_scores))
+        return float(sum(float(configuration.value) for configuration in configurations))

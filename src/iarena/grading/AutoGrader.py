@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from iarena.grading.Exam import Exam
+from iarena.grading.DebugLevel import DebugLevel
 from iarena.grading.ExamReader import ExamReader
 from iarena.grading.MatchReport import MatchReport
 from iarena.playing.LoadPlayer import LoadPlayer
@@ -96,7 +97,7 @@ class AutoGrader:
             raise RuntimeError("AutoGrader requires `grader` to be configured before grading.")
         return grader
 
-    def grade(self) -> list[list[MatchReport]]:
+    def grade(self, debug_level: DebugLevel = DebugLevel.USER) -> list[list[MatchReport]]:
         """Run grading and return grouped match reports.
 
         What it does:
@@ -106,12 +107,12 @@ class AutoGrader:
             Delegates grading orchestration to `grader` while preserving a
             simple API for file-driven application entry points.
         Args:
-            None.
+            debug_level: Verbosity level propagated to exam and trial execution.
         Returns:
             list[list[MatchReport]]: Nested reports grouped by trial in the
                 same order as exam execution.
         """
-        return self._require_grader().grade()
+        return self._require_grader().grade(debug_level=debug_level)
 
     def score(self) -> float:
         """Return the final numeric score computed by the grader.

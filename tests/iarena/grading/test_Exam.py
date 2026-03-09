@@ -127,15 +127,17 @@ def test_grade_runs_trials_for_every_configuration() -> None:
 
     assert len(reports) == 2
     assert len(exam.trials) == 2
-    assert exam.trial_value == [1.0, 3.0]
+    assert exam.trial_results == [1.0, 1.0]
+    assert exam.trial_value == [1.0, 1.0]
 
 
-def test_score_returns_average_from_trial_values() -> None:
+def test_score_returns_weighted_sum_from_trial_results_and_values() -> None:
     exam = Exam()
+    exam.trial_results = [1.0, 0.0, 1.0]
     exam.trial_value = [2.0, 4.0, 6.0]
     exam.trials = []
 
-    assert exam.score() == 4.0
+    assert exam.score() == 8.0
 
 
 def test_grade_uses_explicit_trial_configurations_when_provided() -> None:
@@ -153,14 +155,15 @@ def test_grade_uses_explicit_trial_configurations_when_provided() -> None:
             rules=_Rules(2.0),
             players=[exam.player],
             repetitions=1,
-            allow_fails=0,
+            value=3.0,
         ),
     ]
 
     reports = exam.grade(DebugLevel.USER)
 
     assert len(reports) == 1
-    assert exam.trial_value == [2.0]
+    assert exam.trial_results == [1.0]
+    assert exam.trial_value == [3.0]
 
 
 def test_grade_method_declares_expected_return_annotation() -> None:

@@ -11,10 +11,10 @@ from iarena.grading.DebugLevel import DebugLevel
 from iarena.grading.MatchConfiguration import MatchConfiguration
 from iarena.grading.MatchReport import MatchReport
 from iarena.grading.TrialConfiguration import TrialConfiguration
+from iarena.scoring.Score import Score
 
 if TYPE_CHECKING:
     from iarena.arening.Arena import Arena
-    from iarena.scoring.Score import Score
     from iarena.scoring.ScoreBoard import ScoreBoard
 
 from iarena.visualizing.EmptyView import EmptyView
@@ -36,6 +36,97 @@ class Trial:
 
     configuration: TrialConfiguration
     match_reports: list[MatchReport]
+
+    def _debug_enabled(self, current_level: DebugLevel, required_level: DebugLevel) -> bool:
+        """Return whether one debug message should be emitted.
+
+        Args:
+            current_level: Active debug level for current execution.
+            required_level: Minimum level required for the message.
+
+        Returns:
+            bool: `True` when `current_level` includes `required_level`.
+        """
+        return current_level.value >= required_level.value
+
+    def _emit_debug(self, message: str, current_level: DebugLevel, required_level: DebugLevel) -> None:
+        """Print one debug line when active level includes the required level.
+
+        Args:
+            message: Text to print.
+            current_level: Active debug level.
+            required_level: Minimum level required to print.
+
+        Returns:
+            None.
+        """
+        if self._debug_enabled(current_level=current_level, required_level=required_level):
+            print(message, flush=True)
+
+    def _emit_trial_start(self, debug_level: DebugLevel) -> None:
+        """Emit trial start messages according to current debug level.
+
+        Args:
+            debug_level: Active debug level.
+
+        Returns:
+            None.
+        """
+        description = self.configuration.description.strip() or "trial"
+        self._emit_debug(message=f"> Running: {description}", current_level=debug_level, required_level=DebugLevel.USER)
+        self._emit_debug(
+            message=f"  > Info: {self.configuration}",
+            current_level=debug_level,
+            required_level=DebugLevel.INFO,
+        )
+
+    def _emit_repetition_result(self, report: MatchReport, debug_level: DebugLevel) -> None:
+        """Emit per-repetition outcome diagnostics.
+
+        Args:
+            report: Match report generated for one repetition.
+            debug_level: Active debug level.
+
+        Returns:
+            None.
+        """
+        repetition = int(report.messages.get("repetition", 0)) + 1
+        accepted = bool(report.messages.get("accepted", False))
+        status = "accepted" if accepted else "rejected"
+        marker = "✓" if accepted else "✗"
+
+        self._emit_debug(
+            message=f"  > {marker} repetition {repetition}/{self.configuration.repetitions} ({status})",
+            current_level=debug_level,
+            required_level=DebugLevel.USER,
+        )
+
+        warnings = report.messages.get("warnings", [])
+        if warnings:
+            warning_message = str(warnings[0])
+            self._emit_debug(
+                message=f"  > WARNING repetition {repetition}: {warning_message}",
+                current_level=debug_level,
+                required_level=DebugLevel.WARNING,
+            )
+
+        error_text = report.messages.get("error")
+        if isinstance(error_text, str):
+            self._emit_debug(
+                message=f"  > ERROR repetition {repetition}: {error_text}",
+                current_level=debug_level,
+                required_level=DebugLevel.ERROR,
+            )
+
+        self._emit_debug(
+            message=(
+                f"    > DEBUG repetition {repetition}: "
+                f"score={float(report.score)} moves={report.moves} total_time_s={report.total_time_s:.6f} "
+                f"messages={report.messages}"
+            ),
+            current_level=debug_level,
+            required_level=DebugLevel.DEBUG,
+        )
 
     def _is_score_inside_limits(self, score: Score) -> bool:
         """Return whether one score is inside configured accepted limits.
@@ -78,7 +169,7 @@ class Trial:
     def _new_report(
         self,
         arena: Arena,
-        score: Score,
+        accepted: bool,
         elapsed_s: float,
         repetition: int,
         debug_level: DebugLevel,
@@ -88,7 +179,7 @@ class Trial:
 
         Args:
             arena: Arena used to execute the match.
-            score: Score extracted for the trialing player.
+            accepted: Whether the run was accepted by grading constraints.
             elapsed_s: Match elapsed wall-clock time in seconds.
             repetition: Zero-based repetition index of the match.
             debug_level: Debug verbosity value used for trial execution.
@@ -100,10 +191,11 @@ class Trial:
         report = MatchReport()
         report.moves = int(getattr(arena, "_turn_count", 0))
         report.total_time_s = float(elapsed_s)
-        report.score = score
+        report.score = Score(1.0 if accepted else 0.0)
         report.messages = {
             "repetition": repetition,
             "debug_level": debug_level.name,
+            "accepted": accepted,
         }
         if warnings:
             report.messages["warnings"] = warnings
@@ -130,10 +222,11 @@ class Trial:
         report = MatchReport()
         report.moves = 0
         report.total_time_s = float(elapsed_s)
-        report.score = self.configuration.match_configuration.score_limits[0]
+        report.score = Score(0.0)
         report.messages = {
             "repetition": repetition,
             "debug_level": debug_level.name,
+            "accepted": False,
             "error": str(error),
             "error_type": type(error).__name__,
             "errors": [f"{type(error).__name__}: {error}"],
@@ -155,17 +248,12 @@ class Trial:
         Returns:
             List[MatchReport]: Ordered collection of report entries generated
                 by the repeated match executions.
-        Raises:
-            RuntimeError: If match failures exceed the configured `allow_fails`
-                threshold.
         """
         self.match_reports = []
-        failures = 0
+        self._emit_trial_start(debug_level=debug_level)
 
         for repetition in range(self.configuration.repetitions):
             started = perf_counter()
-            match_failed = False
-            failure_error: Exception | None = None
             try:
                 view = EmptyView()
                 arena = self._create_arena()
@@ -175,26 +263,24 @@ class Trial:
                     view=view,
                 )
                 score = self._score_from_scoreboard(scoreboard)
-                report = self._new_report(
-                    arena=arena,
-                    score=score,
-                    elapsed_s=perf_counter() - started,
-                    repetition=repetition,
-                    debug_level=debug_level,
-                )
-                if not self._is_score_inside_limits(score):
-                    failures += 1
-                    match_failed = True
-                    report.messages["warnings"] = [
+                accepted = self._is_score_inside_limits(score)
+                warnings: list[str] | None = None
+                if not accepted:
+                    warnings = [
                         (
                             f"Score {float(score)} is outside accepted range "
                             f"[{self.configuration.min_score}, {self.configuration.max_score}]."
                         ),
                     ]
+                report = self._new_report(
+                    arena=arena,
+                    accepted=accepted,
+                    elapsed_s=perf_counter() - started,
+                    repetition=repetition,
+                    debug_level=debug_level,
+                    warnings=warnings,
+                )
             except Exception as error:  # pragma: no cover - exercised by fail-path tests
-                failures += 1
-                match_failed = True
-                failure_error = error
                 report = self._error_report(
                     elapsed_s=perf_counter() - started,
                     repetition=repetition,
@@ -202,11 +288,8 @@ class Trial:
                     error=error,
                 )
 
-            if match_failed and failures > self.configuration.allow_fails:
-                if failure_error is not None:
-                    raise RuntimeError("Trial exceeded the allowed number of failed matches.") from failure_error
-                raise RuntimeError("Trial exceeded the allowed number of failed matches.")
             self.match_reports.append(report)
+            self._emit_repetition_result(report=report, debug_level=debug_level)
 
         return self.match_reports
 
@@ -227,4 +310,5 @@ class Trial:
         reports: list[MatchReport] = getattr(self, "match_reports", [])
         if not reports:
             return 0.0
-        return float(sum(float(report.score) for report in reports) / len(reports))
+        all_accepted = all(float(report.score) == 1.0 for report in reports)
+        return 1.0 if all_accepted else 0.0

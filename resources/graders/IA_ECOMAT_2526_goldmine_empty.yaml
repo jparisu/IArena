@@ -3,7 +3,6 @@ game: GoldMine
 move_timeout_s: 5
 total_timeout_s: 100
 repetitions: 3
-fails_allowed: 3
 max_moves: 5000
 
 trials:
@@ -50,9 +49,7 @@ trials:
     args:
       n: 5
       m: 5
-      starting_position:
-        x: -1
-        y: -1
+      starting_position: None
       map_generator: "empty"
     multi_args:
       seed: [1, 2, 3]
@@ -90,5 +87,6 @@ trials:
     multi_args:
       seed: [11, 12, 13]
     repetitions: 2
+    max_moves: 10000
 
     value: 5

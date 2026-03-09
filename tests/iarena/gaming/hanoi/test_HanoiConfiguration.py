@@ -36,3 +36,11 @@ def test_from_dict_allows_using_n_disks_shortcut() -> None:
 
     assert configuration.n_pegs == 4
     assert configuration.disks == [0, 0]
+
+
+def test_str_returns_serialized_configuration_fields() -> None:
+    configuration = HanoiConfiguration(n_pegs=3, disks=[0, 1])
+
+    text = str(configuration)
+
+    assert text == "HanoiConfiguration(disks=[0, 1], n_pegs=3)"

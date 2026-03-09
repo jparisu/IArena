@@ -140,7 +140,8 @@ def test_from_zip_loads_players_and_expands_trials(tmp_path: Path) -> None:
 
     assert len(grader.players) == 2
     assert len(grader.trial_definitions) == 2
-    assert all(repetitions == 2 for _, repetitions in grader.trial_definitions)
+    assert all(repetitions == 2 for _, repetitions, _ in grader.trial_definitions)
+    assert all(value == 1.0 for _, _, value in grader.trial_definitions)
 
 
 def test_grade_all_records_success_and_load_errors(tmp_path: Path) -> None:

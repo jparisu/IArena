@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from iarena.grading.Exam import Exam
+from iarena.grading.DebugLevel import DebugLevel
 from iarena.grading.ExamReader import ExamReader
 from iarena.grading.MatchReport import MatchReport
 from iarena.playing.Player import Player
@@ -28,20 +29,9 @@ class Grader:
         when player instances are already available in memory.
     """
 
-    def __init__(
-            self,
-            configuration_file: str,
-            player: Player,
-    ) -> None:
-        """Initialize the grader with optional configuration file and player.
-
-        Args:
-            configuration_file (str): Optional path to a YAML configuration file.
-            player (Player): Optional player instance to grade.
-        """
-        self._grader = Grader._read_configuration(configuration_file)
-        self._player = player
-
+    grader: Exam
+    configuration_file: str
+    player: Player
 
     @classmethod
     def from_file(cls, configuration_file: str, player: Player) -> Grader:
@@ -97,13 +87,16 @@ class Grader:
             raise RuntimeError("Grader requires `grader` to be configured before grading.")
         return grader
 
-    def grade(self) -> list[list[MatchReport]]:
+    def grade(self, debug_level: DebugLevel = DebugLevel.USER) -> list[list[MatchReport]]:
         """Run grading and return grouped match reports.
+
+        Args:
+            debug_level: Verbosity level propagated to exam and trial execution.
 
         Returns:
             list[list[MatchReport]]: Nested reports grouped by trial.
         """
-        return self._require_grader().grade()
+        return self._require_grader().grade(debug_level=debug_level)
 
     def score(self) -> float:
         """Return the final numeric score computed by the grader.

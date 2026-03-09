@@ -5,6 +5,7 @@ from typing import Iterator
 from iarena.gaming.Rules import Rules
 from iarena.gaming.Movement import Movement
 from iarena.gaming.Position import Position
+from iarena.gaming.hanoi.HanoiConfiguration import HanoiConfiguration
 from iarena.grading.MatchConfiguration import MatchConfiguration
 from iarena.grading.TrialConfiguration import TrialConfiguration
 from iarena.playing.Player import Player
@@ -61,7 +62,7 @@ def test_trial_configuration_stores_expected_trial_inputs() -> None:
         rules=_Rules(),
         players=players,
         repetitions=3,
-        allow_fails=1,
+        value=2.0,
     )
 
     assert configuration.match_configuration is match_configuration
@@ -69,4 +70,27 @@ def test_trial_configuration_stores_expected_trial_inputs() -> None:
     assert isinstance(configuration.rules, _Rules)
     assert configuration.players == players
     assert configuration.repetitions == 3
-    assert configuration.allow_fails == 1
+    assert configuration.value == 2.0
+
+
+def test_trial_configuration_str_includes_description_and_game_configuration() -> None:
+    configuration = TrialConfiguration(
+        match_configuration=MatchConfiguration(
+            move_timeout_s=1.0,
+            total_timeout_s=10.0,
+            max_turns=50,
+            score_limits=(Score(-1.0), Score(1.0)),
+        ),
+        trialing_player_index=PlayerIndex(0),
+        rules=_Rules(),
+        players=[_Player(), _Player()],
+        repetitions=1,
+        description="hanoi trial",
+        game_configuration=HanoiConfiguration(n_pegs=3, disks=[0, 0]),
+        value=1.5,
+    )
+
+    text = str(configuration)
+
+    assert "description='hanoi trial'" in text
+    assert "game_configuration=HanoiConfiguration(" in text

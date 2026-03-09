@@ -45,9 +45,8 @@ class MultiGrader:
 
     game: Game
     configuration_class: type[Configuration]
-    trial_definitions: list[tuple[Configuration, int]]
+    trial_definitions: list[tuple[Configuration, int, float]]
     match_configuration: MatchConfiguration
-    allow_fails: int
     players: list[dict[str, Any]]
     results: list[dict[str, Any]]
     token: str
@@ -110,7 +109,6 @@ class MultiGrader:
         self.configuration_class = configuration_candidates[0]
 
         global_repetitions = max(1, int(configuration.get("repetitions", 1)))
-        self.allow_fails = int(configuration.get("fails_allowed", 0))
         self.match_configuration = MatchConfiguration(
             move_timeout_s=float(configuration.get("move_timeout_s", 1.0)),
             total_timeout_s=float(configuration.get("total_timeout_s", 60.0)),
@@ -145,12 +143,12 @@ class MultiGrader:
         self,
         reports: object,
         global_repetitions: int,
-    ) -> list[tuple[Configuration, int]]:
+    ) -> list[tuple[Configuration, int, float]]:
         """Expand trial definitions into concrete configuration/repetition pairs."""
         if not isinstance(reports, list):
             raise TypeError("Configuration field `trials` (or `reports`) must be a list.")
 
-        definitions: list[tuple[Configuration, int]] = []
+        definitions: list[tuple[Configuration, int, float]] = []
         for report in reports:
             if not isinstance(report, dict):
                 raise TypeError("Each report entry must be a mapping/object.")
@@ -160,13 +158,14 @@ class MultiGrader:
             base_args = dict(raw_base_args)
 
             per_report_repetitions = max(1, int(report.get("repetitions", 1))) * global_repetitions
+            trial_value = float(report.get("value", 1.0))
             for expanded_args in self._expand_args(base_args=base_args, multi_args=report.get("multi_args", {})):
                 definition = self.configuration_class.from_dict(expanded_args)
-                definitions.append((definition, per_report_repetitions))
+                definitions.append((definition, per_report_repetitions, trial_value))
 
         if not definitions:
             definition = self.configuration_class.from_dict({})
-            definitions.append((definition, global_repetitions))
+            definitions.append((definition, global_repetitions, 1.0))
         return definitions
 
     def _expand_args(self, base_args: dict[str, Any], multi_args: object) -> list[dict[str, Any]]:
@@ -299,8 +298,8 @@ class MultiGrader:
 
     def _grade_player(self, player: Player, debug_level: DebugLevel) -> float:
         """Compute the final score for one player across all configured trials."""
-        trial_scores: list[float] = []
-        for configuration, repetitions in self.trial_definitions:
+        weighted_trial_scores: list[float] = []
+        for configuration, repetitions, trial_value in self.trial_definitions:
             rules = self.game.generate_rules(configuration)
             n_players = max(1, int(rules.n_players()))
             trial = Trial()
@@ -310,17 +309,19 @@ class MultiGrader:
                 rules=rules,
                 players=[player for _ in range(n_players)],
                 repetitions=repetitions,
-                allow_fails=self.allow_fails,
+                description=f"Configuration {configuration}",
+                game_configuration=configuration,
+                value=trial_value,
                 min_score=float(self.match_configuration.score_limits[0]),
                 max_score=float(self.match_configuration.score_limits[1]),
             )
             trial.match_reports = []
             trial.trial(debug_level=debug_level)
-            trial_scores.append(trial.score())
+            weighted_trial_scores.append(trial.score() * trial_value)
 
-        if not trial_scores:
+        if not weighted_trial_scores:
             return 0.0
-        return float(sum(trial_scores) / len(trial_scores))
+        return float(sum(weighted_trial_scores))
 
     def write_csv(self, filename: str) -> None:
         """Write graded rows to one CSV file.

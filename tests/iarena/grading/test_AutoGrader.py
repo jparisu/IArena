@@ -8,6 +8,7 @@ from typing import get_args, get_origin, get_type_hints
 import pytest
 
 from iarena.grading.AutoGrader import AutoGrader
+from iarena.grading.DebugLevel import DebugLevel
 from iarena.grading.Exam import Exam
 from iarena.grading.MatchReport import MatchReport
 
@@ -16,9 +17,11 @@ class _Exam:
     def __init__(self) -> None:
         self.grade_calls = 0
         self.score_calls = 0
+        self.last_debug_level: DebugLevel | None = None
 
-    def grade(self) -> list[list[MatchReport]]:
+    def grade(self, debug_level: DebugLevel = DebugLevel.USER) -> list[list[MatchReport]]:
         self.grade_calls += 1
+        self.last_debug_level = debug_level
         report = MatchReport()
         report.moves = 1
         report.total_time_s = 0.1
@@ -39,7 +42,18 @@ def test_grade_delegates_to_exam_grader() -> None:
     reports = auto.grade()
 
     assert exam.grade_calls == 1
+    assert exam.last_debug_level == DebugLevel.USER
     assert len(reports) == 1
+
+
+def test_grade_passes_requested_debug_level_to_exam_grader() -> None:
+    auto = AutoGrader()
+    exam = _Exam()
+    auto.grader = exam  # type: ignore[assignment]
+
+    _ = auto.grade(debug_level=DebugLevel.DEBUG)
+
+    assert exam.last_debug_level == DebugLevel.DEBUG
 
 
 def test_score_delegates_to_exam_grader() -> None:

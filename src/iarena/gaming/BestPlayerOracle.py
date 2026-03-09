@@ -37,14 +37,12 @@ class BestPlayerOracle(Oracle, ABC):
         repetitions (int): Number of repeated runs used for average estimation.
     """
 
-    best_player: Player
     higher_limit_ratio: float = math.inf
     lower_limit_ratio: float = -math.inf
     repetitions: int
 
     def __init__(
         self,
-        best_player: Player,
         higher_limit_ratio: float = math.inf,
         lower_limit_ratio: float = -math.inf,
         repetitions: int = 1,
@@ -63,7 +61,6 @@ class BestPlayerOracle(Oracle, ABC):
         if repetitions <= 0:
             raise ValueError("repetitions must be strictly positive.")
 
-        self.best_player = best_player
         self.higher_limit_ratio = higher_limit_ratio
         self.lower_limit_ratio = lower_limit_ratio
         self.repetitions = repetitions
@@ -103,7 +100,7 @@ class BestPlayerOracle(Oracle, ABC):
         board._scores = {PlayerIndex(0): score}
         return board
 
-    def _run_once(self, rules: Rules) -> float:
+    def _run_once(self, rules: Rules, iteration: int = 0) -> float:
         """Execute one oracle simulation and return the resulting score.
 
         Args:
@@ -113,7 +110,7 @@ class BestPlayerOracle(Oracle, ABC):
             float: Final score achieved by the configured best player.
         """
         view = EmptyView()
-        players = [self.best_player]
+        players = [self._create_best_player(iteration=iteration)]
         arena = OracleArena(
             max_turns=1,
             max_turn_time_s=float("inf"),
@@ -136,7 +133,7 @@ class BestPlayerOracle(Oracle, ABC):
         if rules.n_players() != 1:
             raise ValueError("BestPlayerOracle can only be used with one-player rules.")
 
-        sampled_scores = [self._run_once(rules=rules) for _ in range(self.repetitions)]
+        sampled_scores = [self._run_once(rules=rules, iteration=i) for i in range(self.repetitions)]
         min_observed_score = min(sampled_scores)
         max_observed_score = max(sampled_scores)
 
@@ -147,3 +144,14 @@ class BestPlayerOracle(Oracle, ABC):
         best_board = self._build_scoreboard(score=higher_score)
 
         return best_board, worst_board
+
+    @abstractmethod
+    def _create_best_player(self, iteration: int) -> Player:
+        """Create one instance of the configured best player for the given iteration.
+
+        Args:
+            iteration: Index of the current repetition (starting from 0).
+
+        Returns:
+            Player: New instance of the configured best player.
+        """
