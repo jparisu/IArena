@@ -5,20 +5,27 @@ from __future__ import annotations
 from pathlib import Path
 
 from iarena.apps.streamlit.StreamlitApplication import StreamlitApplication
+from iarena.gaming.goldmine.GoldMineGame import GoldMineGame
+from iarena.gaming.goldmine.GoldMineStreamlitView import GoldMineStreamlitView
 from iarena.gaming.hanoi.HanoiConfiguration import HanoiConfiguration
 from iarena.gaming.hanoi.HanoiGame import HanoiGame
 from iarena.gaming.hanoi.HanoiStreamlitView import HanoiStreamlitView
+from iarena.gaming.tictactoe.TicTacToeGame import TicTacToeGame
+from iarena.gaming.tictactoe.TicTacToeStreamlitView import TicTacToeStreamlitView
 from iarena.playing.LoadPlayer import LoadPlayer
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
 from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
 
 
-def test_available_games_includes_hanoi() -> None:
+def test_available_games_include_streamlit_supported_games() -> None:
     app = StreamlitApplication()
 
     games = app._available_games()
+    game_names = {game.name() for game in games}
 
-    assert any(game.name() == "hanoi" for game in games)
+    assert "hanoi" in game_names
+    assert "goldmine" in game_names
+    assert "tictactoe" in game_names
 
 
 def test_streamlit_renderer_classes_include_hanoi_streamlit_view() -> None:
@@ -27,6 +34,22 @@ def test_streamlit_renderer_classes_include_hanoi_streamlit_view() -> None:
     renderers = app._streamlit_renderer_classes(HanoiGame.instance())
 
     assert HanoiStreamlitView in renderers
+
+
+def test_streamlit_renderer_classes_include_tictactoe_streamlit_view() -> None:
+    app = StreamlitApplication()
+
+    renderers = app._streamlit_renderer_classes(TicTacToeGame.instance())
+
+    assert TicTacToeStreamlitView in renderers
+
+
+def test_streamlit_renderer_classes_include_goldmine_streamlit_view() -> None:
+    app = StreamlitApplication()
+
+    renderers = app._streamlit_renderer_classes(GoldMineGame.instance())
+
+    assert GoldMineStreamlitView in renderers
 
 
 def test_player_classes_filter_excludes_terminal_human_player() -> None:

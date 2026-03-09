@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class NoMaxTurnsArena(ConfiguredArenaBase):
@@ -10,9 +10,6 @@ class NoMaxTurnsArena(ConfiguredArenaBase):
 
     def _check_max_turns(self) -> bool:
         """Return `False` to disable max-turn termination.
-
-        Args:
-            None.
 
         Returns:
             bool: Always `False`.

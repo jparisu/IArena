@@ -4,14 +4,9 @@ move_timeout_s: 5
 total_timeout_s: 100
 repetitions: 3
 fails_allowed: 3
-max_moves: 1000
-solver_configuration:
-  class: "GoldMineSolver"
-  args:
-    min_p: 1.2
-    max_p: 0.5
+max_moves: 5000
 
-reports:
+trials:
 
   - name: Trivial Test
 
@@ -24,6 +19,9 @@ reports:
         x: 2
         y: 2
       map_generator: "empty"
+
+    value: 1
+
 
 
   - name: Inverse Test
@@ -41,6 +39,9 @@ reports:
         y: 0
       map_generator: "empty"
 
+    value: 4
+
+
 
   - name: Random 5x5 Test
 
@@ -56,6 +57,9 @@ reports:
     multi_args:
       seed: [1, 2, 3]
 
+    value: 2
+
+
 
   - name: Unique row map
 
@@ -67,6 +71,9 @@ reports:
     multi_args:
       m: [5, 10, 15]
     repetitions: 2
+
+    value: 2
+
 
 
   - name: Random 15x15 Test
@@ -84,7 +91,4 @@ reports:
       seed: [11, 12, 13]
     repetitions: 2
 
-    solver_configuration:
-      class: "GoldMineSolver"
-      args:
-        repetitions: 10
+    value: 5

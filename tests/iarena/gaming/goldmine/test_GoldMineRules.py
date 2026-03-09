@@ -41,9 +41,7 @@ def test_first_position_uses_configuration_defaults() -> None:
     position = _rules().first_position()
 
     assert isinstance(position, GoldMinePosition)
-    assert position.start == SquareMapCoordinate(0, 0)
-    assert position.current == SquareMapCoordinate(0, 0)
-    assert position.dug_tiles == {(0, 0)}
+    assert set(position.get_valid_directions()) == {SquareMapDirection.RIGHT, SquareMapDirection.DOWN}
 
 
 def test_next_position_applies_legal_move_and_adds_dug_tile() -> None:
@@ -53,8 +51,7 @@ def test_next_position_applies_legal_move_and_adds_dug_tile() -> None:
     next_position = rules.next_position(position, GoldMineMovement(direction=SquareMapDirection.RIGHT))
 
     assert isinstance(next_position, GoldMinePosition)
-    assert next_position.current == SquareMapCoordinate(0, 1)
-    assert (0, 1) in next_position.dug_tiles
+    assert set(next_position.get_valid_directions()) == {SquareMapDirection.LEFT, SquareMapDirection.DOWN}
 
 
 def test_next_position_rejects_invalid_direction() -> None:
@@ -78,13 +75,8 @@ def test_is_finished_detects_dug_target() -> None:
     rules = _rules()
 
     unfinished = rules.first_position()
-    finished = GoldMinePosition(
-        map_data=unfinished.map_data,
-        start=unfinished.start,
-        target=unfinished.target,
-        current=unfinished.target,
-        dug_tiles={unfinished.start.as_tuple(), unfinished.target.as_tuple()},
-    )
+    moved = rules.next_position(unfinished, GoldMineMovement(direction=SquareMapDirection.RIGHT))
+    finished = rules.next_position(moved, GoldMineMovement(direction=SquareMapDirection.DOWN))
 
     assert rules.is_finished(unfinished) is False
     assert rules.is_finished(finished) is True
@@ -105,11 +97,11 @@ def test_hint_methods_fail_when_disabled() -> None:
     position = rules.first_position()
 
     with pytest.raises(RuntimeError, match="Compass"):
-        rules.get_compass_hint(position)
+        position.get_compass()
     with pytest.raises(RuntimeError, match="Proximity"):
-        rules.get_proximity_hint(position)
+        position.get_proximity()
     with pytest.raises(RuntimeError, match="Density"):
-        rules.get_density_hint(position)
+        position.get_density()
 
 
 def test_hint_methods_return_values_when_enabled() -> None:
@@ -128,6 +120,6 @@ def test_hint_methods_return_values_when_enabled() -> None:
     )
     position = rules.first_position()
 
-    assert rules.get_compass_hint(position) in (SquareMapDirection.RIGHT, SquareMapDirection.DOWN)
-    assert rules.get_proximity_hint(position) == 2
-    assert rules.get_density_hint(position) == 0.0
+    assert position.get_compass() in (SquareMapDirection.RIGHT, SquareMapDirection.DOWN)
+    assert position.get_proximity() == 2
+    assert position.get_density() == 0.0

@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 from iarena.gaming.Movement import Movement
-
-from .ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class LogsStoringArena(ConfiguredArenaBase):

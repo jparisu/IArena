@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class NoScoreLimitArena(ConfiguredArenaBase):
@@ -10,9 +10,6 @@ class NoScoreLimitArena(ConfiguredArenaBase):
 
     def _check_score_limit(self) -> bool:
         """Return whether the game is finished without applying score limits.
-
-        Args:
-            None.
 
         Returns:
             bool: `True` only when rules declare the game finished.

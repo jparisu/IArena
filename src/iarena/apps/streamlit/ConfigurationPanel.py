@@ -28,9 +28,6 @@ class ConfigurationPanel:
     def __init__(self) -> None:
         """Initialize one empty configuration panel state container.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
@@ -87,9 +84,6 @@ class ConfigurationPanel:
 
     def ask_for_configuration(self) -> Configuration:
         """Return the configuration object currently stored in panel controls.
-
-        Args:
-            None.
 
         Returns:
             Configuration: Stored configuration object.

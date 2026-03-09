@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from iarena.apps.streamlit.ConfigurationPanel import ConfigurationPanel
+from iarena.apps.streamlit.MovementPanel import MovementPanel
+from iarena.apps.streamlit.StatePanel import StatePanel
 from iarena.visualizing.streamlit_frontend.StreamlitContainer import StreamlitContainer
-
-from .ConfigurationPanel import ConfigurationPanel
-from .MovementPanel import MovementPanel
-from .StatePanel import StatePanel
 
 
 class MainApp:
@@ -34,9 +33,6 @@ class MainApp:
     def __init__(self) -> None:
         """Initialize panel objects for one streamlit application instance.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
@@ -46,9 +42,6 @@ class MainApp:
 
     def build_layout(self) -> dict[str, StreamlitContainer | Any]:
         """Build and return the primary page containers.
-
-        Args:
-            None.
 
         Returns:
             dict[str, StreamlitContainer | Any]: Mapping containing wrapped

@@ -1,6 +1,6 @@
 """Application entrypoints for interactive and executable IArena workflows."""
 
-from .streamlit import StreamlitApplication
-from .terminal import TerminalApplication
+from iarena.apps.streamlit import StreamlitApplication
+from iarena.apps.terminal import TerminalApplication
 
 __all__ = ["TerminalApplication", "StreamlitApplication"]

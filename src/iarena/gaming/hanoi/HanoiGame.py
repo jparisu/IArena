@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
 from iarena.gaming.hanoi.HanoiConfiguration import HanoiConfiguration
 from iarena.gaming.hanoi.HanoiOracle import HanoiOracle
-from iarena.gaming.hanoi.HanoiPerfectPlayer import HanoiPerfectPlayer
 from iarena.gaming.hanoi.HanoiRules import HanoiRules
 from iarena.gaming.hanoi.HanoiStreamlitView import HanoiStreamlitView
 from iarena.gaming.hanoi.HanoiTerminalView import HanoiTerminalView
+from iarena.gaming.hanoi.PerfectHanoiPlayer import PerfectHanoiPlayer
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
 from iarena.playing.PolyvalentStreamlitPlayer import PolyvalentStreamlitPlayer
 from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
@@ -46,9 +46,6 @@ class HanoiGame(Game):
     def instance(cls) -> HanoiGame:
         """Return the singleton Hanoi game instance.
 
-        Args:
-            None.
-
         Returns:
             HanoiGame: Shared singleton instance of `HanoiGame`.
         """
@@ -58,9 +55,6 @@ class HanoiGame(Game):
 
     def default_configuration(self) -> HanoiConfiguration:
         """Return the default Hanoi configuration for terminal quick-start flows.
-
-        Args:
-            None.
 
         Returns:
             HanoiConfiguration: Default playable Hanoi setup.
@@ -136,9 +130,6 @@ class HanoiGame(Game):
     def name(self) -> str:
         """Return the canonical game name used in registries and UI selectors.
 
-        Args:
-            None.
-
         Returns:
             str: Stable human-readable identifier for this game.
         """
@@ -204,7 +195,7 @@ class HanoiGame(Game):
         """
         return self._filter_candidates(
             requirements,
-            HanoiPerfectPlayer,
+            PerfectHanoiPlayer,
             PolyvalentStreamlitPlayer,
             PolyvalentTerminalPlayer,
             PolyvalentRandomPlayer,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class NoOpExecuteTurnArena(ConfiguredArenaBase):
@@ -10,9 +10,6 @@ class NoOpExecuteTurnArena(ConfiguredArenaBase):
 
     def _execute_turn(self) -> None:
         """Execute a no-op turn by only increasing the turn count.
-
-        Args:
-            None.
 
         Returns:
             None.

@@ -18,8 +18,10 @@ if TYPE_CHECKING:
 
 from iarena.gaming.tictactoe.TicTacToeConfiguration import TicTacToeConfiguration
 from iarena.gaming.tictactoe.TicTacToeRules import TicTacToeRules
+from iarena.gaming.tictactoe.TicTacToeStreamlitView import TicTacToeStreamlitView
 from iarena.gaming.tictactoe.TicTacToeTerminalView import TicTacToeTerminalView
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
+from iarena.playing.PolyvalentStreamlitPlayer import PolyvalentStreamlitPlayer
 from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
 
 
@@ -42,9 +44,6 @@ class TicTacToeGame(Game):
     def instance(cls) -> TicTacToeGame:
         """Return the singleton TicTacToe game instance.
 
-        Args:
-            None.
-
         Returns:
             TicTacToeGame: Shared singleton instance of `TicTacToeGame`.
         """
@@ -54,9 +53,6 @@ class TicTacToeGame(Game):
 
     def default_configuration(self) -> TicTacToeConfiguration:
         """Return the default TicTacToe configuration for terminal quick-start flows.
-
-        Args:
-            None.
 
         Returns:
             TicTacToeConfiguration: Default playable TicTacToe setup.
@@ -116,11 +112,26 @@ class TicTacToeGame(Game):
 
         return TicTacToeConfiguration(board_size=board_size, win_length=win_length)
 
-    def name(self) -> str:
-        """Return the canonical game name used in registries and UI selectors.
+    def streamlit_prompt_configuration(self, board_size: int = 3, win_length: int = 3) -> TicTacToeConfiguration:
+        """Build a TicTacToe configuration from streamlit-oriented control values.
 
         Args:
-            None.
+            board_size: Side size of the square board.
+            win_length: Number of aligned symbols required to win.
+
+        Returns:
+            TicTacToeConfiguration: Configuration built from validated streamlit controls.
+        """
+        if board_size < 1:
+            raise ValueError("board_size must be at least 1.")
+        if win_length < 1:
+            raise ValueError("win_length must be at least 1.")
+        if win_length > board_size:
+            raise ValueError("win_length must be less than or equal to board_size.")
+        return TicTacToeConfiguration(board_size=board_size, win_length=win_length)
+
+    def name(self) -> str:
+        """Return the canonical game name used in registries and UI selectors.
 
         Returns:
             str: Stable human-readable identifier for this game.
@@ -189,6 +200,7 @@ class TicTacToeGame(Game):
         return self._filter_candidates(
             requirements,
             PolyvalentTerminalPlayer,
+            PolyvalentStreamlitPlayer,
             PolyvalentRandomPlayer,
         )
 
@@ -201,7 +213,7 @@ class TicTacToeGame(Game):
         Returns:
             set[type[View]]: Set of compatible renderer classes.
         """
-        return self._filter_candidates(requirements, TicTacToeTerminalView)
+        return self._filter_candidates(requirements, TicTacToeTerminalView, TicTacToeStreamlitView)
 
     def generate_rules(self, conf: Configuration) -> Rules:
         """Generate one TicTacToe rules instance from a concrete configuration.

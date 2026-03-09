@@ -46,9 +46,6 @@ class StreamlitSession(Mapping[str, Any]):
     def __iter__(self) -> Iterator[str]:
         """Iterate over stored session-state keys.
 
-        Args:
-            None.
-
         Returns:
             Iterator[str]: Iterator over session-state keys.
         """
@@ -56,9 +53,6 @@ class StreamlitSession(Mapping[str, Any]):
 
     def __len__(self) -> int:
         """Return the number of stored session-state keys.
-
-        Args:
-            None.
 
         Returns:
             int: Number of key-value entries.
@@ -107,9 +101,6 @@ class StreamlitSession(Mapping[str, Any]):
 
     def to_dict(self) -> dict[str, Any]:
         """Return a shallow dictionary copy of this session state.
-
-        Args:
-            None.
 
         Returns:
             dict[str, Any]: Copy of current state mapping.

@@ -6,7 +6,7 @@ from collections.abc import Iterator, Mapping, Sequence
 from itertools import product
 from typing import Any, Generic, TypeVar
 
-from .GenericParameter import GenericParameter
+from iarena.utilizing.structuring.GenericParameter import GenericParameter
 
 ParameterType = TypeVar("ParameterType", bound=GenericParameter)
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from iarena.gaming.goldmine.GoldMineConfiguration import GoldMineConfiguration
+from iarena.utilizing.mapping.square_map.SquareMap import SquareMap
 from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate
 
 
@@ -56,3 +57,54 @@ def test_from_dict_parses_aliases_and_coordinates() -> None:
     assert configuration.target == SquareMapCoordinate(2, 3)
     assert configuration.compass_activated is True
     assert configuration.proximity_activated is True
+
+
+def test_init_accepts_tuple_coordinates() -> None:
+    configuration = GoldMineConfiguration(
+        n_rows=3,
+        n_cols=3,
+        start=(0, 1),
+        target=(2, 2),
+    )
+
+    assert configuration.start == SquareMapCoordinate(0, 1)
+    assert configuration.target == SquareMapCoordinate(2, 2)
+
+
+def test_init_accepts_square_map_data() -> None:
+    map_data = SquareMap([[1.0, 2.0], [3.0, 4.0]])
+
+    configuration = GoldMineConfiguration(
+        n_rows=2,
+        n_cols=2,
+        map_data=map_data,
+    )
+
+    assert configuration.map_data is map_data
+
+
+def test_init_infers_dimensions_from_matrix_map_data() -> None:
+    configuration = GoldMineConfiguration(
+        map_data=[
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0],
+        ],
+    )
+
+    assert configuration.n_rows == 2
+    assert configuration.n_cols == 3
+
+
+def test_from_dict_infers_dimensions_from_map_when_missing() -> None:
+    configuration = GoldMineConfiguration.from_dict(
+        {
+            "map": [
+                [1.0, 2.0],
+                [3.0, 4.0],
+                [5.0, 6.0],
+            ],
+        },
+    )
+
+    assert configuration.n_rows == 3
+    assert configuration.n_cols == 2

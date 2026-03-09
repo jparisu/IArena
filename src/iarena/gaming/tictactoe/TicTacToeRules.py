@@ -131,9 +131,6 @@ class TicTacToeRules(Rules):
     def n_players(self) -> int:
         """Return the number of players supported by this ruleset.
 
-        Args:
-            None.
-
         Returns:
             int: Number of participating players.
         """
@@ -141,9 +138,6 @@ class TicTacToeRules(Rules):
 
     def first_position(self) -> Position:
         """Return the initial position for a newly started TicTacToe match.
-
-        Args:
-            None.
 
         Returns:
             Position: Initial state derived from the configured dimensions.

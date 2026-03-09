@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 import numpy as np
 
 if TYPE_CHECKING:
-    from .SquareMapCoordinate import SquareMapCoordinate
-    from .SquareMapDirection import SquareMapDirection
+    from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate
+    from iarena.utilizing.mapping.square_map.SquareMapDirection import SquareMapDirection
 
 
 T = TypeVar("T")
@@ -92,7 +92,7 @@ class SquareMap(Generic[T]):  # noqa: UP046
             yield neighbor
 
     def iter_coordinates(self) -> Iterator[SquareMapCoordinate]:
-        from .SquareMapCoordinate import SquareMapCoordinate
+        from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate
 
         for i in range(self._n_rows):
             for j in range(self._n_cols):
@@ -151,12 +151,13 @@ class SquareMap(Generic[T]):  # noqa: UP046
         self,
         from_coord: SquareMapCoordinate,
         to_coord: SquareMapCoordinate,
+        fail_on_same: bool = True,
     ) -> SquareMapDirection:
-        from .SquareMapDirection import SquareMapDirection
+        from iarena.utilizing.mapping.square_map.SquareMapDirection import SquareMapDirection
 
         dx = to_coord.x - from_coord.x
         dy = to_coord.y - from_coord.y
-        if dx == 0 and dy == 0:
+        if dx == 0 and dy == 0 and fail_on_same:
             raise ValueError("Cannot compute direction between identical coordinates.")
         if abs(dx) >= abs(dy):
             return SquareMapDirection.DOWN if dx > 0 else SquareMapDirection.UP

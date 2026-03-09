@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
+from iarena.utilizing.mapping.square_map.generators.AbstractMapGenerator import AbstractMapGenerator
 from iarena.utilizing.randoming.Perlin import Perlin
-
-from .AbstractMapGenerator import AbstractMapGenerator
 
 if TYPE_CHECKING:
     from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate

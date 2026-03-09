@@ -91,7 +91,13 @@ class _Player(Player):
         _ = player_index
 
 
-def _trial_configuration(rules: Rules, repetitions: int = 2, allow_fails: int = 0) -> TrialConfiguration:
+def _trial_configuration(
+    rules: Rules,
+    repetitions: int = 2,
+    allow_fails: int = 0,
+    min_score: float = float("-inf"),
+    max_score: float = float("inf"),
+) -> TrialConfiguration:
     return TrialConfiguration(
         match_configuration=MatchConfiguration(
             move_timeout_s=0.5,
@@ -104,6 +110,8 @@ def _trial_configuration(rules: Rules, repetitions: int = 2, allow_fails: int = 
         players=[_Player()],
         repetitions=repetitions,
         allow_fails=allow_fails,
+        min_score=min_score,
+        max_score=max_score,
     )
 
 
@@ -124,6 +132,36 @@ def test_trial_raises_runtime_error_when_failures_exceed_allow_fails() -> None:
 
     with pytest.raises(RuntimeError, match="allowed number of failed matches"):
         _ = trial.trial(DebugLevel.ERROR)
+
+
+def test_trial_adds_warning_when_score_is_outside_configured_limits() -> None:
+    trial = Trial()
+    trial.configuration = _trial_configuration(_Rules(), repetitions=1, allow_fails=1, min_score=2.0, max_score=10.0)
+
+    reports = trial.trial(DebugLevel.WARNING)
+
+    assert len(reports) == 1
+    assert "warnings" in reports[0].messages
+    assert "outside accepted range" in str(reports[0].messages["warnings"][0])
+
+
+def test_trial_raises_runtime_error_when_score_is_outside_limits_and_no_failures_allowed() -> None:
+    trial = Trial()
+    trial.configuration = _trial_configuration(_Rules(), repetitions=1, allow_fails=0, min_score=2.0, max_score=10.0)
+
+    with pytest.raises(RuntimeError, match="allowed number of failed matches"):
+        _ = trial.trial(DebugLevel.WARNING)
+
+
+def test_trial_error_report_contains_structured_errors_message() -> None:
+    trial = Trial()
+    trial.configuration = _trial_configuration(_Rules(fail_on_next_position=True), repetitions=1, allow_fails=1)
+
+    reports = trial.trial(DebugLevel.ERROR)
+
+    assert len(reports) == 1
+    assert "errors" in reports[0].messages
+    assert "ValueError: forced failure" == reports[0].messages["errors"][0]
 
 
 def test_score_returns_average_report_score() -> None:

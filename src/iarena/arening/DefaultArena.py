@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from .behaviors.LogsStoringArena import LogsStoringArena
-from .behaviors.MaxTurnsCheckingArena import MaxTurnsCheckingArena
-from .behaviors.ScoreLimitCheckingArena import ScoreLimitCheckingArena
-from .behaviors.TimeoutCheckingArena import TimeoutCheckingArena
-from .behaviors.WorkerExecuteTurnArena import WorkerExecuteTurnArena
+from iarena.arening.behaviors.LogsStoringArena import LogsStoringArena
+from iarena.arening.behaviors.MaxTurnsCheckingArena import MaxTurnsCheckingArena
+from iarena.arening.behaviors.ScoreLimitCheckingArena import ScoreLimitCheckingArena
+from iarena.arening.behaviors.TimeoutCheckingArena import TimeoutCheckingArena
+from iarena.arening.behaviors.WorkerExecuteTurnArena import WorkerExecuteTurnArena
 
 
 class DefaultArena(

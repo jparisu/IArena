@@ -22,9 +22,6 @@ class Recognizable(Protocol):
     def name(self) -> str:
         """Return the canonical display or identifier name for this object.
 
-        Args:
-            No positional or keyword arguments are required.
-
         Returns:
             str: Stable name associated with the current object instance.
 

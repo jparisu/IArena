@@ -6,6 +6,7 @@ class Movement:
 
     Purpose:
         Provides the `Movement` type within the IArena architecture.
+
     How it works:
         Encapsulates behavior through its public API and type contracts defined in this class body.
     Used for:

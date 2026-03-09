@@ -148,9 +148,6 @@ class TerminalApplication:
     def ask_for_game(self) -> Game:
         """Request and return the selected game from terminal input.
 
-        Args:
-            None.
-
         Returns:
             Game: Selected game compatible with terminal rendering.
         """
@@ -418,9 +415,6 @@ class TerminalApplication:
     def ask_for_configuration(self) -> Configuration:
         """Request and return the selected game configuration.
 
-        Args:
-            None.
-
         Returns:
             Configuration: Selected configuration object.
         """
@@ -639,9 +633,6 @@ class TerminalApplication:
     def run(self) -> None:
         """Run the terminal application entrypoint flow.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
@@ -672,9 +663,6 @@ class TerminalApplication:
 
     def main(self) -> None:
         """Run this object as an executable application.
-
-        Args:
-            None.
 
         Returns:
             None.

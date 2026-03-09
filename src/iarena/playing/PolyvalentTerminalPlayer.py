@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .HumanPlayer import HumanPlayer
+from iarena.playing.HumanPlayer import HumanPlayer
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement

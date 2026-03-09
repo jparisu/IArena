@@ -31,3 +31,5 @@ class TrialConfiguration:
     players: list[Player]
     repetitions: int
     allow_fails: int
+    max_score: float = float("inf")
+    min_score: float = float("-inf")

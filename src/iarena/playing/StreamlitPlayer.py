@@ -7,9 +7,8 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 from iarena.gaming.Movement import Movement
+from iarena.playing.HumanPlayer import HumanPlayer
 from iarena.visualizing.streamlit_frontend.StreamlitSession import StreamlitSession
-
-from .HumanPlayer import HumanPlayer
 
 if TYPE_CHECKING:
     from iarena.gaming.Position import Position

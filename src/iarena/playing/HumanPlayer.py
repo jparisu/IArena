@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING
 
-from .Player import Player
+from iarena.playing.Player import Player
 
 if TYPE_CHECKING:
     from iarena.visualizing.View import View

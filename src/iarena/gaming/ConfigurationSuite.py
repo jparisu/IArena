@@ -6,9 +6,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterator, Mapping
 from typing import Any
 
+from iarena.gaming.Configuration import Configuration
 from iarena.utilizing.structuring.GenericSuiteParameter import GenericSuiteParameter
-
-from .Configuration import Configuration
 
 
 class ConfigurationSuite(GenericSuiteParameter[Configuration], ABC):

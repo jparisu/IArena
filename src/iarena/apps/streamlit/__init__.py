@@ -1,11 +1,11 @@
 """Streamlit application entrypoints and UI panel helpers."""
 
-from .ConfigurationPanel import ConfigurationPanel
-from .MainApp import MainApp
-from .MovementPanel import MovementPanel
-from .StatePanel import StatePanel
-from .StreamlitApplication import StreamlitApplication
-from .StreamlitApplicationState import StreamlitApplicationState
+from iarena.apps.streamlit.ConfigurationPanel import ConfigurationPanel
+from iarena.apps.streamlit.MainApp import MainApp
+from iarena.apps.streamlit.MovementPanel import MovementPanel
+from iarena.apps.streamlit.StatePanel import StatePanel
+from iarena.apps.streamlit.StreamlitApplication import StreamlitApplication
+from iarena.apps.streamlit.StreamlitApplicationState import StreamlitApplicationState
 
 __all__ = [
     "ConfigurationPanel",

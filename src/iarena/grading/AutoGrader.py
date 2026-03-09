@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from iarena.grading.Exam import Exam
+from iarena.grading.ExamReader import ExamReader
 from iarena.grading.MatchReport import MatchReport
+from iarena.playing.LoadPlayer import LoadPlayer
 
 
 class AutoGrader:
@@ -23,12 +25,36 @@ class AutoGrader:
     grader: Exam
     configuration_file: str
     player_file: str
+    token: str
+
+    @classmethod
+    def from_files(
+        cls,
+        configuration_file: str,
+        player_file: str,
+        token: str = "PLAYER =",
+    ) -> AutoGrader:
+        """Build one autograder from a YAML configuration and player file.
+
+        Args:
+            configuration_file: Path to grader YAML configuration.
+            player_file: Path to a player file exposing `PLAYER`.
+            token: Notebook cell selector token used for `.ipynb` players.
+
+        Returns:
+            AutoGrader: Configured autograder ready to grade the player.
+        """
+        autograder = cls()
+        autograder.configuration_file = configuration_file
+        autograder.player_file = player_file
+        autograder.token = token
+
+        player = LoadPlayer.from_file(player_file, token=token)
+        autograder.grader = ExamReader.from_file(configuration_file=configuration_file, player=player)
+        return autograder
 
     def _require_grader(self) -> Exam:
         """Return the configured grader instance or raise a clear error.
-
-        Args:
-            None.
 
         Returns:
             Exam instance stored in this autograder.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from iarena.gaming.hanoi.HanoiConfiguration import HanoiConfiguration
 from iarena.gaming.hanoi.HanoiPerfectPlayer import HanoiPerfectPlayer
+from iarena.gaming.hanoi.PerfectHanoiPlayer import PerfectHanoiPlayer
 from iarena.gaming.hanoi.HanoiPosition import HanoiPosition
 from iarena.gaming.hanoi.HanoiRules import HanoiRules
 from iarena.playing.PlayerIndex import PlayerIndex
@@ -13,6 +14,12 @@ def test_name_returns_stable_identifier() -> None:
     player = HanoiPerfectPlayer()
 
     assert player.name() == "hanoi-perfect"
+
+
+def test_hanoi_perfect_player_alias_reuses_perfect_hanoi_player_implementation() -> None:
+    player = HanoiPerfectPlayer()
+
+    assert isinstance(player, PerfectHanoiPlayer)
 
 
 def test_play_returns_legal_move_towards_solution() -> None:

@@ -26,3 +26,30 @@ Install for local development:
 ```bash
 pip install -e ".[dev]"
 ```
+
+
+## Usage
+
+### Terminal app
+
+``` bash
+# <project_root>/ $
+python apps/terminal_app.py
+```
+
+### Streamlit app
+
+``` bash
+# <project_root>/ $
+streamlit run apps/streamlit_app.py
+```
+
+
+## Development
+
+### Generate docs locally:
+
+``` bash
+# <project_root>/ $
+python -m mkdocs serve
+```

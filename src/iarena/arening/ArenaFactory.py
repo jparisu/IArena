@@ -5,15 +5,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from .DefaultArena import DefaultArena
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.visualizing.EmptyView import EmptyView
 
 if TYPE_CHECKING:
+    from iarena.arening.Arena import Arena
     from iarena.gaming.Rules import Rules
     from iarena.playing.Player import Player
     from iarena.scoring.Score import Score
     from iarena.visualizing.View import View
-
-    from .Arena import Arena
 
 
 class ArenaFactory:
@@ -34,13 +34,13 @@ class ArenaFactory:
     def create_arena(
         cls,
         rules: Rules,
-        view: View,
         players: Sequence[Player],
-        max_turns: int,
-        max_turn_time_s: float,
-        max_total_time_s: float,
-        score_limits: tuple[Score, Score],
-        store_logs: bool,
+        view: View = EmptyView(),
+        max_turns: int | None = None,
+        max_turn_time_s: float | None = None,
+        max_total_time_s: float | None = None,
+        score_limits: tuple[Score, Score] | None = None,
+        store_logs: bool = False,
     ) -> Arena:
         """Create a compatible arena instance for the provided execution setup.
 
@@ -53,11 +53,15 @@ class ArenaFactory:
             rules (Rules): Rules engine that defines game behavior.
             view (View): Frontend used to render state and capture human input.
             players (Sequence[Player]): Ordered participants of the match.
-            max_turns (int): Maximum number of turns allowed in the match.
-            max_turn_time_s (float): Maximum time allowed per turn in seconds.
-            max_total_time_s (float): Maximum total match duration in seconds.
-            score_limits (tuple[Score, Score]): Inclusive lower and upper score
-                thresholds used as stop conditions.
+            max_turns (int | None): Maximum number of turns allowed in the match.
+                `None` means no turn-count limit.
+            max_turn_time_s (float | None): Maximum time allowed per turn in
+                seconds. `None` means no per-turn timeout.
+            max_total_time_s (float | None): Maximum total match duration in
+                seconds. `None` means no global timeout.
+            score_limits (tuple[Score, Score] | None): Inclusive lower and upper
+                score thresholds used as stop conditions. `None` means no score
+                bounds.
             store_logs (bool): Whether per-turn logs should be persisted.
         Returns:
             Arena: Arena instance configured for the provided execution context.
@@ -65,16 +69,21 @@ class ArenaFactory:
             ValueError: If numeric configuration values are invalid.
         """
         _ = cls
-        if max_turns <= 0:
+        if max_turns is not None and max_turns <= 0:
             raise ValueError("`max_turns` must be strictly positive.")
-        if max_turn_time_s <= 0:
+        if max_turn_time_s is not None and max_turn_time_s <= 0:
             raise ValueError("`max_turn_time_s` must be strictly positive.")
-        if max_total_time_s <= 0:
+        if max_total_time_s is not None and max_total_time_s <= 0:
             raise ValueError("`max_total_time_s` must be strictly positive.")
-        if score_limits[0] > score_limits[1]:
+        if score_limits is not None and score_limits[0] > score_limits[1]:
             raise ValueError("`score_limits` must be an ordered pair `(low, high)` with `low <= high`.")
 
-        return DefaultArena(
+        configured_arena_class = ConfiguredArenaBase.create_configured_arena_class(
+            max_turns=max_turns,
+            score_limits=score_limits,
+            store_logs=store_logs,
+        )
+        return configured_arena_class(
             rules=rules,
             view=view,
             players=players,

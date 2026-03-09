@@ -8,8 +8,11 @@ import tempfile
 from types import NoneType
 from typing import Any, ClassVar, TypeVar, cast, get_args, get_origin
 
+import streamlit as st
 import yaml
 
+from iarena.apps.streamlit.MainApp import MainApp
+from iarena.apps.streamlit.StreamlitApplicationState import StreamlitApplicationState
 from iarena.gaming.Configuration import Configuration
 from iarena.gaming.Game import Game
 from iarena.gaming.GameGovernor import GameGovernor
@@ -23,9 +26,6 @@ from iarena.scoring.Score import Score
 from iarena.visualizing.streamlit_frontend.StreamlitContainer import StreamlitContainer
 from iarena.visualizing.streamlit_frontend.StreamlitSession import StreamlitSession
 from iarena.visualizing.streamlit_frontend.StreamlitView import StreamlitView
-
-from .MainApp import MainApp
-from .StreamlitApplicationState import StreamlitApplicationState
 
 T = TypeVar("T")
 
@@ -126,8 +126,6 @@ class StreamlitApplication:
         if len(renderer_classes) == 1:
             return renderer_classes[0]
 
-        import streamlit as st
-
         labels = [renderer_cls.__name__ for renderer_cls in renderer_classes]
         selected_label = st.sidebar.selectbox("Renderer", labels, index=0, key="streamlit_renderer")
         selected_index = labels.index(selected_label)
@@ -135,9 +133,6 @@ class StreamlitApplication:
 
     def _available_games(self) -> list[Game]:
         """Return all registered games supporting streamlit rendering.
-
-        Args:
-            None.
 
         Returns:
             list[Game]: Sorted streamlit-compatible game objects.
@@ -156,8 +151,6 @@ class StreamlitApplication:
         Returns:
             None.
         """
-        import streamlit as st
-
         if self._state_key not in st.session_state:
             st.session_state[self._state_key] = StreamlitApplicationState.SELECTION.value
         if self._game_key not in st.session_state:
@@ -180,35 +173,23 @@ class StreamlitApplication:
         Returns:
             None.
         """
-        import streamlit as st
-
         st.session_state[self._state_key] = state.value
 
     def _current_app_state(self) -> StreamlitApplicationState:
         """Return the current streamlit application state enum value.
 
-        Args:
-            None.
-
         Returns:
             StreamlitApplicationState: Current state value from session state.
         """
-        import streamlit as st
-
         raw_state = st.session_state.get(self._state_key, StreamlitApplicationState.SELECTION.value)
         return StreamlitApplicationState(raw_state)
 
     def _reset_runtime(self) -> None:
         """Reset runtime-related session-state keys to pre-initialization values.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
-        import streamlit as st
-
         st.session_state[self._runtime_key] = None
         st.session_state[self._review_step_key] = 0
         st.session_state[self._review_slider_key] = 0
@@ -218,14 +199,9 @@ class StreamlitApplication:
     def ask_for_game(self) -> Game:
         """Request and return the selected game from streamlit sidebar widgets.
 
-        Args:
-            None.
-
         Returns:
             Game: Selected game compatible with streamlit rendering.
         """
-        import streamlit as st
-
         games = self._available_games()
         if not games:
             raise RuntimeError("No streamlit-compatible games are registered in GameGovernor.")
@@ -384,8 +360,6 @@ class StreamlitApplication:
         Returns:
             Configuration: Built configuration object.
         """
-        import streamlit as st
-
         signature = inspect.signature(configuration_cls.__init__)
         constructor_kwargs: dict[str, Any] = {}
 
@@ -417,8 +391,6 @@ class StreamlitApplication:
         Returns:
             Configuration: Configuration created by the game hook.
         """
-        import streamlit as st
-
         hook = getattr(game, "streamlit_prompt_configuration", None)
         if not callable(hook):
             raise RuntimeError(f"Game '{game.name()}' does not expose `streamlit_prompt_configuration`.")
@@ -453,6 +425,20 @@ class StreamlitApplication:
                 initial_value = bool(default_value) if has_default else False
                 kwargs[parameter_name] = bool(
                     st.checkbox(parameter_name, value=initial_value, key=widget_key),
+                )
+                continue
+
+            if parameter_name == "map_generator":
+                from iarena.utilizing.mapping.square_map.generators.MapFactory import MapFactory
+
+                map_generators = MapFactory.available_generation_methods()
+                default_generator = str(default_value if default_value is not None else "uniform")
+                default_index = map_generators.index(default_generator) if default_generator in map_generators else 0
+                kwargs[parameter_name] = st.selectbox(
+                    parameter_name,
+                    options=map_generators,
+                    index=default_index,
+                    key=widget_key,
                 )
                 continue
 
@@ -492,8 +478,6 @@ class StreamlitApplication:
         Returns:
             Configuration: Selected game configuration.
         """
-        import streamlit as st
-
         configuration_classes = self._configuration_classes(game)
         if not configuration_classes:
             raise RuntimeError(f"Game '{game.name()}' does not expose any configuration class.")
@@ -603,8 +587,6 @@ class StreamlitApplication:
         Returns:
             list[type[Player] | Player]: Selected player classes or loaded players by slot.
         """
-        import streamlit as st
-
         rules = game.generate_rules(configuration)
         player_classes = self._player_classes(game)
         default_index = self._default_player_index(player_classes)
@@ -733,8 +715,6 @@ class StreamlitApplication:
         Returns:
             None.
         """
-        import streamlit as st
-
         rules = game.generate_rules(configuration)
         view = self._streamlit_renderer_class(game)()
         players = self._instantiate_players(player_entries=player_entries, view=view, rules=rules)
@@ -779,8 +759,6 @@ class StreamlitApplication:
         Returns:
             bool: `True` when one movement was applied, otherwise `False`.
         """
-        import streamlit as st
-
         if runtime["finished"]:
             return False
 
@@ -844,21 +822,15 @@ class StreamlitApplication:
                 return next(iter(scores.values()))
             return Score(0.0)
 
+    def _on_review_slider_change(self) -> None:
+        """Copy the slider widget value into the canonical review-step state."""
+        st.session_state[self._review_step_key] = int(st.session_state.get(self._review_slider_key, 0))
+
     def _sync_state_with_slider(self, runtime: dict[str, Any], step_index: int) -> None:
-        """Update application state based on selected history slider step.
-
-        Args:
-            runtime: Runtime dictionary with position history.
-            step_index: Selected history index.
-
-        Returns:
-            None.
-        """
-        import streamlit as st
-
         last_index = len(runtime["positions"]) - 1
-        bounded_step = min(max(step_index, 0), last_index)
+        bounded_step = min(max(int(step_index), 0), last_index)
         st.session_state[self._review_step_key] = bounded_step
+        st.session_state[self._review_slider_key] = bounded_step
 
         if bounded_step < last_index:
             self._set_app_state(StreamlitApplicationState.REVIEWING)
@@ -883,8 +855,6 @@ class StreamlitApplication:
         Returns:
             bool: `True` when caller should trigger `st.rerun()`.
         """
-        import streamlit as st
-
         should_rerun = False
         last_index = len(runtime["positions"]) - 1
         current_step = min(st.session_state.get(self._review_step_key, 0), last_index)
@@ -923,8 +893,6 @@ class StreamlitApplication:
         Returns:
             bool: `True` when caller should trigger `st.rerun()`.
         """
-        import streamlit as st
-
         if not st.session_state.get(self._autoplay_key, False):
             return False
 
@@ -960,8 +928,6 @@ class StreamlitApplication:
         Returns:
             bool: `True` when at least one automatic turn was executed.
         """
-        import streamlit as st
-
         moved_any = False
 
         while True:
@@ -995,8 +961,6 @@ class StreamlitApplication:
         Returns:
             bool: `True` when caller should trigger `st.rerun()`.
         """
-        import streamlit as st
-
         should_rerun = False
         state = self._current_app_state()
 
@@ -1032,13 +996,9 @@ class StreamlitApplication:
             else:
                 current_player = self._current_player(runtime)
                 if isinstance(current_player, StreamlitPlayer):
-                    possible_movements = list(runtime["rules"].possible_movements(runtime["position"]))
-                    selected_movement = self.main_app.right_column.render_possible_movements(
-                        possible_movements,
-                        interactive=True,
-                    )
+                    view.render_movements(runtime["position"], movement_container)
+                    selected_movement = st.session_state.get("selected_movement")
                     if selected_movement is not None:
-                        st.session_state["selected_movement"] = selected_movement
                         moved = self._advance_one_turn(runtime)
                         self._sync_state_with_slider(runtime, len(runtime["positions"]) - 1)
                         should_rerun = moved
@@ -1050,8 +1010,7 @@ class StreamlitApplication:
             score_container.container if score_container.container is not None else st.container(),
         )
         with native_score_container:
-            score = self._score_for_position(runtime, current_position)
-            st.write(f"Score: {float(score):.3f}")
+            view.render_score(current_position, score_container)
 
         if runtime["last_error"]:
             st.error(runtime["last_error"])
@@ -1064,14 +1023,9 @@ class StreamlitApplication:
     def main(self) -> None:  # pylint: disable=too-complex,too-many-statements  # TODO: review
         """Run the streamlit application entrypoint flow.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
-        import streamlit as st
-
         st.set_page_config(page_title="IArena", layout="wide")
         st.title("IArena")
 
@@ -1197,25 +1151,38 @@ class StreamlitApplication:
 
         last_index = len(runtime["positions"]) - 1
         slider_container = cast(Any, layout["slider"])
+
         if last_index > 0:
-            current_review_step = min(max(int(st.session_state.get(self._review_step_key, last_index)), 0), last_index)
+            current_review_step = min(
+                max(int(st.session_state.get(self._review_step_key, last_index)), 0),
+                last_index,
+            )
             st.session_state[self._review_step_key] = current_review_step
+
+            slider_widget_key = f"{self._review_slider_key}_{last_index}_{current_review_step}"
+
             st.session_state[self._review_slider_key] = current_review_step
+
             with slider_container:
-                selected_step = st.slider(
+                st.slider(
                     "Steps",
                     min_value=0,
                     max_value=last_index,
                     key=self._review_slider_key,
+                    on_change=self._on_review_slider_change,
                 )
+
+            selected_step = int(st.session_state.get(self._review_slider_key, current_review_step))
+
         else:
             selected_step = 0
+            st.session_state[self._review_step_key] = 0
             with slider_container:
                 if runtime["finished"]:
                     st.caption("No step history available for this match.")
                 else:
                     st.caption("Step history will appear after the first movement.")
-            st.session_state[self._review_slider_key] = 0
+
         self._sync_state_with_slider(runtime, selected_step)
 
         should_rerun = self._render_runtime_panels(runtime, layout)

@@ -87,9 +87,6 @@ class TicTacToePosition(Position):
     def hash(self) -> int:
         """Return a stable hash representation for this position.
 
-        Args:
-            None.
-
         Returns:
             int: Deterministic integer hash for the current board state.
         """
@@ -105,9 +102,6 @@ class TicTacToePosition(Position):
 
     def __str__(self) -> str:
         """Return a compact textual representation of this TicTacToe position.
-
-        Args:
-            None.
 
         Returns:
             str: Human-readable state summary.
@@ -125,9 +119,6 @@ class TicTacToePosition(Position):
     def next_player(self) -> PlayerIndex:
         """Return the next player that must act from this position.
 
-        Args:
-            None.
-
         Returns:
             PlayerIndex: Identifier of the player expected to play next.
         """
@@ -135,9 +126,6 @@ class TicTacToePosition(Position):
 
     def get_rules(self) -> Rules:
         """Return the rules object associated with this position.
-
-        Args:
-            None.
 
         Returns:
             Rules: Rules instance that can validate and evolve this position.

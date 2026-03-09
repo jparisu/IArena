@@ -42,9 +42,6 @@ class HanoiMovement(Movement):
     def __str__(self) -> str:
         """Return a user-friendly terminal representation of the movement.
 
-        Args:
-            None.
-
         Returns:
             str: Human-readable peg transition text.
         """
@@ -52,9 +49,6 @@ class HanoiMovement(Movement):
 
     def __repr__(self) -> str:
         """Return a debug-oriented representation of the movement.
-
-        Args:
-            None.
 
         Returns:
             str: Constructor-like textual representation.

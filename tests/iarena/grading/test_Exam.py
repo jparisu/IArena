@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator, get_args, get_origin, get_type_hints
+from typing import get_args, get_origin, get_type_hints
 
 from iarena.gaming.Configuration import Configuration
 from iarena.gaming.ConfigurationSuite import ConfigurationSuite
@@ -11,7 +12,9 @@ from iarena.gaming.Position import Position
 from iarena.gaming.Rules import Rules
 from iarena.grading.DebugLevel import DebugLevel
 from iarena.grading.Exam import Exam
+from iarena.grading.MatchConfiguration import MatchConfiguration
 from iarena.grading.MatchReport import MatchReport
+from iarena.grading.TrialConfiguration import TrialConfiguration
 from iarena.playing.Player import Player
 from iarena.playing.PlayerIndex import PlayerIndex
 from iarena.scoring.Score import Score
@@ -133,6 +136,31 @@ def test_score_returns_average_from_trial_values() -> None:
     exam.trials = []
 
     assert exam.score() == 4.0
+
+
+def test_grade_uses_explicit_trial_configurations_when_provided() -> None:
+    exam = Exam()
+    exam.player = _Player()
+    exam.trial_configurations = [
+        TrialConfiguration(
+            match_configuration=MatchConfiguration(
+                move_timeout_s=0.2,
+                total_timeout_s=1.0,
+                max_turns=5,
+                score_limits=(Score(-10.0), Score(10.0)),
+            ),
+            trialing_player_index=PlayerIndex(0),
+            rules=_Rules(2.0),
+            players=[exam.player],
+            repetitions=1,
+            allow_fails=0,
+        ),
+    ]
+
+    reports = exam.grade(DebugLevel.USER)
+
+    assert len(reports) == 1
+    assert exam.trial_value == [2.0]
 
 
 def test_grade_method_declares_expected_return_annotation() -> None:

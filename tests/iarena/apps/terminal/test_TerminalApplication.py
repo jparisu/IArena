@@ -27,13 +27,13 @@ class _TerminalIO:
         self.outputs.append(message)
 
 
-def test_ask_for_game_returns_hanoi_terminal_game() -> None:
+def test_ask_for_game_returns_goldmine_terminal_game() -> None:
     io = _TerminalIO(inputs=["0"])
     app = TerminalApplication(input_fnc=io.input, output_fnc=io.output)
 
     game = app.ask_for_game()
 
-    assert game.name() == "hanoi"
+    assert game.name() == "goldmine"
 
 
 def test_ask_for_configuration_default_uses_game_default_configuration() -> None:

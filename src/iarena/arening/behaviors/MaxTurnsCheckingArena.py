@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class MaxTurnsCheckingArena(ConfiguredArenaBase):
@@ -10,9 +10,6 @@ class MaxTurnsCheckingArena(ConfiguredArenaBase):
 
     def _check_max_turns(self) -> bool:
         """Return whether the configured turn budget has been exhausted.
-
-        Args:
-            None.
 
         Returns:
             bool: `True` when `max_turns` has been reached.

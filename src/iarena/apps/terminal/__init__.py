@@ -1,5 +1,5 @@
 """Terminal application entrypoints and orchestration helpers."""
 
-from .TerminalApplication import TerminalApplication
+from iarena.apps.terminal.TerminalApplication import TerminalApplication
 
 __all__ = ["TerminalApplication"]

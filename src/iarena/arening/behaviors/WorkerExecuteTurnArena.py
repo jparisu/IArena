@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 from iarena.utilizing.timing.Worker import Worker
 from iarena.visualizing.terminal_frontend.TerminalView import TerminalView
-
-from .ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class WorkerExecuteTurnArena(ConfiguredArenaBase):
@@ -13,9 +12,6 @@ class WorkerExecuteTurnArena(ConfiguredArenaBase):
 
     def _execute_turn(self) -> None:
         """Execute one complete turn for the player indicated by the position.
-
-        Args:
-            None.
 
         Returns:
             None.
@@ -39,11 +35,14 @@ class WorkerExecuteTurnArena(ConfiguredArenaBase):
             self._view.output_fnc("STATE END")
             self._view.output_fnc(section_line)
 
-        try:
-            movement = Worker.limited_time_call(play_method, self._max_turn_time_s, self._position)
-        except TimeoutError:
-            self._timed_out = True
-            return
+        if self._max_turn_time_s is None:
+            movement = play_method(self._position)
+        else:
+            try:
+                movement = Worker.limited_time_call(play_method, self._max_turn_time_s, self._position)
+            except TimeoutError:
+                self._timed_out = True
+                return
 
         self._position = self._rules.next_position(self._position, movement)
         self._last_movement = movement

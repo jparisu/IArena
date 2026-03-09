@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 from iarena.playing.PlayerIndex import PlayerIndex
-
-from .ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class ScoreLimitCheckingArena(ConfiguredArenaBase):
@@ -12,9 +11,6 @@ class ScoreLimitCheckingArena(ConfiguredArenaBase):
 
     def _check_score_limit(self) -> bool:
         """Return whether score-based termination conditions are met.
-
-        Args:
-            None.
 
         Returns:
             bool: `True` when the game is finished or score limits are reached.

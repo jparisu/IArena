@@ -6,12 +6,11 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from iarena.arening.GenericArena import GenericArena
-from iarena.gaming.Movement import Movement
-from iarena.playing.PlayerIndex import PlayerIndex
 from iarena.scoring.Score import Score
 from iarena.utilizing.timing.Timer import Timer
 
 if TYPE_CHECKING:
+    from iarena.gaming.Movement import Movement
     from iarena.gaming.Rules import Rules
     from iarena.playing.Player import Player
     from iarena.scoring.ScoreBoard import ScoreBoard
@@ -32,15 +31,77 @@ class ConfiguredArenaBase(GenericArena):
         setup flow for configured arenas.
     """
 
+    _CONFIGURED_CLASS_CACHE: dict[tuple[bool, bool, bool], type[ConfiguredArenaBase]] = {}
+
+    @classmethod
+    def create_configured_arena_class(
+        cls,
+        max_turns: int | None,
+        score_limits: tuple[Score, Score] | None,
+        store_logs: bool,
+    ) -> type[ConfiguredArenaBase]:
+        """Build a concrete arena class matching enabled/disabled constraints.
+
+        Args:
+            max_turns: Turn limit configuration. `None` disables max-turn checks.
+            score_limits: Score limit configuration. `None` disables score bounds.
+            store_logs: Whether logging behavior should persist turn logs.
+
+        Returns:
+            type[ConfiguredArenaBase]: Arena class composed from behavior mixins.
+        """
+        _ = cls
+        has_max_turns_limit = max_turns is not None
+        has_score_limit = score_limits is not None
+
+        cache_key = (has_max_turns_limit, has_score_limit, store_logs)
+        cached_class = ConfiguredArenaBase._CONFIGURED_CLASS_CACHE.get(cache_key)
+        if cached_class is not None:
+            return cached_class
+
+        from iarena.arening.behaviors.LogsStoringArena import LogsStoringArena
+        from iarena.arening.behaviors.MaxTurnsCheckingArena import MaxTurnsCheckingArena
+        from iarena.arening.behaviors.NoLogsArena import NoLogsArena
+        from iarena.arening.behaviors.NoMaxTurnsArena import NoMaxTurnsArena
+        from iarena.arening.behaviors.NoScoreLimitArena import NoScoreLimitArena
+        from iarena.arening.behaviors.ScoreLimitCheckingArena import ScoreLimitCheckingArena
+        from iarena.arening.behaviors.TimeoutCheckingArena import TimeoutCheckingArena
+        from iarena.arening.behaviors.WorkerExecuteTurnArena import WorkerExecuteTurnArena
+
+        max_turns_behavior = MaxTurnsCheckingArena if has_max_turns_limit else NoMaxTurnsArena
+        score_limit_behavior = ScoreLimitCheckingArena if has_score_limit else NoScoreLimitArena
+        logs_behavior = LogsStoringArena if store_logs else NoLogsArena
+
+        arena_class_name = (
+            "ConfiguredArena_"
+            f"{'MaxTurns' if has_max_turns_limit else 'NoMaxTurns'}_"
+            f"{'ScoreLimit' if has_score_limit else 'NoScoreLimit'}_"
+            "Timeout_"
+            f"{'Logs' if store_logs else 'NoLogs'}"
+        )
+        arena_class = type(
+            arena_class_name,
+            (
+                WorkerExecuteTurnArena,
+                TimeoutCheckingArena,
+                score_limit_behavior,
+                max_turns_behavior,
+                logs_behavior,
+            ),
+            {},
+        )
+        ConfiguredArenaBase._CONFIGURED_CLASS_CACHE[cache_key] = arena_class
+        return arena_class
+
     def __init__(
         self,
         rules: Rules,
         view: View,
         players: Sequence[Player],
-        max_turns: int,
-        max_turn_time_s: float,
-        max_total_time_s: float,
-        score_limits: tuple[Score, Score],
+        max_turns: int | None,
+        max_turn_time_s: float | None,
+        max_total_time_s: float | None,
+        score_limits: tuple[Score, Score] | None,
         store_logs: bool,
     ) -> None:
         """Initialize one configured arena runtime.
@@ -49,10 +110,11 @@ class ConfiguredArenaBase(GenericArena):
             rules: Rules engine for match progression and scoring.
             view: View frontend associated with this execution.
             players: Ordered participants in the match.
-            max_turns: Maximum turn budget for the match.
-            max_turn_time_s: Per-turn timeout budget in seconds.
-            max_total_time_s: Global timeout budget in seconds.
+            max_turns: Maximum turn budget for the match. `None` means unlimited.
+            max_turn_time_s: Per-turn timeout budget in seconds. `None` means unlimited.
+            max_total_time_s: Global timeout budget in seconds. `None` means unlimited.
             score_limits: Inclusive lower and upper score thresholds.
+                `None` means no score-based bounds.
             store_logs: Whether turn-level logs should be persisted.
 
         Returns:
@@ -78,7 +140,7 @@ class ConfiguredArenaBase(GenericArena):
         self._bind_view_players()
         self._notify_starting_game()
 
-    def play(self, rules: Rules, players: list[Player], view: View) -> ScoreBoard:
+    def play(self, rules: Rules, players: list[Player], view: View | None = None) -> ScoreBoard:
         """Play a match and return the final scoreboard.
 
         Args:
@@ -96,15 +158,12 @@ class ConfiguredArenaBase(GenericArena):
             raise ValueError("The provided `rules` object does not match this arena configuration.")
         if list(players) != self._players:
             raise ValueError("The provided `players` do not match this arena configuration.")
-        if view is not self._view:
+        if view is not None and view is not self._view:
             raise ValueError("The provided `view` object does not match this arena configuration.")
         return self._game_loop()
 
     def _validate_player_count(self) -> None:
         """Validate that configured players match rule requirements.
-
-        Args:
-            None.
 
         Returns:
             None.
@@ -122,9 +181,6 @@ class ConfiguredArenaBase(GenericArena):
     def _bind_view_players(self) -> None:
         """Bind configured players to the view when it exposes a players field.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
@@ -134,12 +190,11 @@ class ConfiguredArenaBase(GenericArena):
     def _notify_starting_game(self) -> None:
         """Notify players about game start when they expose `starting_game`.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
+        from iarena.playing.PlayerIndex import PlayerIndex
+
         for player_index, player in enumerate(self._players):
             starting_game = getattr(player, "starting_game", None)
             if callable(starting_game):

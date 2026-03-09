@@ -7,7 +7,9 @@ import pytest
 from iarena.gaming.tictactoe.TicTacToeConfiguration import TicTacToeConfiguration
 from iarena.gaming.tictactoe.TicTacToeGame import TicTacToeGame
 from iarena.gaming.tictactoe.TicTacToeRules import TicTacToeRules
+from iarena.gaming.tictactoe.TicTacToeStreamlitView import TicTacToeStreamlitView
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
+from iarena.playing.PolyvalentStreamlitPlayer import PolyvalentStreamlitPlayer
 from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
 
 
@@ -23,8 +25,8 @@ def test_get_component_methods_filter_by_requirement() -> None:
     assert len(game.get_configurations(requirements=lambda cls: True)) == 1
     assert len(game.get_rules(requirements=lambda cls: True)) == 1
     assert len(game.get_oracles(requirements=lambda cls: True)) == 0
-    assert len(game.get_players(requirements=lambda cls: True)) == 2
-    assert len(game.get_renderers(requirements=lambda cls: True)) == 1
+    assert len(game.get_players(requirements=lambda cls: True)) == 3
+    assert len(game.get_renderers(requirements=lambda cls: True)) == 2
 
     assert game.get_rules(requirements=lambda _cls: False) == set()
 
@@ -35,7 +37,16 @@ def test_get_players_includes_generic_terminal_and_random_players() -> None:
     players = game.get_players(requirements=lambda cls: True)
 
     assert PolyvalentTerminalPlayer in players
+    assert PolyvalentStreamlitPlayer in players
     assert PolyvalentRandomPlayer in players
+
+
+def test_get_renderers_include_streamlit_view() -> None:
+    game = TicTacToeGame()
+
+    renderers = game.get_renderers(requirements=lambda cls: True)
+
+    assert TicTacToeStreamlitView in renderers
 
 
 def test_instance_returns_singleton_tictactoe_game() -> None:

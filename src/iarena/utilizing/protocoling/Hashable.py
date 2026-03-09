@@ -22,9 +22,6 @@ class Hashable(Protocol):
     def hash(self) -> int:
         """Compute an integer hash that identifies the current object state.
 
-        Args:
-            No positional or keyword arguments are required.
-
         Returns:
             int: Deterministic hash value for this instance, suitable for
                 hashed collections and equality-based indexing workflows.

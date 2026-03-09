@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from iarena.playing.Player import Player
 from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
-
-from .Player import Player
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement
@@ -31,6 +30,26 @@ class PolyvalentRandomPlayer(Player):
 
     rng: RandomGenerator
 
+    def __init__(
+        self,
+        name: str = "polyvalent-random",
+        rng: RandomGenerator | None = None,
+        seed: int | None = None,
+    ) -> None:
+        """Initialize a new random player instance with optional name and RNG configuration.
+
+        Args:
+            name (str): Optional name for this player instance. Defaults to "polyvalent-random".
+            rng (RandomGenerator | None): Optional custom random generator. If None, a new one is created.
+            seed (int | None): Optional seed for RNG initialization. Ignored if `rng` is provided.
+
+        Returns:
+            None: This constructor initializes the player instance and does not return a value.
+        """
+        self._name = name
+        self._seed = seed
+        self.rng = rng if rng is not None else RandomGenerator(seed=seed)
+
     def name(self) -> str:
         """Return a stable identifier for this random player type.
 
@@ -43,7 +62,7 @@ class PolyvalentRandomPlayer(Player):
         Returns:
             str: Canonical random-player identifier.
         """
-        return "polyvalent-random"
+        return self._name
 
     def play(self, pos: Position) -> Movement:
         """Choose and return the next movement for the given position.
@@ -78,4 +97,4 @@ class PolyvalentRandomPlayer(Player):
         """
         self._rules = rules
         self._player_index = player_index
-        self.rng = RandomGenerator()
+        self.rng = RandomGenerator(self._seed)

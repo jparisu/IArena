@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .ConfiguredArenaBase import ConfiguredArenaBase
+from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
 
 
 class NoTimeoutArena(ConfiguredArenaBase):
@@ -10,9 +10,6 @@ class NoTimeoutArena(ConfiguredArenaBase):
 
     def _check_timeout(self) -> bool:
         """Return `False` to disable timeout-based termination.
-
-        Args:
-            None.
 
         Returns:
             bool: Always `False`.

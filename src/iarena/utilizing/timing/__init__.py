@@ -1,6 +1,6 @@
 """Timing and bounded-execution utility types."""
 
-from .Timer import Timer
-from .Worker import Worker
+from iarena.utilizing.timing.Timer import Timer
+from iarena.utilizing.timing.Worker import Worker
 
 __all__ = ["Timer", "Worker"]

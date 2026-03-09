@@ -6,8 +6,14 @@ import pytest
 
 from iarena.gaming.goldmine.GoldMineConfiguration import GoldMineConfiguration
 from iarena.gaming.goldmine.GoldMineGame import GoldMineGame
+from iarena.gaming.goldmine.GoldMineOracle import GoldMineOracle
+from iarena.gaming.goldmine.GoldMinePerfectPlayer import GoldMinePerfectPlayer
 from iarena.gaming.goldmine.GoldMineRules import GoldMineRules
+from iarena.gaming.goldmine.GoldMineStreamlitView import GoldMineStreamlitView
+from iarena.gaming.goldmine.GoldMineTerminalView import GoldMineTerminalView
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
+from iarena.playing.PolyvalentStreamlitPlayer import PolyvalentStreamlitPlayer
+from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
 
 
 def test_name_returns_goldmine() -> None:
@@ -21,9 +27,9 @@ def test_get_component_methods_filter_by_requirement() -> None:
 
     assert len(game.get_configurations(requirements=lambda cls: True)) == 1
     assert len(game.get_rules(requirements=lambda cls: True)) == 1
-    assert len(game.get_oracles(requirements=lambda cls: True)) == 0
-    assert len(game.get_players(requirements=lambda cls: True)) == 1
-    assert len(game.get_renderers(requirements=lambda cls: True)) == 0
+    assert len(game.get_oracles(requirements=lambda cls: True)) == 1
+    assert len(game.get_players(requirements=lambda cls: True)) == 4
+    assert len(game.get_renderers(requirements=lambda cls: True)) == 2
 
     assert game.get_rules(requirements=lambda _cls: False) == set()
 
@@ -33,7 +39,27 @@ def test_get_players_includes_random_player() -> None:
 
     players = game.get_players(requirements=lambda cls: True)
 
+    assert GoldMinePerfectPlayer in players
     assert PolyvalentRandomPlayer in players
+    assert PolyvalentStreamlitPlayer in players
+    assert PolyvalentTerminalPlayer in players
+
+
+def test_get_renderers_includes_goldmine_streamlit_view() -> None:
+    game = GoldMineGame()
+
+    renderers = game.get_renderers(requirements=lambda cls: True)
+
+    assert GoldMineStreamlitView in renderers
+    assert GoldMineTerminalView in renderers
+
+
+def test_get_oracles_includes_goldmine_oracle() -> None:
+    game = GoldMineGame()
+
+    oracles = game.get_oracles(requirements=lambda cls: True)
+
+    assert GoldMineOracle in oracles
 
 
 def test_instance_returns_singleton_goldmine_game() -> None:

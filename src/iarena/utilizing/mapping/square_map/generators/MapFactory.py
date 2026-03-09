@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .AbstractMapGenerator import AbstractMapGenerator
-from .BimodelMap import BimodelMap
-from .ColumnMap import ColumnMap
-from .EmptyMap import EmptyMap
-from .ExponentialMap import ExponentialMap
-from .JumpingMap import JumpingMap
-from .PerlinMap import PerlinMap
-from .UniformMap import UniformMap
+from iarena.utilizing.mapping.square_map.generators.AbstractMapGenerator import AbstractMapGenerator
+from iarena.utilizing.mapping.square_map.generators.BimodelMap import BimodelMap
+from iarena.utilizing.mapping.square_map.generators.ColumnMap import ColumnMap
+from iarena.utilizing.mapping.square_map.generators.EmptyMap import EmptyMap
+from iarena.utilizing.mapping.square_map.generators.ExponentialMap import ExponentialMap
+from iarena.utilizing.mapping.square_map.generators.JumpingMap import JumpingMap
+from iarena.utilizing.mapping.square_map.generators.PerlinMap import PerlinMap
+from iarena.utilizing.mapping.square_map.generators.UniformMap import UniformMap
 
 if TYPE_CHECKING:
     from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate

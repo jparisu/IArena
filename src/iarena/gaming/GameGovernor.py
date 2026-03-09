@@ -33,9 +33,6 @@ class GameGovernor(GenericRegistry[Game]):
     def __init__(self) -> None:
         """Initialize one game-governor registry and register built-in games.
 
-        Args:
-            None.
-
         Returns:
             None.
         """
@@ -47,9 +44,6 @@ class GameGovernor(GenericRegistry[Game]):
     @classmethod
     def instance(cls) -> GameGovernor:
         """Return the unique singleton instance of the game governor.
-
-        Args:
-            None.
 
         Returns:
             GameGovernor: Shared singleton registry instance.

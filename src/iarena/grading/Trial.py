@@ -37,6 +37,18 @@ class Trial:
     configuration: TrialConfiguration
     match_reports: list[MatchReport]
 
+    def _is_score_inside_limits(self, score: Score) -> bool:
+        """Return whether one score is inside configured accepted limits.
+
+        Args:
+            score: Score obtained by the trialed player in one match.
+
+        Returns:
+            bool: `True` when score belongs to `[min_score, max_score]`.
+        """
+        numeric_score = float(score)
+        return self.configuration.min_score <= numeric_score <= self.configuration.max_score
+
     def _score_from_scoreboard(self, scoreboard: ScoreBoard) -> Score:
         """Return the trial-player score extracted from a scoreboard.
 
@@ -76,6 +88,7 @@ class Trial:
         elapsed_s: float,
         repetition: int,
         debug_level: DebugLevel,
+        warnings: list[str] | None = None,
     ) -> MatchReport:
         """Create one match report from runtime artifacts.
 
@@ -85,6 +98,7 @@ class Trial:
             elapsed_s: Match elapsed wall-clock time in seconds.
             repetition: Zero-based repetition index of the match.
             debug_level: Debug verbosity value used for trial execution.
+            warnings: Optional warning messages attached to this match.
 
         Returns:
             MatchReport populated with per-match execution metadata.
@@ -97,6 +111,8 @@ class Trial:
             "repetition": repetition,
             "debug_level": debug_level.name,
         }
+        if warnings:
+            report.messages["warnings"] = warnings
         return report
 
     def _error_report(
@@ -126,6 +142,7 @@ class Trial:
             "debug_level": debug_level.name,
             "error": str(error),
             "error_type": type(error).__name__,
+            "errors": [f"{type(error).__name__}: {error}"],
         }
         return report
 
@@ -153,6 +170,8 @@ class Trial:
 
         for repetition in range(self.configuration.repetitions):
             started = perf_counter()
+            match_failed = False
+            failure_error: Exception | None = None
             try:
                 view = EmptyView()
                 arena = self._create_arena(view=view)
@@ -169,17 +188,30 @@ class Trial:
                     repetition=repetition,
                     debug_level=debug_level,
                 )
+                if not self._is_score_inside_limits(score):
+                    failures += 1
+                    match_failed = True
+                    report.messages["warnings"] = [
+                        (
+                            f"Score {float(score)} is outside accepted range "
+                            f"[{self.configuration.min_score}, {self.configuration.max_score}]."
+                        ),
+                    ]
             except Exception as error:  # pragma: no cover - exercised by fail-path tests
                 failures += 1
+                match_failed = True
+                failure_error = error
                 report = self._error_report(
                     elapsed_s=perf_counter() - started,
                     repetition=repetition,
                     debug_level=debug_level,
                     error=error,
                 )
-                if failures > self.configuration.allow_fails:
-                    raise RuntimeError("Trial exceeded the allowed number of failed matches.") from error
 
+            if match_failed and failures > self.configuration.allow_fails:
+                if failure_error is not None:
+                    raise RuntimeError("Trial exceeded the allowed number of failed matches.") from failure_error
+                raise RuntimeError("Trial exceeded the allowed number of failed matches.")
             self.match_reports.append(report)
 
         return self.match_reports

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .StreamlitPlayer import StreamlitPlayer
+from iarena.playing.StreamlitPlayer import StreamlitPlayer
 
 
 class PolyvalentStreamlitPlayer(StreamlitPlayer):
@@ -21,9 +21,6 @@ class PolyvalentStreamlitPlayer(StreamlitPlayer):
 
     def name(self) -> str:
         """Return a stable identifier for this streamlit player type.
-
-        Args:
-            None.
 
         Returns:
             str: Canonical streamlit-player identifier.

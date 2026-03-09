@@ -47,8 +47,6 @@ class Timer:
         How it works:
             Concrete implementations should record the current reference timestamp only
             when the timer is paused, so duplicate calls do not double-count time.
-        Args:
-            None.
         Returns:
             None: Updates internal running state.
         """
@@ -66,8 +64,6 @@ class Timer:
         How it works:
             Concrete implementations should add the current active span to the stored
             accumulated value and mark the timer as paused.
-        Args:
-            None.
         Returns:
             None: Updates internal accumulated timing state.
         """
@@ -89,8 +85,6 @@ class Timer:
         How it works:
             Concrete implementations should preserve whether the timer is currently
             running or paused while zeroing the elapsed counter.
-        Args:
-            None.
         Returns:
             None: Resets timing-related state.
         """
@@ -106,8 +100,6 @@ class Timer:
         How it works:
             Concrete implementations should include both accumulated paused spans and
             the current running span (if active) in the returned value.
-        Args:
-            None.
         Returns:
             float: Elapsed time in seconds.
         """
@@ -122,8 +114,6 @@ class Timer:
     def _now(self) -> float:
         """Return a monotonic timestamp in seconds.
 
-        Args:
-            None.
         Returns:
             float: Monotonic timestamp suitable for duration measurement.
         """

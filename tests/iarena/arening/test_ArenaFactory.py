@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import TYPE_CHECKING
 from collections.abc import Iterator
 
@@ -87,6 +88,23 @@ class _Player(Player):
         _ = player_index
 
 
+class _SlowPlayer(Player):
+    def __init__(self, sleep_s: float) -> None:
+        self._sleep_s = sleep_s
+
+    def name(self) -> str:
+        return "slow-player"
+
+    def play(self, pos: Position) -> Movement:
+        _ = pos
+        time.sleep(self._sleep_s)
+        return _Move()
+
+    def starting_game(self, rules: Rules, player_index: PlayerIndex) -> None:
+        _ = rules
+        _ = player_index
+
+
 class _View(View):
     def render_info(self, rules: Rules, canvas: Canvas) -> None:
         _ = rules
@@ -139,3 +157,64 @@ def test_create_arena_raises_value_error_for_invalid_max_turns() -> None:
             score_limits=(Score(-1.0), Score(1.0)),
             store_logs=False,
         )
+
+
+def test_create_arena_allows_default_none_limits() -> None:
+    rules = _Rules()
+    view = _View()
+    players: list[Player] = [_Player()]
+
+    arena = ArenaFactory.create_arena(
+        rules=rules,
+        view=view,
+        players=players,
+    )
+
+    scoreboard = arena.play(rules=rules, players=players, view=view)
+
+    assert isinstance(scoreboard, ScoreBoard)
+    assert scoreboard.get_score(PlayerIndex(0)) == Score(3.0)
+
+
+def test_create_arena_without_turn_timeout_allows_slow_turns() -> None:
+    rules = _Rules()
+    view = _View()
+    players: list[Player] = [_SlowPlayer(sleep_s=0.02)]
+
+    arena = ArenaFactory.create_arena(
+        rules=rules,
+        view=view,
+        players=players,
+        max_turns=10,
+        max_turn_time_s=None,
+        max_total_time_s=None,
+        score_limits=None,
+        store_logs=False,
+    )
+
+    scoreboard = arena.play(rules=rules, players=players, view=view)
+
+    assert isinstance(scoreboard, ScoreBoard)
+    assert scoreboard.get_score(PlayerIndex(0)) == Score(3.0)
+
+
+def test_create_arena_keeps_turn_timeout_when_total_timeout_is_none() -> None:
+    rules = _Rules()
+    view = _View()
+    players: list[Player] = [_SlowPlayer(sleep_s=0.05)]
+
+    arena = ArenaFactory.create_arena(
+        rules=rules,
+        view=view,
+        players=players,
+        max_turns=10,
+        max_turn_time_s=0.001,
+        max_total_time_s=None,
+        score_limits=None,
+        store_logs=False,
+    )
+
+    scoreboard = arena.play(rules=rules, players=players, view=view)
+
+    assert isinstance(scoreboard, ScoreBoard)
+    assert scoreboard.get_score(PlayerIndex(0)) == Score(0.0)

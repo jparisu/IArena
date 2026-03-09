@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .AbstractMapGenerator import AbstractMapGenerator
+from iarena.utilizing.mapping.square_map.generators.AbstractMapGenerator import AbstractMapGenerator
 
 if TYPE_CHECKING:
     from iarena.utilizing.mapping.square_map.SquareMapCoordinate import SquareMapCoordinate

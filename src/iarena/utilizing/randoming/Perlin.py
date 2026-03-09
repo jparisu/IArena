@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 from noise import pnoise2
 
-from .RandomGenerator import RandomGenerator
+from iarena.utilizing.randoming.RandomGenerator import RandomGenerator
 
 
 class Perlin:

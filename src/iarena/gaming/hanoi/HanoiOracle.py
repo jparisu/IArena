@@ -1,123 +1,66 @@
-"""Declares the concrete benchmark oracle for the Hanoi game."""
+"""Declares the concrete best-player oracle for the Hanoi game."""
 
 from __future__ import annotations
 
-from collections import deque
 from typing import TYPE_CHECKING
 
-from iarena.gaming.Oracle import Oracle
-from iarena.playing.PlayerIndex import PlayerIndex
-from iarena.scoring.Score import Score
-from iarena.scoring.ScoreBoard import ScoreBoard
+from iarena.gaming.BestPlayerOracle import BestPlayerOracle
+from iarena.gaming.hanoi.PerfectHanoiPlayer import PerfectHanoiPlayer
 
 if TYPE_CHECKING:
     from iarena.gaming.Rules import Rules
+    from iarena.scoring.ScoreBoard import ScoreBoard
 
 from iarena.gaming.hanoi.HanoiRules import HanoiRules
 
 
-class HanoiOracle(Oracle):
-    """Concrete benchmark oracle implementation for Hanoi.
+class HanoiOracle(BestPlayerOracle):
+    """Benchmark oracle that delegates score estimation to `PerfectHanoiPlayer`.
 
     Purpose:
-        Computes reference best/worst score bounds for configured Hanoi games.
+        Provide score limits for Hanoi by repeatedly running the best known
+        deterministic player in an unconstrained arena.
     How it works:
-        Analyzes the puzzle definition and derives expected benchmark outcomes.
+        Uses `BestPlayerOracle` with `PerfectHanoiPlayer` and ratio `1.0` for
+        both lower and higher score limits.
     Used for:
-        Match evaluation, grading, and performance comparison against optimal play.
+        Match grading and score-limit configuration for Hanoi sessions.
     Public Attributes:
-        None declared at class level in this base definition.
+        Inherits public attributes from `BestPlayerOracle`.
     """
 
-    @classmethod
-    def _top_disk_index(cls, state: tuple[int, ...], peg: int) -> int | None:
-        """Return the top movable disk index from one peg in a raw state tuple.
-
-        Args:
-            state: Per-disk peg assignment tuple.
-            peg: Peg index whose top disk should be queried.
+    def __init__(self) -> None:
+        """Create one Hanoi oracle with fixed perfect-player limit ratios.
 
         Returns:
-            int | None: Top disk index for the peg, or `None` when empty.
+            None.
         """
-        _ = cls
-        top: int | None = None
-        for disk_index, disk_peg in enumerate(state):
-            if disk_peg == peg:
-                top = disk_index
-        return top
+        super().__init__(
+            best_player=PerfectHanoiPlayer(),
+            higher_limit_ratio=1.0,
+            lower_limit_ratio=1.0,
+            repetitions=1,
+        )
 
     @classmethod
-    def _optimal_steps(cls, n_pegs: int, start: tuple[int, ...], goal: tuple[int, ...]) -> int:
-        """Return the shortest number of moves to reach goal from start.
-
-        Args:
-            n_pegs: Number of available pegs.
-            start: Initial per-disk peg assignment.
-            goal: Goal per-disk peg assignment.
+    def default(cls) -> BestPlayerOracle:
+        """Return the default configured Hanoi oracle instance.
 
         Returns:
-            int: Optimal number of required moves.
+            BestPlayerOracle: Default Hanoi oracle configuration.
         """
-        if start == goal:
-            return 0
-
-        queue: deque[tuple[tuple[int, ...], int]] = deque([(start, 0)])
-        visited: set[tuple[int, ...]] = {start}
-
-        while queue:
-            state, steps = queue.popleft()
-            if state == goal:
-                return steps
-
-            for from_peg in range(n_pegs):
-                moving_disk = cls._top_disk_index(state, from_peg)
-                if moving_disk is None:
-                    continue
-
-                for to_peg in range(n_pegs):
-                    if to_peg == from_peg:
-                        continue
-
-                    target_top = cls._top_disk_index(state, to_peg)
-                    if target_top is not None and moving_disk < target_top:
-                        continue
-
-                    next_state = list(state)
-                    next_state[moving_disk] = to_peg
-                    next_state_tuple = tuple(next_state)
-                    if next_state_tuple in visited:
-                        continue
-
-                    visited.add(next_state_tuple)
-                    queue.append((next_state_tuple, steps + 1))
-
-        raise ValueError("Could not derive an optimal Hanoi path for the provided configuration.")
+        return cls()
 
     @classmethod
     def reckon_solution_score(cls, rules: Rules) -> tuple[ScoreBoard, ScoreBoard]:
-        """Compute benchmark scoreboards for the provided Hanoi ruleset.
+        """Compute best and worst benchmark scoreboards for one Hanoi ruleset.
 
         Args:
-            rules: Rules instance to evaluate for benchmark score bounds.
+            rules: Rules instance to evaluate.
 
         Returns:
-            tuple[ScoreBoard, ScoreBoard]: Pair with best-case and worst-case scoreboards.
+            tuple[ScoreBoard, ScoreBoard]: Best and worst benchmark scoreboards.
         """
-        _ = cls
-
         if not isinstance(rules, HanoiRules):
             raise TypeError("rules must be an instance of HanoiRules.")
-
-        start_position = rules.first_position()
-        start_state = tuple(start_position.disks)
-        goal_state = tuple([start_position.n_pegs - 1] * len(start_position.disks))
-
-        optimal_steps = cls._optimal_steps(start_position.n_pegs, start_state, goal_state)
-        optimal_score = Score(float(-optimal_steps))
-
-        best_board = ScoreBoard()
-        worst_board = ScoreBoard()
-        best_board._scores = {PlayerIndex(0): optimal_score}
-        worst_board._scores = {PlayerIndex(0): optimal_score}
-        return best_board, worst_board
+        return super().reckon_solution_score(rules=rules)

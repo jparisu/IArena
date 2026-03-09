@@ -6,7 +6,7 @@ from abc import ABC
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from .GenericRegistry import GenericRegistry
+from iarena.utilizing.structuring.GenericRegistry import GenericRegistry
 
 T = TypeVar("T")
 

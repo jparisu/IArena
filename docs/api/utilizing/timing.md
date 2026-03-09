@@ -2,6 +2,9 @@
 
 ## Timer
 
+
+---
+
 ::: iarena.utilizing.timing.Timer.Timer
     options:
       show_root_heading: true
@@ -16,6 +19,9 @@
 - `Timer.elapsed() -> float`
 
 ## Worker
+
+
+---
 
 ::: iarena.utilizing.timing.Worker.Worker
     options:

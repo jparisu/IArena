@@ -1,11 +1,12 @@
 """TicTacToe game concrete types built on top of the gaming abstractions."""
 
-from .TicTacToeConfiguration import TicTacToeConfiguration
-from .TicTacToeGame import TicTacToeGame
-from .TicTacToeMovement import TicTacToeMovement
-from .TicTacToePosition import TicTacToePosition
-from .TicTacToeRules import TicTacToeRules
-from .TicTacToeTerminalView import TicTacToeTerminalView
+from iarena.gaming.tictactoe.TicTacToeConfiguration import TicTacToeConfiguration
+from iarena.gaming.tictactoe.TicTacToeGame import TicTacToeGame
+from iarena.gaming.tictactoe.TicTacToeMovement import TicTacToeMovement
+from iarena.gaming.tictactoe.TicTacToePosition import TicTacToePosition
+from iarena.gaming.tictactoe.TicTacToeRules import TicTacToeRules
+from iarena.gaming.tictactoe.TicTacToeStreamlitView import TicTacToeStreamlitView
+from iarena.gaming.tictactoe.TicTacToeTerminalView import TicTacToeTerminalView
 
 __all__ = [
     "TicTacToePosition",
@@ -14,4 +15,5 @@ __all__ = [
     "TicTacToeRules",
     "TicTacToeGame",
     "TicTacToeTerminalView",
+    "TicTacToeStreamlitView",
 ]

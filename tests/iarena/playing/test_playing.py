@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -154,6 +155,60 @@ def test_load_player_from_file_rejects_missing_file(tmp_path: Path) -> None:
 
     with pytest.raises(FileNotFoundError, match="File not found"):
         LoadPlayer.from_file(str(missing_file))
+
+
+def test_load_player_from_notebook_file_loads_player_from_token_cell(tmp_path: Path) -> None:
+    notebook_file = tmp_path / "custom_player.ipynb"
+    notebook_file.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {"cell_type": "code", "source": ["x = 1\n"]},
+                    {
+                        "cell_type": "code",
+                        "source": [
+                            "from iarena.playing.LoadPlayer import LoadPlayer\n",
+                            "\n",
+                            "class _CustomPlayer(LoadPlayer):\n",
+                            "    def play(self, pos):\n",
+                            "        return 'movement'\n",
+                            "\n",
+                            "    def authors(self) -> list[str]:\n",
+                            "        return ['Notebook Author']\n",
+                            "\n",
+                            "PLAYER = _CustomPlayer()\n",
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    loaded_player = LoadPlayer.from_file(str(notebook_file))
+
+    assert isinstance(loaded_player, LoadPlayer)
+    assert loaded_player.authors() == ["Notebook Author"]
+
+
+def test_load_player_from_notebook_file_requires_matching_token(tmp_path: Path) -> None:
+    notebook_file = tmp_path / "missing_token.ipynb"
+    notebook_file.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "source": ["PLAYER = object()\n"],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="No notebook code cell contains token"):
+        LoadPlayer.from_file(str(notebook_file), token="CUSTOM_TOKEN")
 
 
 def test_polyvalent_terminal_player_name_is_stable() -> None:

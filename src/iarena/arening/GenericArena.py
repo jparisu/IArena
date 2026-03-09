@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Protocol
 
-from .Arena import Arena
+from iarena.arening.Arena import Arena
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement

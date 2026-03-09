@@ -42,7 +42,6 @@ class Player(Recognizable, ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def starting_game(self, rules: Rules, player_index: PlayerIndex) -> None:
         """Initialize player state when a new game begins.
 
@@ -55,5 +54,8 @@ class Player(Recognizable, ABC):
             player_index (PlayerIndex): Player identifier assigned in the arena.
         Returns:
             None: This method updates internal state and returns no value.
+
+        Warning:
+            This method must be overridden by concrete player implementations to properly initialize game context.
         """
-        raise NotImplementedError
+        pass

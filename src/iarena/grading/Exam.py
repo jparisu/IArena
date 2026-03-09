@@ -32,14 +32,12 @@ class Exam:
     game: Game
     player: Player
     suite_configuration: ConfigurationSuite
+    trial_configurations: list[TrialConfiguration]
     trials: list[Trial]
     trial_value: list[float]
 
     def _iter_configurations(self) -> list[Configuration]:
         """Return all concrete configurations contained in the suite.
-
-        Args:
-            None.
 
         Returns:
             List of concrete game configurations to evaluate.
@@ -64,19 +62,18 @@ class Exam:
         """
         return [self.player for _ in range(n_players)]
 
-    def _build_trial(self, configuration: Configuration) -> Trial:
-        """Create one trial object from a concrete game configuration.
+    def _build_trial_configuration(self, configuration: Configuration) -> TrialConfiguration:
+        """Create one trial configuration from a concrete game configuration.
 
         Args:
             configuration: Concrete game configuration to evaluate.
 
         Returns:
-            Trial configured for one full repeated match evaluation.
+            TrialConfiguration configured for one full repeated match evaluation.
         """
         rules = self.game.generate_rules(configuration)
         n_players = max(1, rules.n_players())
-        trial = Trial()
-        trial.configuration = TrialConfiguration(
+        return TrialConfiguration(
             match_configuration=MatchConfiguration(
                 move_timeout_s=1.0,
                 total_timeout_s=60.0,
@@ -89,8 +86,22 @@ class Exam:
             repetitions=1,
             allow_fails=0,
         )
-        trial.match_reports = []
-        return trial
+
+    def _iter_trial_configurations(self) -> list[TrialConfiguration]:
+        """Return all trial configurations to execute.
+
+        Returns:
+            list[TrialConfiguration]: Explicit configurations when already set;
+            otherwise defaults built from the suite configurations.
+        """
+        explicit_trial_configurations = list(getattr(self, "trial_configurations", []))
+        if explicit_trial_configurations:
+            return explicit_trial_configurations
+
+        return [
+            self._build_trial_configuration(configuration=configuration)
+            for configuration in self._iter_configurations()
+        ]
 
     def grade(self, debug_level: DebugLevel = DebugLevel.USER) -> list[list[MatchReport]]:
         """Execute all trials and return nested match reports.
@@ -112,8 +123,10 @@ class Exam:
         self.trial_value = []
         grouped_reports: list[list[MatchReport]] = []
 
-        for configuration in self._iter_configurations():
-            trial = self._build_trial(configuration=configuration)
+        for trial_configuration in self._iter_trial_configurations():
+            trial = Trial()
+            trial.configuration = trial_configuration
+            trial.match_reports = []
             reports = trial.trial(debug_level=debug_level)
             grouped_reports.append(reports)
             self.trials.append(trial)

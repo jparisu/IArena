@@ -16,8 +16,14 @@ if TYPE_CHECKING:
     from iarena.visualizing.View import View
 
 from iarena.gaming.goldmine.GoldMineConfiguration import GoldMineConfiguration
+from iarena.gaming.goldmine.GoldMineOracle import GoldMineOracle
+from iarena.gaming.goldmine.GoldMinePerfectPlayer import GoldMinePerfectPlayer
 from iarena.gaming.goldmine.GoldMineRules import GoldMineRules
+from iarena.gaming.goldmine.GoldMineStreamlitView import GoldMineStreamlitView
+from iarena.gaming.goldmine.GoldMineTerminalView import GoldMineTerminalView
 from iarena.playing.PolyvalentRandomPlayer import PolyvalentRandomPlayer
+from iarena.playing.PolyvalentStreamlitPlayer import PolyvalentStreamlitPlayer
+from iarena.playing.PolyvalentTerminalPlayer import PolyvalentTerminalPlayer
 
 
 class GoldMineGame(Game):
@@ -93,6 +99,44 @@ class GoldMineGame(Game):
         n_cols = self._prompt_positive_int(input_fnc, output_fnc, "Map cols", 6, "Map cols")
         return GoldMineConfiguration(n_rows=n_rows, n_cols=n_cols, map_generator="uniform", seed=0)
 
+    def streamlit_prompt_configuration(
+        self,
+        n_rows: int = 6,
+        n_cols: int = 6,
+        map_generator: str = "uniform",
+        seed: int = 0,
+        compass_activated: bool = False,
+        proximity_activated: bool = False,
+        density_activated: bool = False,
+    ) -> GoldMineConfiguration:
+        """Build a GoldMine configuration from streamlit-oriented control values.
+
+        Args:
+            n_rows: Number of map rows.
+            n_cols: Number of map columns.
+            map_generator: Map generation strategy name.
+            seed: Random seed used when map data is generated.
+            compass_activated: Whether compass hint should be enabled.
+            proximity_activated: Whether proximity hint should be enabled.
+            density_activated: Whether density hint should be enabled.
+
+        Returns:
+            GoldMineConfiguration: Configuration built from validated streamlit controls.
+        """
+        if n_rows < 1:
+            raise ValueError("n_rows must be at least 1.")
+        if n_cols < 1:
+            raise ValueError("n_cols must be at least 1.")
+        return GoldMineConfiguration(
+            n_rows=n_rows,
+            n_cols=n_cols,
+            map_generator=map_generator,
+            seed=seed,
+            compass_activated=compass_activated,
+            proximity_activated=proximity_activated,
+            density_activated=density_activated,
+        )
+
     def name(self) -> str:
         """Return the canonical game name."""
         return "goldmine"
@@ -115,17 +159,21 @@ class GoldMineGame(Game):
 
     def get_oracles(self, requirements: Callable[[Any], bool]) -> set[type[Oracle]]:
         """Return compatible oracle classes."""
-        _ = requirements
-        return set()
+        return self._filter_candidates(requirements, GoldMineOracle)
 
     def get_players(self, requirements: Callable[[Any], bool]) -> set[type[Player]]:
         """Return compatible player classes."""
-        return self._filter_candidates(requirements, PolyvalentRandomPlayer)
+        return self._filter_candidates(
+            requirements,
+            GoldMinePerfectPlayer,
+            PolyvalentRandomPlayer,
+            PolyvalentStreamlitPlayer,
+            PolyvalentTerminalPlayer,
+        )
 
     def get_renderers(self, requirements: Callable[[Any], bool]) -> set[type[View]]:
         """Return compatible renderer classes."""
-        _ = requirements
-        return set()
+        return self._filter_candidates(requirements, GoldMineTerminalView, GoldMineStreamlitView)
 
     def generate_rules(self, conf: Configuration) -> Rules:
         """Generate rules from one GoldMine configuration.
