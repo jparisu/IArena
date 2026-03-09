@@ -97,11 +97,11 @@ class GoldMineStreamlitView(StreamlitView):
         if not isinstance(rules, GoldMineRules):
             raise TypeError("Position rules must be an instance of GoldMineRules.")
 
-        if rules.configuration.compass_activated:
+        if rules._configuration.compass_activated:
             hint_items.append(("Compass", position.get_compass().name))
-        if rules.configuration.proximity_activated:
+        if rules._configuration.proximity_activated:
             hint_items.append(("Proximity", str(position.get_proximity())))
-        if rules.configuration.density_activated:
+        if rules._configuration.density_activated:
             hint_items.append(("Density", f"{position.get_density():.3f}"))
 
         if not hint_items:
@@ -128,6 +128,57 @@ class GoldMineStreamlitView(StreamlitView):
         )
         self._emit_html(canvas, panel_html)
 
+    def _emit_pyplot(self, canvas: object, figure: object) -> None:
+        """Render a matplotlib figure on a streamlit-like container when supported.
+
+        Args:
+            canvas: Candidate streamlit container object.
+            figure: Matplotlib figure object to render.
+
+        Returns:
+            None.
+        """
+        pyplot = getattr(canvas, "pyplot", None)
+        if callable(pyplot):
+            try:
+                pyplot(figure, use_container_width=True)
+            except TypeError:
+                pyplot(figure)
+            return
+
+        import streamlit as st
+
+        st.pyplot(figure, use_container_width=True)
+
+    def _render_debug_map_section(self, position: GoldMinePosition, canvas: StreamlitContainer) -> None:
+        """Render a hidden-by-default debug section with the full map plot.
+
+        Args:
+            position: Current game position.
+            canvas: Streamlit container where the section is rendered.
+
+        Returns:
+            None.
+        """
+        rules = position.get_rules()
+        if not isinstance(rules, GoldMineRules):
+            raise TypeError("Position rules must be an instance of GoldMineRules.")
+
+        native_canvas = canvas.container
+        if native_canvas is None:
+            return
+
+        expander = getattr(native_canvas, "expander", None)
+        if not callable(expander):
+            return
+
+        import matplotlib.pyplot as plt
+
+        figure = rules._generate_plot_position(position)
+        with expander("Debug map (hidden information)", expanded=False) as debug_canvas:
+            self._emit_pyplot(debug_canvas, figure)
+        plt.close(figure)
+
     def render_info(self, rules: Rules, canvas: Canvas) -> None:
         """Render static GoldMine information into the streamlit canvas.
 
@@ -141,7 +192,7 @@ class GoldMineStreamlitView(StreamlitView):
         if not isinstance(rules, GoldMineRules):
             raise TypeError("rules must be an instance of GoldMineRules.")
 
-        conf = rules.configuration
+        conf = rules._configuration
         info = (
             "### GoldMine\n"
             f"- **Map size:** `{conf.n_rows}x{conf.n_cols}`\n"
@@ -171,6 +222,7 @@ class GoldMineStreamlitView(StreamlitView):
             ),
         )
         self._render_hint_panel(position, canvas)
+        self._render_debug_map_section(position, canvas)
 
     def _render_direction_button(
         self,

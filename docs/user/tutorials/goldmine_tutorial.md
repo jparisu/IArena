@@ -89,8 +89,6 @@ Let's create a configuration with a random 4x4 map, where the start is in the to
 If not set, the gold cell will also be randomly generated and hidden for the player.
 
 ```python
-from iarena.gaming.goldmine import GoldMineConfiguration
-
 random_configuration = GoldMineConfiguration(
     n_rows=4,
     n_cols=4,
@@ -217,18 +215,16 @@ from iarena.playing import Player
 
 class AlwaysRightGoldMinePlayer(Player):
 
-    def name(self) -> str:
-        return "always-right"
-
     def play(self, position: GoldMinePosition) -> GoldMineMovement:
-        possible_movements = position.get_directions_with_cost()
+        possible_movements = list(position.get_valid_directions())
+        # Note: we convert the iterator to a list for simplicity
 
-        for direction, cost in possible_movements:
+        for direction in possible_movements:
             if direction == SquareMapDirection.RIGHT:
                 print(f"[{self.name()}] Choosing RIGHT")
                 return GoldMineMovement(direction)
 
-        fallback = possible_movements[0].direction
+        fallback = list(possible_movements)[0]
         print(f"[{self.name()}] RIGHT not available, choosing {fallback}")
         return GoldMineMovement(direction=fallback)
 
@@ -260,17 +256,22 @@ Let's create an arena to test our previous player in the GoldMine game:
 from iarena.arening import ArenaFactory
 
 arena = ArenaFactory.create_arena(
-    rules=rules,        # Game rules
-    players=[player],   # List of players (in this case, only one)
-    max_turns=20,       # Maximum number of turns to prevent infinite loops
+    max_turns=15,       # Maximum number of turns to prevent infinite loops
 )
 
 # Run the game and get the final scoreboard
-scoreboard = arena.play(rules=rules, players=players)
+scoreboard = arena.play(
+    rules=rules,        # Game rules
+    players=[player],   # List of players (in this case, only one)
+)
 
 print("Game finished")
 print(f"Final score: {scoreboard.get_score(0)}")
 ```
+
+!!! Warning
+    At this point the game would stop with an Exception because the maximum number of turns is reached.
+    Try to implement a smarter player that is able to find the gold within the maximum number of turns.
 
 ---
 
@@ -289,15 +290,13 @@ For this, when creating an `Arena`, using the specific `GoldMineTerminalView` vi
 ```python
 from iarena.gaming.goldmine.GoldMineTerminalView import GoldMineTerminalView
 
-arena = ArenaFactory.create_arena(
+# Run the game and get the final scoreboard
+scoreboard = arena.play(
     rules=rules,        # Game rules
     players=[player],   # List of players (in this case, only one)
-    max_turns=20,       # Maximum number of turns to prevent infinite loops
-    view=GoldMineTerminalView()
+    view=GoldMineTerminalView(),
 )
 
-# Run the game and get the final scoreboard
-scoreboard = arena.play(rules=rules, players=players)
 print(f"Final score: {scoreboard.get_score(0)}")
 ```
 
@@ -312,17 +311,13 @@ Let's try to play GoldMine with a human player by terminal input:
 ```python
 from iarena.playing import PolyvalentTerminalPlayer
 
-human_player = PolyvalentTerminalPlayer("human")
-
-arena = ArenaFactory.create_arena(
-    rules=rules,        # Game rules
-    players=[human_player],   # List of players (in this case, only one)
-    max_turns=20,       # Maximum number of turns to prevent infinite loops
-    view=GoldMineTerminalView()
-)
+human_player = PolyvalentTerminalPlayer()
 
 # Run the game and get the final scoreboard
-scoreboard = arena.play(rules=rules, players=[human_player])
+scoreboard = arena.play(
+    rules=rules,        # Game rules
+    players=[human_player],   # List of players (in this case, only one)
+)
 print(f"Final score: {scoreboard.get_score(0)}")
 ```
 
@@ -341,7 +336,7 @@ class MemoryGoldMinePlayer(Player):
         super().__init__(name)
         self.steps = 0
 
-    def starting_game(self, rules: Rules, player_index: PlayerIndex) -> None:
+    def starting_game(self, rules: GoldMineRules, player_index: int) -> None:
         self.steps = 0
 
     def play(self, rules, position):
@@ -382,7 +377,7 @@ print(f"Compass activated: {rules_with_compass.compass_activated()}")
 
 # Get the first position and check the compass hint
 first_position_with_compass = rules_with_compass.first_position()
-compass_hint = first_position_with_compass.get_compass_hint()
+compass_hint = first_position_with_compass.get_compass()
 print(f"Compass hint: {compass_hint}")
 ```
 
@@ -408,7 +403,7 @@ print(f"Proximity hint activated: {rules_with_proximity.proximity_activated()}")
 
 # Get the first position and check the proximity hint
 first_position_with_proximity = rules_with_proximity.first_position()
-proximity_hint = first_position_with_proximity.get_proximity_hint()
+proximity_hint = first_position_with_proximity.get_proximity()
 print(f"Proximity hint: {proximity_hint}")
 ```
 

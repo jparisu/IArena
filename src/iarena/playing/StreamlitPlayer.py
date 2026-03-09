@@ -31,6 +31,17 @@ class StreamlitPlayer(HumanPlayer, ABC):
         render: Streamlit-compatible view used to capture user input.
     """
 
+    def __init__(self, name: str | None = None) -> None:
+        """Initialize the player with an optional name.
+
+        Args:
+            name (str | None): Optional name for the player. If None, a default name is assigned.
+
+        Returns:
+            None.
+        """
+        super().__init__(name=name)
+
     def set_session_state(self, state: StreamlitSession | Mapping[str, Any]) -> None:
         """Set the streamlit session state used for the next `play` call.
 

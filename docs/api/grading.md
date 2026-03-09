@@ -67,6 +67,14 @@
 
 ---
 
+::: iarena.grading.Grader.Grader
+    options:
+      show_root_heading: true
+      members: true
+
+
+---
+
 ::: iarena.grading.MultiGrader.MultiGrader
     options:
       show_root_heading: true

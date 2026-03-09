@@ -125,9 +125,6 @@ def test_create_arena_returns_playable_arena_instance() -> None:
     players: list[Player] = [_Player()]
 
     arena = ArenaFactory.create_arena(
-        rules=rules,
-        view=view,
-        players=players,
         max_turns=10,
         max_turn_time_s=1.0,
         max_total_time_s=5.0,
@@ -142,15 +139,8 @@ def test_create_arena_returns_playable_arena_instance() -> None:
 
 
 def test_create_arena_raises_value_error_for_invalid_max_turns() -> None:
-    rules = _Rules()
-    view = _View()
-    players: list[Player] = [_Player()]
-
     with pytest.raises(ValueError):
         ArenaFactory.create_arena(
-            rules=rules,
-            view=view,
-            players=players,
             max_turns=0,
             max_turn_time_s=1.0,
             max_total_time_s=10.0,
@@ -164,11 +154,7 @@ def test_create_arena_allows_default_none_limits() -> None:
     view = _View()
     players: list[Player] = [_Player()]
 
-    arena = ArenaFactory.create_arena(
-        rules=rules,
-        view=view,
-        players=players,
-    )
+    arena = ArenaFactory.create_arena()
 
     scoreboard = arena.play(rules=rules, players=players, view=view)
 
@@ -182,9 +168,6 @@ def test_create_arena_without_turn_timeout_allows_slow_turns() -> None:
     players: list[Player] = [_SlowPlayer(sleep_s=0.02)]
 
     arena = ArenaFactory.create_arena(
-        rules=rules,
-        view=view,
-        players=players,
         max_turns=10,
         max_turn_time_s=None,
         max_total_time_s=None,
@@ -204,9 +187,6 @@ def test_create_arena_keeps_turn_timeout_when_total_timeout_is_none() -> None:
     players: list[Player] = [_SlowPlayer(sleep_s=0.05)]
 
     arena = ArenaFactory.create_arena(
-        rules=rules,
-        view=view,
-        players=players,
         max_turns=10,
         max_turn_time_s=0.001,
         max_total_time_s=None,
@@ -218,3 +198,15 @@ def test_create_arena_keeps_turn_timeout_when_total_timeout_is_none() -> None:
 
     assert isinstance(scoreboard, ScoreBoard)
     assert scoreboard.get_score(PlayerIndex(0)) == Score(0.0)
+
+
+def test_play_defaults_to_empty_view_when_no_view_is_provided() -> None:
+    rules = _Rules()
+    players: list[Player] = [_Player()]
+
+    arena = ArenaFactory.create_arena()
+
+    scoreboard = arena.play(rules=rules, players=players)
+
+    assert isinstance(scoreboard, ScoreBoard)
+    assert scoreboard.get_score(PlayerIndex(0)) == Score(3.0)

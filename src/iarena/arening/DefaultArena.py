@@ -6,11 +6,11 @@ from iarena.arening.behaviors.LogsStoringArena import LogsStoringArena
 from iarena.arening.behaviors.MaxTurnsCheckingArena import MaxTurnsCheckingArena
 from iarena.arening.behaviors.ScoreLimitCheckingArena import ScoreLimitCheckingArena
 from iarena.arening.behaviors.TimeoutCheckingArena import TimeoutCheckingArena
-from iarena.arening.behaviors.WorkerExecuteTurnArena import WorkerExecuteTurnArena
+from iarena.arening.behaviors.DirectExecuteTurnArena import DirectExecuteTurnArena
 
 
 class DefaultArena(
-    WorkerExecuteTurnArena,
+    DirectExecuteTurnArena,
     TimeoutCheckingArena,
     ScoreLimitCheckingArena,
     MaxTurnsCheckingArena,

@@ -346,11 +346,11 @@ class GoldMinePerfectPlayer(Player):
 
         self._rules = rules
         self._player_index = player_index
-        self._rng.set_seed(rules.configuration.seed if rules.configuration.seed is not None else 0)
+        self._rng.set_seed(rules._configuration.seed if rules._configuration.seed is not None else 0)
         self._reset_tracking_state()
 
-        max_dx = rules.configuration.n_rows - 1
-        max_dy = rules.configuration.n_cols - 1
+        max_dx = rules._configuration.n_rows - 1
+        max_dy = rules._configuration.n_cols - 1
         self._candidate_coordinates = [
             SquareMapCoordinate(x, y)
             for x in range(-max_dx, max_dx + 1)

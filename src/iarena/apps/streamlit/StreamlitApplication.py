@@ -11,8 +11,6 @@ from typing import Any, ClassVar, TypeVar, cast, get_args, get_origin
 import streamlit as st
 import yaml
 
-from iarena.apps.streamlit.MainApp import MainApp
-from iarena.apps.streamlit.StreamlitApplicationState import StreamlitApplicationState
 from iarena.gaming.Configuration import Configuration
 from iarena.gaming.Game import Game
 from iarena.gaming.GameGovernor import GameGovernor
@@ -26,6 +24,9 @@ from iarena.scoring.Score import Score
 from iarena.visualizing.streamlit_frontend.StreamlitContainer import StreamlitContainer
 from iarena.visualizing.streamlit_frontend.StreamlitSession import StreamlitSession
 from iarena.visualizing.streamlit_frontend.StreamlitView import StreamlitView
+
+from iarena.apps.streamlit.MainApp import MainApp
+from iarena.apps.streamlit.StreamlitApplicationState import StreamlitApplicationState
 
 T = TypeVar("T")
 
@@ -822,15 +823,24 @@ class StreamlitApplication:
                 return next(iter(scores.values()))
             return Score(0.0)
 
-    def _on_review_slider_change(self) -> None:
+    def _on_review_slider_change(self, widget_key: str) -> None:
         """Copy the slider widget value into the canonical review-step state."""
+        _ = widget_key
         st.session_state[self._review_step_key] = int(st.session_state.get(self._review_slider_key, 0))
 
     def _sync_state_with_slider(self, runtime: dict[str, Any], step_index: int) -> None:
+        """Update application state based on selected history slider step.
+
+        Args:
+            runtime: Runtime dictionary with position history.
+            step_index: Selected history index.
+
+        Returns:
+            None.
+        """
         last_index = len(runtime["positions"]) - 1
         bounded_step = min(max(int(step_index), 0), last_index)
         st.session_state[self._review_step_key] = bounded_step
-        st.session_state[self._review_slider_key] = bounded_step
 
         if bounded_step < last_index:
             self._set_app_state(StreamlitApplicationState.REVIEWING)
@@ -859,20 +869,22 @@ class StreamlitApplication:
         last_index = len(runtime["positions"]) - 1
         current_step = min(st.session_state.get(self._review_step_key, 0), last_index)
 
+        # TODO Fix buttons being triggerable when autoplay is enabled due to Streamlit's state update mechanics.
+
         play_col, pause_col = st.columns(2)
-        if play_col.button("Play", key="streamlit_review_play", use_container_width=True):
+        if play_col.button("Play", key="streamlit_review_play", use_container_width=True, disabled=True):
             st.session_state[self._autoplay_key] = True
             should_rerun = True
-        if pause_col.button("Pause", key="streamlit_review_pause", use_container_width=True):
+        if pause_col.button("Pause", key="streamlit_review_pause", use_container_width=True, disabled=True):
             st.session_state[self._autoplay_key] = False
 
         back_col, fwd_col = st.columns(2)
-        if back_col.button("Step backward", key="streamlit_review_back", use_container_width=True):
+        if back_col.button("Step backward", key="streamlit_review_back", use_container_width=True, disabled=True):
             st.session_state[self._autoplay_key] = False
             self._sync_state_with_slider(runtime, current_step - 1)
             should_rerun = True
 
-        if fwd_col.button("Step forward", key="streamlit_review_forward", use_container_width=True):
+        if fwd_col.button("Step forward", key="streamlit_review_forward", use_container_width=True, disabled=True):
             st.session_state[self._autoplay_key] = False
             if current_step < last_index:
                 self._sync_state_with_slider(runtime, current_step + 1)
@@ -1161,19 +1173,18 @@ class StreamlitApplication:
 
             slider_widget_key = f"{self._review_slider_key}_{last_index}_{current_review_step}"
 
-            st.session_state[self._review_slider_key] = current_review_step
-
             with slider_container:
                 st.slider(
                     "Steps",
                     min_value=0,
                     max_value=last_index,
-                    key=self._review_slider_key,
+                    value=current_review_step,
+                    key=slider_widget_key,
                     on_change=self._on_review_slider_change,
+                    args=(slider_widget_key,),
                 )
 
-            selected_step = int(st.session_state.get(self._review_slider_key, current_review_step))
-
+            selected_step = int(st.session_state.get(slider_widget_key, current_review_step))
         else:
             selected_step = 0
             st.session_state[self._review_step_key] = 0

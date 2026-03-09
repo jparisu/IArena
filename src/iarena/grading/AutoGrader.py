@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
+import yaml
+
 from iarena.grading.Exam import Exam
 from iarena.grading.ExamReader import ExamReader
 from iarena.grading.MatchReport import MatchReport
 from iarena.playing.LoadPlayer import LoadPlayer
+from iarena.utilizing.filing.FileLoader import FileLoader
 
 
 class AutoGrader:
@@ -50,8 +56,31 @@ class AutoGrader:
         autograder.token = token
 
         player = LoadPlayer.from_file(player_file, token=token)
-        autograder.grader = ExamReader.from_file(configuration_file=configuration_file, player=player)
+        configuration = cls._read_configuration(configuration_file=configuration_file)
+        autograder.grader = ExamReader.from_mapping(configuration=configuration, player=player)
         return autograder
+
+    @classmethod
+    def _read_configuration(cls, configuration_file: str) -> dict[str, Any]:
+        """Read one YAML configuration from local disk or an online URL.
+
+        Args:
+            configuration_file: Local file path or HTTP(S) URL.
+
+        Returns:
+            dict[str, Any]: Parsed configuration mapping.
+
+        Raises:
+            TypeError: If parsed YAML root content is not a mapping.
+            ValueError: If YAML payload is invalid.
+        """
+        _ = cls
+        payload = yaml.safe_load(FileLoader.read_file(filename=configuration_file))
+        if payload is None:
+            return {}
+        if not isinstance(payload, Mapping):
+            raise TypeError("Configuration root content must be a mapping/object.")
+        return dict(payload)
 
     def _require_grader(self) -> Exam:
         """Return the configured grader instance or raise a clear error.

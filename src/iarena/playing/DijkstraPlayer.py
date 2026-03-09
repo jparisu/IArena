@@ -29,6 +29,19 @@ class DijkstraPlayer(Player, ABC):
         None declared at class level in this base definition.
     """
 
+    def __init__(self, name: str | None = None) -> None:
+        """Initialize the player with an optional name.
+
+        Args:
+            name (str | None): Optional name for the player. If None, a default name is assigned.
+
+        Returns:
+            None.
+        """
+        super().__init__(name=name)
+        self._rules: Rules | None = None
+        self._player_index: PlayerIndex | None = None
+
     def name(self) -> str:
         """Return the canonical identifier for this generic player family.
 

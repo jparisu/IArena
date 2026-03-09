@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 from typing import get_args, get_origin, get_type_hints
@@ -165,3 +166,54 @@ def test_from_files_accepts_notebook_players_with_token(tmp_path: Path) -> None:
     assert autograder.player_file == str(player_file)
     assert autograder.token == "CUSTOM_PLAYER_TOKEN"
     assert isinstance(autograder.grader, Exam)
+
+
+def test_from_files_reads_configuration_with_file_loader(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    module = importlib.import_module("iarena.grading.AutoGrader")
+    player_file = tmp_path / "player.py"
+    player_file.write_text(
+        "\n".join(
+            [
+                "from __future__ import annotations",
+                "",
+                "from iarena.playing.LoadPlayer import LoadPlayer",
+                "from iarena.gaming.Movement import Movement",
+                "from iarena.gaming.Position import Position",
+                "",
+                "class TmpPlayer(LoadPlayer):",
+                "    def play(self, pos: Position) -> Movement:",
+                "        return next(pos.get_rules().possible_movements(pos))",
+                "",
+                "    def authors(self) -> list[str]:",
+                "        return ['Tester']",
+                "",
+                "PLAYER = TmpPlayer()",
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    reads: list[tuple[str, bool]] = []
+
+    def _fake_read_file(filename: str, allow_online: bool = True) -> str:
+        reads.append((filename, allow_online))
+        return "\n".join(
+            [
+                "game: hanoi",
+                "trials:",
+                "  - args:",
+                "      n_pegs: 3",
+                "      n_disks: 1",
+            ],
+        )
+
+    monkeypatch.setattr(
+        module,
+        "FileLoader",
+        type("FakeFileLoader", (), {"read_file": staticmethod(_fake_read_file)}),
+    )
+
+    autograder = AutoGrader.from_files("https://example.com/grader.yaml", str(player_file))
+
+    assert isinstance(autograder.grader, Exam)
+    assert reads == [("https://example.com/grader.yaml", True)]

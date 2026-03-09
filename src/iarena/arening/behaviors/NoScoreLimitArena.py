@@ -14,4 +14,4 @@ class NoScoreLimitArena(ConfiguredArenaBase):
         Returns:
             bool: `True` only when rules declare the game finished.
         """
-        return self._rules.is_finished(self._position)
+        return self._rules.is_finished(self._current_position)

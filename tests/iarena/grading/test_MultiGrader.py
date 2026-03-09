@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import csv
+import importlib
 import json
 from pathlib import Path
 from zipfile import ZipFile
+
+import pytest
 
 from iarena.grading.MultiGrader import MultiGrader
 
@@ -213,3 +216,37 @@ def test_from_zip_loads_notebook_players_with_token(tmp_path: Path) -> None:
     assert len(grader.players) == 1
     assert grader.token == "CUSTOM_TOKEN"
     assert grader.players[0]["player"] is not None
+
+
+def test_from_zip_reads_configuration_with_file_loader(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    module = importlib.import_module("iarena.grading.MultiGrader")
+    zip_file = tmp_path / "players.zip"
+    submissions_dir = tmp_path / "submissions"
+    submissions_dir.mkdir()
+    _write_player_file(submissions_dir / "student_a.py", "Alice", valid=True)
+    _build_zip(zip_file, submissions_dir)
+
+    reads: list[tuple[str, bool]] = []
+
+    def _fake_read_file(filename: str, allow_online: bool = True) -> str:
+        reads.append((filename, allow_online))
+        return "\n".join(
+            [
+                "game: hanoi",
+                "trials:",
+                "  - args:",
+                "      n_pegs: 3",
+                "      n_disks: 1",
+            ],
+        )
+
+    monkeypatch.setattr(
+        module,
+        "FileLoader",
+        type("FakeFileLoader", (), {"read_file": staticmethod(_fake_read_file)}),
+    )
+
+    grader = MultiGrader.from_zip("https://example.com/grader.yaml", str(zip_file), repetitions=1)
+
+    assert len(grader.trial_definitions) == 1
+    assert reads == [("https://example.com/grader.yaml", True)]

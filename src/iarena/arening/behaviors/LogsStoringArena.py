@@ -22,7 +22,7 @@ class LogsStoringArena(ConfiguredArenaBase):
             {
                 "turn": self._turn_count,
                 "movement": last_movement,
-                "position": self._position,
+                "position": self._current_position,
                 "elapsed_s": self._timer.elapsed(),
             },
         )

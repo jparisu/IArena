@@ -122,11 +122,19 @@ class GenericArena(Arena, ABC):
             RuntimeError: If required arena state (`_rules` and `_position`) is
                 missing when the loop terminates.
         """
+
         while True:
-            if self._check_timeout() or self._check_score_limit() or self._check_max_turns():
-                break
+            if self._check_timeout():
+                raise TimeoutError(f"Match execution exceeded time limit of {self._max_total_time_s} seconds.")
+
+            elif self._check_score_limit():
+                raise StopIteration("Score limit reached, finishing match.")
+
+            elif self._check_max_turns():
+                raise StopIteration("Max turns reached, finishing match.")
 
             self._execute_turn()
+            self._turn_count += 1
 
             should_store_logs = bool(getattr(self, "_should_store_logs", False))
             if should_store_logs:
@@ -134,14 +142,10 @@ class GenericArena(Arena, ABC):
                 if last_movement is not None:
                     self._store_logs(last_movement)
 
-        rules = getattr(self, "_rules", None)
-        position = getattr(self, "_position", None)
-        if rules is None or position is None:
-            raise RuntimeError("GenericArena requires `_rules` and `_position` to be set before running `_game_loop`.")
+            if self._rules.is_finished(self._current_position):
+                break
 
-        typed_rules: Rules = rules
-        typed_position: Position = position
-        return typed_rules.get_score(typed_position)
+        return self._rules.get_score(self._current_position)
 
 
 class ExecuteTurnProtocol(Protocol):

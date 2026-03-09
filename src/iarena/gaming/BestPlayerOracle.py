@@ -115,9 +115,6 @@ class BestPlayerOracle(Oracle, ABC):
         view = EmptyView()
         players = [self.best_player]
         arena = OracleArena(
-            rules=rules,
-            view=view,
-            players=players,
             max_turns=1,
             max_turn_time_s=float("inf"),
             max_total_time_s=float("inf"),

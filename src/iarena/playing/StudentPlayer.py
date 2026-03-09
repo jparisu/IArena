@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from iarena.utilizing.protocoling.Recognizable import Recognizable
+from iarena.playing.Player import Player
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from iarena.playing.PlayerIndex import PlayerIndex
 
 
-class Player(Recognizable, ABC):
+class StudentPlayer(Player):
     """Abstract player capable of selecting movements during a match.
 
     Purpose:
@@ -27,18 +28,30 @@ class Player(Recognizable, ABC):
         None declared at class level in this base definition.
     """
 
-    def __init__(self, name: str | None = None) -> None:
-        """Initialize the player with an optional name.
+    def __init__(self, name: str, authors: list[str]) -> None:
+        """Initialize the player with a name and list of authors.
 
         Args:
-            name (str | None): Optional name for the player. If None, a default name is assigned.
+            name (str): Name for the player.
+            authors (list[str]): List of author names responsible for this player.
 
         Returns:
             None.
         """
         if name is not None and not isinstance(name, str):
             raise TypeError("name must be a string or None.")
+        if not isinstance(authors, list) or not all(isinstance(author, str) for author in authors):
+            raise TypeError("authors must be a list of strings.")
         self._name = name if name is not None else f"Player_{id(self)}"
+        self._authors = authors
+
+    def authors(self) -> list[str]:
+        """Return the list of authors responsible for this player.
+
+        Returns:
+            list[str]: List of author names.
+        """
+        return self._authors
 
     def __str__(self) -> str:
         """Return a string representation of the player.
@@ -56,22 +69,6 @@ class Player(Recognizable, ABC):
         """
         return self._name
 
-    @abstractmethod
-    def play(self, pos: Position) -> Movement:
-        """Choose and return the next movement for the given position.
-
-        What it does:
-            Declares the core decision method that produces one legal movement.
-        How it works:
-            Concrete subclasses evaluate the input position and select a movement.
-        Args:
-            pos (Position): Current game position where the player must act.
-        Returns:
-            Movement: Movement chosen by the player strategy.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def starting_game(self, rules: Rules, player_index: PlayerIndex) -> None:
         """Initialize player state when a new game begins.
 
@@ -88,3 +85,4 @@ class Player(Recognizable, ABC):
         Warning:
             This method must be overridden by concrete player implementations to properly initialize game context.
         """
+        pass

@@ -62,7 +62,7 @@ class GoldMineTerminalView(TerminalView):
         if not isinstance(rules, GoldMineRules):
             raise TypeError("rules must be an instance of GoldMineRules.")
 
-        conf = rules.configuration
+        conf = rules._configuration
         return (
             "=== GoldMine ===\n"
             f"Map size: {conf.n_rows}x{conf.n_cols}\n"
@@ -109,11 +109,11 @@ class GoldMineTerminalView(TerminalView):
                 movement_lines.append(f"  [{movement_index}] {movement.direction.name} (cost {cost:.2f})")
 
         hint_lines: list[str] = []
-        if rules.configuration.compass_activated:
+        if rules._configuration.compass_activated:
             hint_lines.append(f"  - Compass: {position.get_compass().name}")
-        if rules.configuration.proximity_activated:
+        if rules._configuration.proximity_activated:
             hint_lines.append(f"  - Proximity: {position.get_proximity()}")
-        if rules.configuration.density_activated:
+        if rules._configuration.density_activated:
             hint_lines.append(f"  - Density: {position.get_density():.3f}")
         if not hint_lines:
             hint_lines.append("  - No active hints.")

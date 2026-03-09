@@ -60,20 +60,14 @@ class Trial:
         """
         return scoreboard.get_score(self.configuration.trialing_player_index)
 
-    def _create_arena(self, view: EmptyView) -> Arena:
+    def _create_arena(self) -> Arena:
         """Build one arena configured from current match limits.
 
-        Args:
-            view: View instance attached to the created arena.
-
         Returns:
-            Arena configured with trial rules, players, and execution limits.
+            Arena configured with current execution limits.
         """
         match_configuration: MatchConfiguration = self.configuration.match_configuration
         return ArenaFactory.create_arena(
-            rules=self.configuration.rules,
-            view=view,
-            players=self.configuration.players,
             max_turns=match_configuration.max_turns,
             max_turn_time_s=match_configuration.move_timeout_s,
             max_total_time_s=match_configuration.total_timeout_s,
@@ -174,7 +168,7 @@ class Trial:
             failure_error: Exception | None = None
             try:
                 view = EmptyView()
-                arena = self._create_arena(view=view)
+                arena = self._create_arena()
                 scoreboard = arena.play(
                     rules=self.configuration.rules,
                     players=self.configuration.players,

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from iarena.playing.Player import Player
-from iarena.utilizing.filing.Loader import Loader
+from iarena.utilizing.filing.PythonLoader import PythonLoader
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement
@@ -116,7 +116,7 @@ class LoadPlayer(Player):
         if source_path.suffix.lower() == ".ipynb":
             loaded_variables = cls._load_notebook_variables(filename=path, variable_names=["PLAYER"], token=token)
         else:
-            loaded_variables = Loader.load_file(filename=path, variable_names=["PLAYER"])
+            loaded_variables = PythonLoader.load_file(filename=path, variable_names=["PLAYER"])
         loaded_player = loaded_variables["PLAYER"]
         if not isinstance(loaded_player, LoadPlayer):
             raise TypeError(

@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from iarena.arening.behaviors.ConfiguredArenaBase import ConfiguredArenaBase
-from iarena.visualizing.EmptyView import EmptyView
 
 if TYPE_CHECKING:
     from iarena.arening.Arena import Arena
-    from iarena.gaming.Rules import Rules
-    from iarena.playing.Player import Player
     from iarena.scoring.Score import Score
-    from iarena.visualizing.View import View
 
 
 class ArenaFactory:
@@ -33,9 +28,6 @@ class ArenaFactory:
     @classmethod
     def create_arena(
         cls,
-        rules: Rules,
-        players: Sequence[Player],
-        view: View = EmptyView(),
         max_turns: int | None = None,
         max_turn_time_s: float | None = None,
         max_total_time_s: float | None = None,
@@ -47,12 +39,9 @@ class ArenaFactory:
         What it does:
             Defines the central factory entrypoint for arena selection and creation.
         How it works:
-            Concrete logic is expected to inspect rules, players, and execution
-            limits to choose and instantiate the best available arena strategy.
+            Concrete logic inspects execution limits to compose and instantiate
+            the best available arena strategy.
         Args:
-            rules (Rules): Rules engine that defines game behavior.
-            view (View): Frontend used to render state and capture human input.
-            players (Sequence[Player]): Ordered participants of the match.
             max_turns (int | None): Maximum number of turns allowed in the match.
                 `None` means no turn-count limit.
             max_turn_time_s (float | None): Maximum time allowed per turn in
@@ -82,11 +71,9 @@ class ArenaFactory:
             max_turns=max_turns,
             score_limits=score_limits,
             store_logs=store_logs,
+            max_turn_time_s=max_turn_time_s,
         )
         return configured_arena_class(
-            rules=rules,
-            view=view,
-            players=players,
             max_turns=max_turns,
             max_turn_time_s=max_turn_time_s,
             max_total_time_s=max_total_time_s,

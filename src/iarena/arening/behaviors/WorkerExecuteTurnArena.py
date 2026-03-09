@@ -16,7 +16,7 @@ class WorkerExecuteTurnArena(ConfiguredArenaBase):
         Returns:
             None.
         """
-        current_index = int(self._position.next_player())
+        current_index = int(self._current_position.next_player())
         if current_index < 0 or current_index >= len(self._players):
             raise IndexError("Position returned a player index outside configured players range.")
 
@@ -30,20 +30,19 @@ class WorkerExecuteTurnArena(ConfiguredArenaBase):
             self._view.output_fnc(section_line)
             self._view.output_fnc(f"STATE START · TURN {self._turn_count + 1}")
             self._view.output_fnc(section_line)
-            self._view.render_state(self._position, object())
+            self._view.render_state(self._current_position, object())
             self._view.output_fnc(section_line)
             self._view.output_fnc("STATE END")
             self._view.output_fnc(section_line)
 
         if self._max_turn_time_s is None:
-            movement = play_method(self._position)
+            movement = play_method(self._current_position)
         else:
             try:
-                movement = Worker.limited_time_call(play_method, self._max_turn_time_s, self._position)
+                movement = Worker.limited_time_call(play_method, self._max_turn_time_s, self._current_position)
             except TimeoutError:
-                self._timed_out = True
-                return
+                raise TimeoutError(f"Turn execution exceeded time limit of {self._max_turn_time_s} seconds.")
 
-        self._position = self._rules.next_position(self._position, movement)
+        self._current_position = self._rules.next_position(self._current_position, movement)
         self._last_movement = movement
         self._turn_count += 1

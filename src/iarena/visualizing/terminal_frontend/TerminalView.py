@@ -57,7 +57,14 @@ class TerminalView(View, ABC):
 
         """
         _ = canvas
+
+        section_line = "=" * 72
+        self._emit_text("\n")
+        self._emit_text(section_line)
         self._emit_text(self.get_str_state(pos))
+        self._emit_text(section_line)
+        self._emit_text("\n")
+
 
     def _emit_text(self, text: str) -> None:
         """Send one formatted text block to the configured output callable.

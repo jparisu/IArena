@@ -644,9 +644,6 @@ class TerminalApplication:
 
         view.render_info(rules, object())
         arena = ArenaFactory.create_arena(
-            rules=rules,
-            view=view,
-            players=players,
             max_turns=self.max_turns,
             max_turn_time_s=self.max_turn_time_s,
             max_total_time_s=self.max_total_time_s,

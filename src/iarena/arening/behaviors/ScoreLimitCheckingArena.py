@@ -15,11 +15,11 @@ class ScoreLimitCheckingArena(ConfiguredArenaBase):
         Returns:
             bool: `True` when the game is finished or score limits are reached.
         """
-        if self._rules.is_finished(self._position):
+        if self._rules.is_finished(self._current_position):
             return True
 
         low_limit, high_limit = self._score_limits
-        scoreboard = self._rules.get_score(self._position)
+        scoreboard = self._rules.get_score(self._current_position)
 
         raw_scores = getattr(scoreboard, "_scores", None)
         if isinstance(raw_scores, dict):

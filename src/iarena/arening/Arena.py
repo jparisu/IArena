@@ -27,7 +27,7 @@ class Arena(ABC):
     """
 
     @abstractmethod
-    def play(self, rules: Rules, players: list[Player], view: View) -> ScoreBoard:
+    def play(self, rules: Rules, players: list[Player], view: View | None = None) -> ScoreBoard:
         """Play a complete match and return the final scoreboard.
 
         What it does:
@@ -39,7 +39,8 @@ class Arena(ABC):
         Args:
             rules (Rules): Rules engine that defines legal transitions and scoring.
             players (list[Player]): Ordered participants involved in the match.
-            view (View): Visualization/input frontend used during execution.
+            view (View | None): Optional visualization/input frontend used
+                during execution. When omitted, arenas use `EmptyView`.
         Returns:
             ScoreBoard: Final scoreboard produced when the match finishes.
         """

@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
-from iarena.playing.LoadPlayer import LoadPlayer
+from iarena.playing.Player import Player
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement
@@ -19,7 +19,7 @@ AUTHORS = [
 ]
 
 
-class MyPlayer(LoadPlayer):
+class MyPlayer(Player):
     def play(self, pos: Position) -> Movement:
         # Return a random movement from the iterator of legal movements.
         return random.choice(list(pos.get_rules().possible_movements(pos)))

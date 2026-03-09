@@ -27,6 +27,48 @@ class _RecordingCanvas:
         self.payloads.append(str(message))
 
 
+class _RecordingDebugCanvas:
+    """Minimal streamlit-like canvas used to record pyplot calls."""
+
+    def __init__(self) -> None:
+        """Initialize one empty figure recorder."""
+        self.figures: list[object] = []
+
+    def pyplot(self, figure: object, **_: Any) -> None:
+        """Record one matplotlib figure payload."""
+        self.figures.append(figure)
+
+
+class _RecordingExpander:
+    """Context manager stub returned by one expander call."""
+
+    def __init__(self, debug_canvas: _RecordingDebugCanvas) -> None:
+        """Store the debug canvas yielded by this context manager."""
+        self._debug_canvas = debug_canvas
+
+    def __enter__(self) -> _RecordingDebugCanvas:
+        """Yield the wrapped debug canvas."""
+        return self._debug_canvas
+
+    def __exit__(self, *_: object) -> None:
+        """End the context manager without suppressing exceptions."""
+        return None
+
+
+class _RecordingNativeCanvas:
+    """Minimal streamlit-like container exposing expander support."""
+
+    def __init__(self) -> None:
+        """Initialize expander invocation and debug payload recorders."""
+        self.debug_canvas = _RecordingDebugCanvas()
+        self.expanders: list[tuple[str, bool]] = []
+
+    def expander(self, label: str, *, expanded: bool = False) -> _RecordingExpander:
+        """Record one expander invocation and return one context manager stub."""
+        self.expanders.append((label, expanded))
+        return _RecordingExpander(self.debug_canvas)
+
+
 def _rules() -> GoldMineRules:
     """Create one deterministic GoldMine ruleset with hints enabled."""
     return GoldMineRules(
@@ -74,3 +116,16 @@ def test_render_score_does_not_include_heuristic_hints() -> None:
     assert "Compass hint" not in combined_payload
     assert "Proximity hint" not in combined_payload
     assert "Density hint" not in combined_payload
+
+
+def test_render_position_adds_collapsed_debug_map_expander() -> None:
+    """`render_position` should expose full map plot inside a collapsed expander."""
+    view = GoldMineStreamlitView()
+    position = _rules().first_position()
+    native_canvas = _RecordingNativeCanvas()
+    wrapped_canvas = StreamlitContainer(native_canvas)
+
+    view.render_position(position, wrapped_canvas)
+
+    assert native_canvas.expanders == [("Debug map (hidden information)", False)]
+    assert len(native_canvas.debug_canvas.figures) == 1

@@ -5,8 +5,8 @@ from __future__ import annotations
 import csv
 import itertools
 import math
-import urllib.request
 import zipfile
+from collections.abc import Mapping
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -26,7 +26,7 @@ from iarena.playing.LoadPlayer import LoadPlayer
 from iarena.playing.Player import Player
 from iarena.playing.PlayerIndex import PlayerIndex
 from iarena.scoring.Score import Score
-from iarena.utilizing.reading.YamlReader import YamlReader
+from iarena.utilizing.filing.FileLoader import FileLoader
 
 
 class MultiGrader:
@@ -89,15 +89,13 @@ class MultiGrader:
 
     def _read_configuration(self, configuration_filename: str) -> dict[str, Any]:
         """Read one grading configuration from disk or URL."""
-        if configuration_filename.startswith(("http://", "https://")):
-            with urllib.request.urlopen(configuration_filename, timeout=30) as response:
-                payload = yaml.safe_load(response.read().decode("utf-8"))
-            if payload is None:
-                return {}
-            if not isinstance(payload, dict):
-                raise TypeError("Configuration root content must be a mapping/object.")
-            return payload
-        return dict(YamlReader.read_mapping(configuration_filename))
+        _ = self
+        payload = yaml.safe_load(FileLoader.read_file(filename=configuration_filename))
+        if payload is None:
+            return {}
+        if not isinstance(payload, Mapping):
+            raise TypeError("Configuration root content must be a mapping/object.")
+        return dict(payload)
 
     def _configure_from_mapping(self, configuration: dict[str, Any], repetitions: int) -> None:
         """Parse mapping settings into concrete grading runtime objects."""

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from iarena.arening.GenericArena import GenericArena
 from iarena.scoring.Score import Score
 from iarena.utilizing.timing.Timer import Timer
+from iarena.visualizing.EmptyView import EmptyView
 
 if TYPE_CHECKING:
     from iarena.gaming.Movement import Movement
@@ -39,6 +39,7 @@ class ConfiguredArenaBase(GenericArena):
         max_turns: int | None,
         score_limits: tuple[Score, Score] | None,
         store_logs: bool,
+        max_turn_time_s: float | None = None,
     ) -> type[ConfiguredArenaBase]:
         """Build a concrete arena class matching enabled/disabled constraints.
 
@@ -67,10 +68,12 @@ class ConfiguredArenaBase(GenericArena):
         from iarena.arening.behaviors.ScoreLimitCheckingArena import ScoreLimitCheckingArena
         from iarena.arening.behaviors.TimeoutCheckingArena import TimeoutCheckingArena
         from iarena.arening.behaviors.WorkerExecuteTurnArena import WorkerExecuteTurnArena
+        from iarena.arening.behaviors.DirectExecuteTurnArena import DirectExecuteTurnArena
 
         max_turns_behavior = MaxTurnsCheckingArena if has_max_turns_limit else NoMaxTurnsArena
         score_limit_behavior = ScoreLimitCheckingArena if has_score_limit else NoScoreLimitArena
         logs_behavior = LogsStoringArena if store_logs else NoLogsArena
+        worker_behavior = WorkerExecuteTurnArena if max_turn_time_s is not None and max_turn_time_s > 0 else DirectExecuteTurnArena
 
         arena_class_name = (
             "ConfiguredArena_"
@@ -82,7 +85,7 @@ class ConfiguredArenaBase(GenericArena):
         arena_class = type(
             arena_class_name,
             (
-                WorkerExecuteTurnArena,
+                worker_behavior,
                 TimeoutCheckingArena,
                 score_limit_behavior,
                 max_turns_behavior,
@@ -95,9 +98,6 @@ class ConfiguredArenaBase(GenericArena):
 
     def __init__(
         self,
-        rules: Rules,
-        view: View,
-        players: Sequence[Player],
         max_turns: int | None,
         max_turn_time_s: float | None,
         max_total_time_s: float | None,
@@ -107,9 +107,6 @@ class ConfiguredArenaBase(GenericArena):
         """Initialize one configured arena runtime.
 
         Args:
-            rules: Rules engine for match progression and scoring.
-            view: View frontend associated with this execution.
-            players: Ordered participants in the match.
             max_turns: Maximum turn budget for the match. `None` means unlimited.
             max_turn_time_s: Per-turn timeout budget in seconds. `None` means unlimited.
             max_total_time_s: Global timeout budget in seconds. `None` means unlimited.
@@ -120,46 +117,38 @@ class ConfiguredArenaBase(GenericArena):
         Returns:
             None.
         """
-        self._rules = rules
-        self._view = view
-        self._players = list(players)
         self._max_turns = max_turns
         self._max_turn_time_s = max_turn_time_s
         self._max_total_time_s = max_total_time_s
         self._score_limits = score_limits
         self._should_store_logs = store_logs
 
+    def play(self, rules: Rules, players: list[Player], view: View | None = None) -> ScoreBoard:
+        """Play a match and return the final scoreboard.
+
+        Args:
+            rules: Rules engine for match progression and scoring.
+            players: Ordered players that will participate in the match.
+            view: Optional view associated with this execution. When omitted,
+                `EmptyView` is used.
+
+        Returns:
+            ScoreBoard: Final scoreboard after loop termination.
+        """
+        self._rules = rules
+        self._players = list(players)
+        self._view = EmptyView() if view is None else view
+
         self._timer = Timer(start_activated=True)
         self._turn_count = 0
         self._timed_out = False
-        self._position = self._rules.first_position()
+        self._current_position = self._rules.first_position()
         self._last_movement: Movement | None = None
         self._logs: list[dict[str, Any]] = []
 
         self._validate_player_count()
         self._bind_view_players()
         self._notify_starting_game()
-
-    def play(self, rules: Rules, players: list[Player], view: View | None = None) -> ScoreBoard:
-        """Play a match and return the final scoreboard.
-
-        Args:
-            rules: Expected rules instance bound to this arena.
-            players: Expected ordered player collection bound to this arena.
-            view: Expected view instance bound to this arena.
-
-        Returns:
-            ScoreBoard: Final scoreboard after loop termination.
-
-        Raises:
-            ValueError: If call arguments do not match the arena configuration.
-        """
-        if rules is not self._rules:
-            raise ValueError("The provided `rules` object does not match this arena configuration.")
-        if list(players) != self._players:
-            raise ValueError("The provided `players` do not match this arena configuration.")
-        if view is not None and view is not self._view:
-            raise ValueError("The provided `view` object does not match this arena configuration.")
         return self._game_loop()
 
     def _validate_player_count(self) -> None:

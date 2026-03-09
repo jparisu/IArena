@@ -42,7 +42,7 @@ class _ArenaWithHooks(GenericArena):
         self._should_store_logs = True
         self.logged_movements: list[Movement] = []
 
-    def play(self, rules: Rules, players: list[Player], view: View) -> ScoreBoard:
+    def play(self, rules: Rules, players: list[Player], view: View | None = None) -> ScoreBoard:
         _ = rules
         _ = players
         _ = view

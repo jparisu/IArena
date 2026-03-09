@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 from pathlib import Path
 
 import pytest
@@ -53,3 +54,16 @@ def test_loader_load_file_rejects_invalid_force_types_length(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="same length as variable_names"):
         Loader.load_file(filename=str(source_file), variable_names=["VALUE"], force_types=["int", "str"])
+
+
+def test_loader_load_file_supports_online_sources(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = importlib.import_module("iarena.utilizing.filing.PythonLoader")
+    monkeypatch.setattr(
+        module.FileLoader,
+        "read_file",
+        classmethod(lambda cls, filename, allow_online=True: "VALUE = 42\n"),
+    )
+
+    payload = Loader.load_file(filename="https://example.com/player.py", variable_names=["VALUE"])
+
+    assert payload["VALUE"] == 42

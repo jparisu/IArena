@@ -26,6 +26,17 @@ class PolyvalentTerminalPlayer(HumanPlayer):
         None declared at class level in this base definition.
     """
 
+    def __init__(self, name: str | None = None) -> None:
+        """Initialize the player with an optional name.
+
+        Args:
+            name (str | None): Optional name for the player. If None, a default name is assigned.
+
+        Returns:
+            None.
+        """
+        super().__init__(name=name)
+
     def name(self) -> str:
         """Return a stable identifier for this terminal player type.
 
@@ -57,8 +68,8 @@ class PolyvalentTerminalPlayer(HumanPlayer):
             raise ValueError("No legal movements available for PolyvalentTerminalPlayer.")
 
         render = getattr(self, "render", None)
-        output_fnc = getattr(render, "output_fnc", None)
-        input_fnc = getattr(render, "input_fnc", None)
+        output_fnc = getattr(render, "output_fnc", print)
+        input_fnc = getattr(render, "input_fnc", input)
         if not callable(output_fnc) or not callable(input_fnc):
             raise TypeError("`render` must expose callable `output_fnc` and `input_fnc` attributes.")
 
