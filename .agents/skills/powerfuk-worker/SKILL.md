@@ -29,18 +29,20 @@ Agent interface definitions live in [agents/](agents/): [openai.yaml](agents/ope
 ## Global Rules
 
 - Keep outputs concise, structured, and phase-aware.
-- Prefer test-first work when it is practical.
+- Prefer test-first work when it is practical, and make failing tests part of the approved architecture handoff when code changes are required.
 - Stop and ask for confirmation if implementation must diverge from approved design or architecture.
 - Explain unexpected test failures and propose the next safe step before continuing.
 - Keep code, tests, documentation, and validation aligned with the latest approved phase state.
 - Treat each phase result as a checkpoint artifact for human review.
+- During design, keep `design/` artifacts current with the approved design state instead of leaving design updates for later phases.
+- During architecture, create the planned file structure, implementation skeleton, and test skeleton before implementation begins.
 
 ## Phase Loading
 
 Load only the current phase file unless a cross-phase dependency requires checking another phase.
 
 - For design work, read [references/phase-1-design.md](references/phase-1-design.md).
-- For architecture and test planning, read [references/phase-2-architect.md](references/phase-2-architect.md).
+- For architecture, scaffolding, and pre-implementation test setup, read [references/phase-2-architect.md](references/phase-2-architect.md).
 - For implementation, read [references/phase-3-implementation.md](references/phase-3-implementation.md).
 - For validation, read [references/phase-4-validation.md](references/phase-4-validation.md).
 

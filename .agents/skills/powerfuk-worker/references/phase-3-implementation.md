@@ -1,11 +1,11 @@
 # Phase 3: Implementation
 
-Implement only the approved design and architecture.
+Implement only the approved design and architecture skeleton.
 
 ## Required Work
 
-- Fill in the planned implementation.
-- Add or update tests with the planned coverage.
+- Fill in the approved implementation skeleton.
+- Make the pre-written failing tests pass without changing the approved coverage intent unless re-approved.
 - Run or reason through performance implications.
 - Improve efficiency when needed without drifting from the approved plan.
 - Update documentation that changed because of the implementation.
@@ -15,7 +15,7 @@ If implementation pressure reveals a needed design or architecture change, stop 
 ## Phase Output
 
 - implemented behavior summary
-- test updates summary
+- test pass/fix summary for the pre-written failing tests
 - performance or efficiency notes
 - documentation updates summary
 

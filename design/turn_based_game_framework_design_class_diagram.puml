@@ -7,27 +7,50 @@ skinparam packageStyle rectangle
 skinparam linetype ortho
 
 package "game" {
-    abstract class GameConfig {
-        +number_of_players
-        +variant_options
+    abstract class GameConfig
+
+    abstract class GameMove
+    abstract class ParseableGameMove {
+        +{static} is_valid_string(s: str): bool
+        +{static} from_string(s: str): ParseableGameMove
+    }
+    abstract class StringifiableGameMove {
+        +to_string(): str
+        +__str__(): str
+    }
+    abstract class ParseableStringifiableGameMove
+
+    GameMove <|-- ParseableGameMove
+    GameMove <|-- StringifiableGameMove
+    ParseableGameMove <|-- ParseableStringifiableGameMove
+    StringifiableGameMove <|-- ParseableStringifiableGameMove
+
+    abstract class GameState {
+        +current_player_id(): int
     }
 
     abstract class GameRules {
-        +legal_moves(state: GameState): list<Move>
-        +apply_move(state: GameState, move: Move): GameState
+        +number_of_players(): int
+        +first_position(): GameState
+        +apply_move(state: GameState, move: GameMove): GameState
         +is_terminal(state: GameState): bool
-        +result(state: GameState)
+        +result(state: GameState): Any
+        +is_legal(state: GameState, move: GameMove): bool
     }
 
-    abstract class GameState {
-        +current_player_id()
-        +turn_number
-        +active_player
+    abstract class FullGameRules {
+        +legal_moves(state: GameState): Iterator<GameMove>
     }
 
-    abstract class Move {
-        +decision_data
+    GameRules <|-- FullGameRules
+
+    abstract class GameGovernance {
+        +create_rules(config: GameConfig): GameRules
+        +supported_configs(): list<GameConfig>
     }
+
+    GameGovernance ..> GameConfig : accepts
+    GameGovernance ..> GameRules : creates
 }
 
 package "interface" {

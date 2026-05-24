@@ -27,7 +27,8 @@ loop Until terminal state
         Engine -> HumanPlayer: choose_move(state)
         HumanPlayer -> Interface: render(content)
         HumanPlayer -> GameRules: legal_moves(state)
-        GameRules --> HumanPlayer: legal moves
+        note right: requires FullGameRules
+        GameRules --> HumanPlayer: legal moves iterator
         HumanPlayer -> Interface: render(content)
         HumanPlayer -> Interface: ask("Choose a move")
         ' Interface -> HumanUser: prompt for move
@@ -41,12 +42,17 @@ loop Until terminal state
         AutomaticPlayer --> Engine: move
     end
 
-    Engine -> GameRules: legal_moves(state)
-    GameRules --> Engine: legal moves
+    alt Engine uses FullGameRules
+        Engine -> GameRules: legal_moves(state)
+        GameRules --> Engine: legal moves iterator
+    else Engine uses is_legal
+        Engine -> GameRules: is_legal(state, move)
+        GameRules --> Engine: bool
+    end
 
-    alt Move is invalid
+    alt GameMove is invalid
         Engine -> Interface: on_invalid_move(state, current player, move)
-    else Move is valid
+    else GameMove is valid
         Engine -> GameRules: apply_move(state, move)
         GameRules --> Engine: new state
         Engine -> GameState: replace current state

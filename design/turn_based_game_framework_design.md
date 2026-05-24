@@ -60,43 +60,59 @@ Represents the static configuration of a game.
 
 ##### Notes
 
-This class should remain abstract and game-independent. Each concrete game defines its own configuration class.
+This class is a marker abstract base with no mandatory methods. Each concrete game defines its own configuration subclass.
 
 ---
 
 #### `GameRules`
 
-Defines the logic and rules of a concrete game.
+Defines the minimal rule contract required by the engine to run the game loop.
 
 ##### Responsibilities
 
-- Determine which moves are legal in a given state.
+- Return the number of players for the game.
+- Produce the initial game state from the configuration.
 - Apply a move to a state and produce the next state.
 - Determine whether the game has ended.
-- Determine the current player or next player, when this is rule-dependent.
-- Validate moves.
+- Validate a single candidate move.
 - Calculate outcomes, scores, rewards, or winners.
 
-##### Typical methods
+##### Methods
 
 ```python
 class GameRules:
-    def legal_moves(self, state: "GameState") -> list["Move"]:
-        ...
-
-    def apply_move(self, state: "GameState", move: "Move") -> "GameState":
-        ...
-
-    def is_terminal(self, state: "GameState") -> bool:
-        ...
-
-    def result(self, state: "GameState"):
-        ...
+    def number_of_players(self) -> int: ...
+    def first_position(self) -> GameState: ...
+    def apply_move(self, state: GameState, move: GameMove) -> GameState: ...
+    def is_terminal(self, state: GameState) -> bool: ...
+    def result(self, state: GameState) -> Any: ...
+    def is_legal(self, state: GameState, move: GameMove) -> bool: ...
 ```
 
 ##### Notes
 
-The rules should not depend on a concrete user interface. They should be pure game logic.
+The rules object is constructed from a `GameConfig` and holds the configuration internally. Rules must not depend on any concrete user interface.
+
+---
+
+#### `FullGameRules`
+
+Extends `GameRules` with full enumeration of legal moves.
+
+##### Additional responsibilities
+
+- Yield every legal move available in a given state.
+
+##### Additional method
+
+```python
+class FullGameRules(GameRules):
+    def legal_moves(self, state: GameState) -> Iterator[GameMove]: ...
+```
+
+##### Notes
+
+Use `FullGameRules` when the engine, interface, or search algorithm needs to enumerate all legal actions. Games that cannot or do not need to enumerate all moves may implement `GameRules` directly.
 
 ---
 
@@ -107,19 +123,26 @@ Represents the current position or state of the game.
 ##### Responsibilities
 
 - Store all dynamic information needed to describe the current game position.
-- Represent whose turn it is.
+- Represent whose turn it is via a zero-based integer player index.
 - Represent public and possibly private information.
 - Support games with arbitrary numbers of players.
 - Provide enough information for rules, players, and views to operate.
 
-##### Examples of information it may contain
+##### Examples of information a subclass may contain
 
 - Current turn number.
-- Active player.
+- Active player index.
 - Board position.
 - Hands, cards, pieces, resources, or hidden information.
 - Game history, if needed.
 - Scores or accumulated rewards.
+
+##### Method
+
+```python
+class GameState:
+    def current_player_id(self) -> int: ...
+```
 
 ##### Notes
 
@@ -129,7 +152,7 @@ Depending on the implementation strategy, the state may be immutable, copied aft
 
 ---
 
-#### `Move`
+#### `GameMove`
 
 Represents an action that a player can perform from a given game state.
 
@@ -150,7 +173,67 @@ Represents an action that a player can perform from a given game state.
 
 ##### Notes
 
-A move should not contain interface-specific information. The same move object should be usable whether it came from a terminal, Streamlit app, HTML interface, or automatic player.
+A move must not contain interface-specific information. The same move object must be usable whether it came from a terminal, Streamlit app, HTML interface, or automatic player.
+
+---
+
+#### `ParseableGameMove`
+
+A `GameMove` that can be constructed from a plain string.
+
+##### Methods
+
+```python
+class ParseableGameMove(GameMove):
+    @classmethod
+    def is_valid_string(cls, s: str) -> bool: ...
+
+    @classmethod
+    def from_string(cls, s: str) -> ParseableGameMove: ...
+```
+
+---
+
+#### `StringifiableGameMove`
+
+A `GameMove` that can be serialised to a plain string. Implements `__str__` via `to_string`.
+
+##### Methods
+
+```python
+class StringifiableGameMove(GameMove):
+    def to_string(self) -> str: ...
+    def __str__(self) -> str: ...  # delegates to to_string()
+```
+
+---
+
+#### `ParseableStringifiableGameMove`
+
+A `GameMove` that supports both parsing from and serialisation to a string. Inherits from both `ParseableGameMove` and `StringifiableGameMove`.
+
+---
+
+#### `GameGovernance`
+
+Registry and factory for a concrete game's rule variants and configurations.
+
+##### Responsibilities
+
+- Know which `GameConfig` subclasses the game supports.
+- Construct a `GameRules` instance from a given configuration.
+
+##### Methods
+
+```python
+class GameGovernance:
+    def create_rules(self, config: GameConfig) -> GameRules: ...
+    def supported_configs(self) -> list[type[GameConfig]]: ...
+```
+
+##### Notes
+
+One `GameGovernance` subclass is expected per concrete game. Support for player types and interface types will be added once those modules are designed.
 
 ---
 
@@ -553,10 +636,13 @@ project/
 │
 ├── game/
 │   ├── __init__.py
-│   ├── config.py        # GameConfig
-│   ├── rules.py         # GameRules
-│   ├── state.py         # GameState
-│   └── move.py          # Move
+│   ├── GameConfig.py                    # GameConfig
+│   ├── GameRules.py                     # GameRules, FullGameRules
+│   ├── GameState.py                     # GameState
+│   ├── GameMove.py                      # GameMove, ParseableGameMove,
+│   │                                    # StringifiableGameMove,
+│   │                                    # ParseableStringifiableGameMove
+│   └── GameGovernance.py               # GameGovernance
 │
 ├── engine/
 │   ├── __init__.py
@@ -588,9 +674,14 @@ project/
 | Module | Class | Responsibility |
 |---|---|---|
 | `game` | `GameConfig` | Static configuration of a concrete game. |
-| `game` | `GameRules` | Legal moves, transitions, terminal states, and results. |
+| `game` | `GameRules` | Move validation, transitions, terminal states, and results. |
+| `game` | `FullGameRules` | Extends `GameRules` with full legal-move enumeration. |
 | `game` | `GameState` | Dynamic representation of the current game position. |
-| `game` | `Move` | Representation of a player's action. |
+| `game` | `GameMove` | Root representation of a player's action. |
+| `game` | `ParseableGameMove` | A `GameMove` constructable from a string. |
+| `game` | `StringifiableGameMove` | A `GameMove` serialisable to a string. |
+| `game` | `ParseableStringifiableGameMove` | A `GameMove` that supports both directions. |
+| `game` | `GameGovernance` | Registry and factory for a concrete game's configs and rules. |
 | `engine` | `Engine` | Runs the turn-based game loop. |
 | `interface` | `Interface` | Common contract for external interaction. |
 | `interface` | `NullInterface` | Empty interface for simulations or automatic players. |
@@ -650,45 +741,89 @@ The interface decides how that information is communicated.
 
 ```python
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from typing import Any
 
 
 class GameConfig(ABC):
     """Static configuration for a concrete game."""
-    pass
 
 
-class Move(ABC):
-    """Action selected by a player."""
-    pass
+class GameMove(ABC):
+    """Root abstract class for a player action."""
+
+
+class ParseableGameMove(GameMove):
+    """A GameMove constructable from a string."""
+
+    @classmethod
+    @abstractmethod
+    def is_valid_string(cls, s: str) -> bool: ...
+
+    @classmethod
+    @abstractmethod
+    def from_string(cls, s: str) -> "ParseableGameMove": ...
+
+
+class StringifiableGameMove(GameMove):
+    """A GameMove serialisable to a string."""
+
+    @abstractmethod
+    def to_string(self) -> str: ...
+
+    def __str__(self) -> str:
+        return self.to_string()
+
+
+class ParseableStringifiableGameMove(ParseableGameMove, StringifiableGameMove):
+    """A GameMove that supports both parsing and serialisation."""
 
 
 class GameState(ABC):
     """Dynamic state of the game."""
 
     @abstractmethod
-    def current_player_id(self) -> Any:
+    def current_player_id(self) -> int:
         pass
 
 
 class GameRules(ABC):
-    """Rules and transition logic for a concrete game."""
+    """Minimal rules contract for the engine."""
 
     @abstractmethod
-    def legal_moves(self, state: GameState) -> list[Move]:
-        pass
+    def number_of_players(self) -> int: ...
 
     @abstractmethod
-    def apply_move(self, state: GameState, move: Move) -> GameState:
-        pass
+    def first_position(self) -> GameState: ...
 
     @abstractmethod
-    def is_terminal(self, state: GameState) -> bool:
-        pass
+    def apply_move(self, state: GameState, move: GameMove) -> GameState: ...
 
     @abstractmethod
-    def result(self, state: GameState) -> Any:
-        pass
+    def is_terminal(self, state: GameState) -> bool: ...
+
+    @abstractmethod
+    def result(self, state: GameState) -> Any: ...
+
+    @abstractmethod
+    def is_legal(self, state: GameState, move: GameMove) -> bool: ...
+
+
+class FullGameRules(GameRules):
+    """Extends GameRules with legal-move enumeration."""
+
+    @abstractmethod
+    def legal_moves(self, state: GameState) -> Iterator[GameMove]: ...
+
+
+class GameGovernance(ABC):
+    """Registry and factory for a concrete game."""
+
+    @abstractmethod
+    def create_rules(self, config: GameConfig) -> GameRules: ...
+
+    @abstractmethod
+    def supported_configs(self) -> list[type[GameConfig]]: ...
 
 
 class Interface(ABC):

@@ -40,6 +40,7 @@ Add user-facing changes to `CHANGELOG.md`.
 - `tests/`: test suite for the project.
 - `docs/`: documentation for the project.
 - `apps/`: example applications and demos using the project.
+- `design/`: design documents and diagrams for the project.
 
 ### Format conventions
 
