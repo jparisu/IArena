@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from iarena.apps.streamlit.StreamlitApplication import StreamlitApplication
@@ -131,8 +132,9 @@ def test_instantiate_players_accepts_loaded_player_entries() -> None:
 
 def test_load_player_from_uploaded_file_returns_player_instance() -> None:
     class _UploadedFile:
-        def __init__(self, payload: bytes) -> None:
+        def __init__(self, payload: bytes, name: str = "uploaded_player.py") -> None:
             self._payload = payload
+            self.name = name
 
         def getvalue(self) -> bytes:
             return self._payload
@@ -150,6 +152,46 @@ class _UploadedLoadPlayer(LoadPlayer):
 
 PLAYER = _UploadedLoadPlayer()
 """.strip(),
+    )
+    app = StreamlitApplication()
+
+    player = app._load_player_from_uploaded_file(uploaded_file)
+
+    assert isinstance(player, LoadPlayer)
+
+
+def test_load_player_from_uploaded_notebook_file_returns_player_instance() -> None:
+    class _UploadedFile:
+        def __init__(self, payload: bytes, name: str) -> None:
+            self._payload = payload
+            self.name = name
+
+        def getvalue(self) -> bytes:
+            return self._payload
+
+    uploaded_file = _UploadedFile(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "source": [
+                            "from iarena.playing.LoadPlayer import LoadPlayer\n",
+                            "\n",
+                            "class _UploadedNotebookLoadPlayer(LoadPlayer):\n",
+                            "    def play(self, pos):\n",
+                            "        return list(pos.get_rules().possible_movements(pos))[0]\n",
+                            "\n",
+                            "    def authors(self) -> list[str]:\n",
+                            "        return ['Uploaded Notebook Streamlit Test']\n",
+                            "\n",
+                            "PLAYER = _UploadedNotebookLoadPlayer()\n",
+                        ],
+                    },
+                ],
+            },
+        ).encode("utf-8"),
+        name="uploaded_player.ipynb",
     )
     app = StreamlitApplication()
 

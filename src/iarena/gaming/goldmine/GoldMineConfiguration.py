@@ -173,7 +173,7 @@ class GoldMineConfiguration(Configuration):
             return SquareMapCoordinate(int(raw[0]), int(raw[1]))
         if isinstance(raw, dict):
             return SquareMapCoordinate(int(raw["x"]), int(raw["y"]))
-        raise TypeError("Coordinate must be SquareMapCoordinate, tuple/list of length 2, dict, or None.")
+        raise TypeError(f"Coordinate must be SquareMapCoordinate, tuple/list of length 2, dict, or None, not {type(raw)}: {raw}.")
 
     @staticmethod
     def _parse_map_data(raw: SquareMap[float] | Iterable[Iterable[float]] | None) -> SquareMap[float] | list[list[float]] | None:

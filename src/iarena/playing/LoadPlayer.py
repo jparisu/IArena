@@ -92,8 +92,8 @@ class LoadPlayer(Player):
         return "load-player"
 
     @classmethod
-    def from_file(cls, path: str, token: str = "PLAYER =") -> LoadPlayer:
-        """Load one `LoadPlayer` instance from a Python file or notebook.
+    def from_file(cls, path: str, token: str = "PLAYER =") -> Player:
+        """Load one `Player` instance from a Python file or notebook.
 
         What it does:
             Executes one source artifact and returns its `PLAYER` instance.
@@ -104,13 +104,13 @@ class LoadPlayer(Player):
             path (str): Path to the source file containing a `PLAYER` variable.
             token (str): Substring used to pick the notebook cell to execute.
         Returns:
-            LoadPlayer: Loaded player instance exposed by the module.
+            Player: Loaded player instance exposed by the module.
         Raises:
             FileNotFoundError: If `path` does not exist.
             IsADirectoryError: If `path` points to a directory.
             ImportError: If the module cannot be loaded or executed.
             ValueError: If the module does not define `PLAYER`.
-            TypeError: If `PLAYER` is not an instance of `LoadPlayer`.
+            TypeError: If `PLAYER` is not an instance of `Player`.
         """
         source_path = Path(path)
         if source_path.suffix.lower() == ".ipynb":
@@ -118,9 +118,9 @@ class LoadPlayer(Player):
         else:
             loaded_variables = PythonLoader.load_file(filename=path, variable_names=["PLAYER"])
         loaded_player = loaded_variables["PLAYER"]
-        if not isinstance(loaded_player, LoadPlayer):
+        if not isinstance(loaded_player, Player):
             raise TypeError(
-                f"PLAYER must be an instance of LoadPlayer, got {type(loaded_player).__name__} from {path}",
+                f"PLAYER must be an instance of Player, got {type(loaded_player).__name__} from {path}",
             )
         return loaded_player
 

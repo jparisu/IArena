@@ -127,6 +127,9 @@ class Exam:
         self.trial_value = []
         grouped_reports: list[list[MatchReport]] = []
 
+        if debug_level.value >= DebugLevel.USER:
+            print(f"[EXAM] Grading exam for player {self.player.name()}.")
+
         for trial_configuration in self._iter_trial_configurations():
             trial = Trial()
             trial.configuration = trial_configuration

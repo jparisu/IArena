@@ -27,7 +27,7 @@ class MapFactory:
         "empty": EmptyMap,
         "uniform": UniformMap,
         "bimodel": BimodelMap,
-        "column": ColumnMap,
+        # "column": ColumnMap,  TODO - needs fix, not working properly
         "exponential": ExponentialMap,
         "jumping": JumpingMap,
         "perlin": PerlinMap,

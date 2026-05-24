@@ -146,14 +146,14 @@ def test_load_player_from_file_rejects_invalid_player_type(tmp_path: Path) -> No
     player_file = tmp_path / "invalid_player.py"
     player_file.write_text("PLAYER = object()", encoding="utf-8")
 
-    with pytest.raises(TypeError, match="PLAYER must be an instance of LoadPlayer"):
+    with pytest.raises(TypeError, match="PLAYER must be an instance of Player"):
         LoadPlayer.from_file(str(player_file))
 
 
 def test_load_player_from_file_rejects_missing_file(tmp_path: Path) -> None:
     missing_file = tmp_path / "absent_player.py"
 
-    with pytest.raises(FileNotFoundError, match="File not found"):
+    with pytest.raises(FileNotFoundError, match="File not found|No such file"):
         LoadPlayer.from_file(str(missing_file))
 
 
@@ -209,6 +209,30 @@ def test_load_player_from_notebook_file_requires_matching_token(tmp_path: Path) 
 
     with pytest.raises(ValueError, match="No notebook code cell contains token"):
         LoadPlayer.from_file(str(notebook_file), token="CUSTOM_TOKEN")
+
+
+def test_load_player_from_file_accepts_player_subclass_not_inheriting_load_player(tmp_path: Path) -> None:
+    player_file = tmp_path / "custom_base_player.py"
+    player_file.write_text(
+        """
+from iarena.playing.Player import Player
+
+class _CustomPlayer(Player):
+    def play(self, pos):
+        return "movement"
+
+    def starting_game(self, rules, player_index) -> None:
+        _ = (rules, player_index)
+
+PLAYER = _CustomPlayer(name="plain-player")
+""".strip(),
+        encoding="utf-8",
+    )
+
+    loaded_player = LoadPlayer.from_file(str(player_file))
+
+    assert isinstance(loaded_player, Player)
+    assert loaded_player.name() == "plain-player"
 
 
 def test_polyvalent_terminal_player_name_is_stable() -> None:

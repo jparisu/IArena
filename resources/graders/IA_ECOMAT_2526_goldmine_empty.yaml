@@ -49,7 +49,6 @@ trials:
     args:
       n: 5
       m: 5
-      starting_position: None
       map_generator: "empty"
     multi_args:
       seed: [1, 2, 3]

@@ -223,10 +223,11 @@ class MultiGrader:
                     },
                 )
 
-    def _authors(self, player: LoadPlayer) -> list[str]:
+    def _authors(self, player: Player) -> list[str]:
         """Return a safe authors list for one loaded player."""
         try:
-            authors = player.authors()
+            authors_method = getattr(player, "authors")
+            authors = authors_method()
         except Exception:
             return []
         if not isinstance(authors, list):

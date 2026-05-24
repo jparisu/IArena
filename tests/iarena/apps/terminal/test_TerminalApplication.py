@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from iarena.apps.terminal.TerminalApplication import TerminalApplication
@@ -115,3 +116,41 @@ PLAYER = _CustomLoadPlayer()
     player = app.ask_for_player(slot_index=0, player_classes=[PolyvalentRandomPlayer])
 
     assert player.name() == "terminal-loaded-player"
+
+
+def test_ask_for_player_loads_player_from_notebook_file(tmp_path: Path) -> None:
+    player_file = tmp_path / "custom_player.ipynb"
+    player_file.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "source": [
+                            "from iarena.playing.LoadPlayer import LoadPlayer\n",
+                            "\n",
+                            "class _CustomLoadPlayer(LoadPlayer):\n",
+                            "    def play(self, pos):\n",
+                            "        return list(pos.get_rules().possible_movements(pos))[0]\n",
+                            "\n",
+                            "    def authors(self) -> list[str]:\n",
+                            "        return ['Terminal Notebook Test']\n",
+                            "\n",
+                            "    def name(self) -> str:\n",
+                            "        return 'terminal-notebook-loaded-player'\n",
+                            "\n",
+                            "PLAYER = _CustomLoadPlayer()\n",
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    io = _TerminalIO(inputs=["1", str(player_file)])
+    app = TerminalApplication(input_fnc=io.input, output_fnc=io.output)
+    app.view = object()
+
+    player = app.ask_for_player(slot_index=0, player_classes=[PolyvalentRandomPlayer])
+
+    assert player.name() == "terminal-notebook-loaded-player"

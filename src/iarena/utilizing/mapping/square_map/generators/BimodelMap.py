@@ -33,7 +33,7 @@ class BimodelMap(AbstractMapGenerator):
         p_high = float(kwargs.get("p_high", 0.3))
         cls._validate_probability(p_high)
         low_cost = float(kwargs.get("low_cost", 1.0))
-        high_cost = float(kwargs.get("high_cost", 10.0))
+        high_cost = float(kwargs.get("high_cost", n*m+1))
 
         grid = np.full((n, m), low_cost, dtype=float)
         for i in range(n):

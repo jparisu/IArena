@@ -32,7 +32,7 @@ class GoldMineOracle(BestPlayerOracle):
         self,
         repetitions: int = 10,
         higher_limit_ratio: float = 0.0,
-        lower_limit_ratio: float = 1.2,
+        lower_limit_ratio: float = 1.5,
         player_seed: int | None = 0,
 
     ) -> None:

@@ -579,7 +579,7 @@ class TerminalApplication:
         return player_instance
 
     def _ask_load_player_from_file(self, slot_index: int) -> Player:
-        """Request a Python file path and load one `LoadPlayer` instance from it.
+        """Request a source file path and load one `LoadPlayer` instance from it.
 
         Args:
             slot_index: Player slot index currently being configured.
@@ -588,9 +588,9 @@ class TerminalApplication:
             Player: Loaded player instance.
         """
         while True:
-            raw_path = self.input_fnc(f"Python player file path for slot {slot_index}: ").strip()
+            raw_path = self.input_fnc(f"Player file path (.py or .ipynb) for slot {slot_index}: ").strip()
             if raw_path == "":
-                self.output_fnc("A Python file path is required.")
+                self.output_fnc("A player file path (.py or .ipynb) is required.")
                 continue
             try:
                 return LoadPlayer.from_file(raw_path)

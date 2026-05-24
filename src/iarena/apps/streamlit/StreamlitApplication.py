@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import inspect
 import tempfile
+from pathlib import Path
 from types import NoneType
 from typing import Any, ClassVar, TypeVar, cast, get_args, get_origin
 
@@ -604,11 +605,11 @@ class StreamlitApplication:
             if use_file:
                 uploaded_player_file = st.file_uploader(
                     f"Player file for slot {slot_index}",
-                    type=["py"],
+                    type=["py", "ipynb"],
                     key=f"streamlit_player_file_slot_{slot_index}",
                 )
                 if uploaded_player_file is None:
-                    raise ValueError(f"Please upload a Python player file for slot {slot_index}.")
+                    raise ValueError(f"Please upload a player file (.py or .ipynb) for slot {slot_index}.")
                 selected.append(self._load_player_from_uploaded_file(uploaded_player_file))
                 continue
 
@@ -623,18 +624,39 @@ class StreamlitApplication:
         return selected
 
     def _load_player_from_file(self, file_path: str) -> Player:
-        """Load one player instance from a Python file path.
+        """Load one player instance from a source file path.
 
         Args:
-            file_path: Path to a Python source file that defines `PLAYER`.
+            file_path: Path to a `.py` or `.ipynb` source file that defines `PLAYER`.
 
         Returns:
             Player: Loaded player instance.
         """
         return LoadPlayer.from_file(file_path)
 
+    def _uploaded_player_suffix(self, uploaded_file: Any) -> str:
+        """Return the canonical temporary suffix for one uploaded player file.
+
+        Args:
+            uploaded_file: Streamlit uploaded file object.
+
+        Returns:
+            str: Either `.py` or `.ipynb`.
+
+        Raises:
+            ValueError: If uploaded file extension is unsupported.
+        """
+        raw_name = getattr(uploaded_file, "name", "")
+        if not isinstance(raw_name, str) or raw_name.strip() == "":
+            return ".py"
+
+        suffix = Path(raw_name).suffix.lower()
+        if suffix not in {".py", ".ipynb"}:
+            raise ValueError("Uploaded player file must have extension `.py` or `.ipynb`.")
+        return suffix
+
     def _load_player_from_uploaded_file(self, uploaded_file: Any) -> Player:
-        """Load one player instance from a streamlit uploaded Python file.
+        """Load one player instance from a streamlit uploaded source file.
 
         Args:
             uploaded_file: Streamlit uploaded file object exposing `getvalue`.
@@ -643,7 +665,8 @@ class StreamlitApplication:
             Player: Loaded player instance.
         """
         source_bytes = bytes(uploaded_file.getvalue())
-        with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=True) as temporary_file:
+        suffix = self._uploaded_player_suffix(uploaded_file)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=suffix, delete=True) as temporary_file:
             temporary_file.write(source_bytes)
             temporary_file.flush()
             return self._load_player_from_file(temporary_file.name)
