@@ -1,0 +1,12 @@
+[codespell]
+# Where to run
+skip = .git,dist,build,site,docs/_build,*.png,*.jpg,*.jpeg,*.gif,*.svg,*.pdf,*.ipynb
+# File globs to include (adjust as you like)
+builtin = clear,rare
+check-filenames = true
+# check-hidden = false  # false is not correctly parsed
+# American English dictionary by default
+# Add your project words here:
+ignore-words = .spelling/.codespell-words.txt
+# Or quick comma list (use either this or the file above)
+# ignore-words-list = fgx,sklearn,ndarray

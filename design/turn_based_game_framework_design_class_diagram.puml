@@ -1,0 +1,130 @@
+@startuml
+title Turn-Based Game Framework Class Diagram
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "game" {
+    abstract class GameConfig {
+        +number_of_players
+        +variant_options
+    }
+
+    abstract class GameRules {
+        +legal_moves(state: GameState): list<Move>
+        +apply_move(state: GameState, move: Move): GameState
+        +is_terminal(state: GameState): bool
+        +result(state: GameState)
+    }
+
+    abstract class GameState {
+        +current_player_id()
+        +turn_number
+        +active_player
+    }
+
+    abstract class Move {
+        +decision_data
+    }
+}
+
+package "interface" {
+    abstract class Interface {
+        +render(content: str): None
+        +ask(prompt: str): str
+        +on_game_start(state: GameState): None
+        +on_turn_start(state: GameState, player: Player): None
+        +on_invalid_move(state: GameState, player: Player, move: Move): None
+        +on_turn_end(state: GameState, player: Player, move: Move): None
+        +on_game_end(state: GameState, result): None
+    }
+
+    class NullInterface
+    class TerminalInterface
+    class StreamlitInterface
+    class HTMLInterface
+
+    Interface <|-- NullInterface
+    Interface <|-- TerminalInterface
+    Interface <|-- StreamlitInterface
+    Interface <|-- HTMLInterface
+}
+
+package "view" {
+    abstract class View {
+        +render_state(state: GameState, player: Player, interface: Interface): None
+        +render_legal_moves(state: GameState, player: Player, legal_moves: list<Move>, interface: Interface): None
+        +parse_move(raw_input: str, state: GameState, player: Player): Move
+    }
+}
+
+package "player" {
+    abstract class Player {
+        +choose_move(state: GameState): Move
+    }
+
+    class HumanPlayer {
+        -view: View
+        -interface: Interface
+        +choose_move(state: GameState): Move
+    }
+
+    class AutomaticPlayer {
+        +choose_move(state: GameState): Move
+    }
+
+    Player <|-- HumanPlayer
+    Player <|-- AutomaticPlayer
+}
+
+package "engine" {
+    class Engine {
+        -rules: GameRules
+        -state: GameState
+        -players: list<Player>
+        -interface: Interface
+        +run()
+        +get_current_player(): Player
+    }
+}
+
+GameRules ..> GameState : evaluates
+GameRules ..> Move : validates/applies
+View ..> GameState : presents
+View ..> Move : parses/displays
+View ..> Interface : renders through
+Player ..> GameState : observes
+Player ..> Move : returns
+HumanPlayer *-- View
+HumanPlayer *-- Interface
+Engine *-- GameRules
+Engine *-- GameState
+Engine *-- Interface
+Engine o-- "1..*" Player
+Engine ..> Move : executes
+Interface ..> GameState : reports
+Interface ..> Player : notifies
+Interface ..> Move : reports
+
+note right of Engine
+Runs the turn-based loop:
+- checks terminal state
+- asks active player for a move
+- validates and applies the move
+- notifies the interface
+end note
+
+note bottom of View
+View decides what information
+is shown to a human player.
+Interface decides how it is shown.
+end note
+
+note bottom of AutomaticPlayer
+May operate without a View
+or user-facing Interface.
+end note
+
+@enduml

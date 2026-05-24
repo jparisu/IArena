@@ -1,0 +1,19 @@
+# Claude Code agent definition for powerfuk-worker
+#
+# The canonical agent file is at:
+#   .claude/agents/powerfuk-worker.md
+#
+# That file instructs the Claude sub-agent to read this skill's SKILL.md
+# and reference files at runtime, so no content is duplicated here.
+#
+# To invoke: /powerfuk-worker (or Claude auto-loads it when the request
+# matches the description in the agent frontmatter).
+
+agent: .claude/agents/powerfuk-worker.md
+skill: .agents/skills/powerfuk-worker/SKILL.md
+references:
+  - .agents/skills/powerfuk-worker/references/repository-rules.md
+  - .agents/skills/powerfuk-worker/references/phase-1-design.md
+  - .agents/skills/powerfuk-worker/references/phase-2-architect.md
+  - .agents/skills/powerfuk-worker/references/phase-3-implementation.md
+  - .agents/skills/powerfuk-worker/references/phase-4-validation.md

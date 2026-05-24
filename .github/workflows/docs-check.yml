@@ -1,0 +1,35 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          # Upgrade pip first to keep dependency resolution stable.
+          python -m pip install --upgrade pip
+          # Install the project with documentation build dependencies.
+          python -m pip install -e ".[docs]"
+
+      - name: Build docs
+        run: |
+          # Build the documentation strictly so warnings fail the workflow.
+          mkdocs build --strict

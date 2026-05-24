@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+
+message: "If you use this software, please cite it as below."
+
+authors:
+  - family-names: "Paris"
+    given-names: "Javier"
+    orcid: "https://orcid.org/0000-0001-6489-0530"
+
+title: "IArena"
+
+version: 3.0.0
+
+url: "https://github.com/jparisu/iarena"
+
+repository-code: "https://github.com/jparisu/iarena"
+
+license: Apache-2.0
+
+# TODO: future repos
+# date-released: 2026-03-15
+# abstract: "IArena is a Python project generated from this Copier template."
+# keywords:

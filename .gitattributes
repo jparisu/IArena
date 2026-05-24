@@ -1,0 +1,12 @@
+# Force all text files to use LF line endings on checkout
+* text=auto
+
+# Explicitly declare files that should always have LF (common for scripts)
+*.sh text eol=lf
+
+# Treat images as binary files (don't try to fix line endings)
+*.png binary
+*.jpg binary
+
+# Tell GitHub to ignore the 'docs/' folder in language stats
+docs/* linguist-documentation
