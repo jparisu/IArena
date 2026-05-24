@@ -1,0 +1,86 @@
+site_name: iarena Documentation
+site_description: Python framework for building turn-based games and AI players
+site_author: jparisu
+site_url: https://iarena.readthedocs.io/
+
+repo_name: jparisu/iarena
+repo_url: https://github.com/jparisu/iarena
+edit_uri: edit/main/docs
+
+docs_dir: docs
+
+# Theme
+theme:
+  name: readthedocs
+  features:
+      - content.code.copy  # This enables the copy button globally
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_root_members_full_path: false
+            show_source: false
+            show_category_heading: true
+            group_by_category: true
+            separate_signature: true
+            show_signature_annotations: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - Tutorial: user/tutorials/goldmine_tutorial.md
+      - Games:
+          - Games Overview: user/games/games.md
+          - Hanoi: user/games/hanoi.md
+          - GoldMine: user/games/goldmine.md
+          - TicTacToe: user/games/tictactoe.md
+          - Shared Resources:
+            - user/games/squaremap.md
+      - Players: user/players/players.md
+      - Random Player: user/players/random.md
+      - Arena: user/arena/arena.md
+      - Glossary: user/appendixes/glossary.md
+  - API Reference:
+      - Overview: api/index.md
+      - API:
+          - Gaming: api/gaming.md
+          - Apps: api/apps.md
+          - Playing: api/playing.md
+          - Arening: api/arening.md
+          - Grading: api/grading.md
+          - Utilizing:
+               - Protocoling: api/utilizing/protocoling.md
+               - Randoming: api/utilizing/randoming.md
+               - Filing: api/utilizing/filing.md
+               - Reading: api/utilizing/reading.md
+               - Timing: api/utilizing/timing.md
+               - Structuring: api/utilizing/structuring.md
+               - Square Map: api/utilizing/square_map.md
+               - Generators: api/utilizing/generators.md

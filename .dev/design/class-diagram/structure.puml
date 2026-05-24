@@ -1,0 +1,569 @@
+@startuml
+title IArena Skeleton Class Diagram
+skinparam classAttributeIconSize 0
+
+package "utilizing.protocoling" {
+
+    interface Hashable {
+    + {abstract} hash(): int
+    }
+
+    interface Recognizable {
+    + {abstract} name(): str
+    }
+
+}
+
+package "utilizing.randoming" {
+
+    class RandomGenerator {
+    + __init__(seed: int | None): None
+    + rand(): float
+    + random(): float
+    + choice(seq: Sequence[T]): T
+    + set_seed(seed: int, consistent: bool): None
+    + reset_seed(): None
+    + shuffle(x: MutableSequence[T]): None
+    + randint(high: int, low: int): int
+    }
+
+    class Perlin {
+    + {static} perlin_value_generator(i: int, j: int, base: int, scale: float, persistence: float, octaves: int, lacunarity: float): float
+    + {static} perlin_generator(n: int, m: int, abruptness: float, rng: RandomGenerator | None): np.ndarray
+    }
+
+}
+
+package "utilizing.timing" {
+
+    class Timer {
+    + __init__(start_activated: bool): None
+    + start(): None
+    + pause(): None
+    + reset(): None
+    + elapsed(): float
+    }
+
+    class Worker {
+    + {static} limited_time_call(func: Callable[..., Any], timeout_s: float, *args: Any): Any
+    }
+
+}
+
+package "utilizing.structuring" {
+
+    abstract class GenericRegistry {
+    + __init__(name_convention: Callable[[str], str] | None): None
+    + register(obj: T, name: str, aliases: Sequence[str] | None, overwrite: bool): str
+    + register_alias(alias: str, target_existing_alias: str, overwrite: bool): None
+    + get(name: str, strict: bool): T | None
+    + remove_alias(name: str): None
+    + remove_value(name: str): T | None
+    + has(name: str): bool
+    + list_aliases(): List[str]
+    + __contains__(name: str): bool
+    + __len__(): int
+    + clear(): None
+    }
+
+    abstract class GenericFactory {
+    + register_constructor(constructor: Callable[..., T], name: str, aliases: List[str] | None, overwrite: bool): None
+    + construct(name: str, **kwargs: Any): T
+    }
+
+    class GenericSingleton {
+    + __init__(cls: type[T]): None
+    + __call__(*args: object, **kwargs: object): T
+    + get_instance(): T
+    }
+
+    enum GenericEnumRegistry {
+    + {static} get_all_values(): List[Any]
+    + get(index: int | None): Any
+    + {static} find(query: str, throw: bool, only_keys: bool): T | None
+    + {static} from_string(value: str, throw: bool): T | None
+    + {static} name_convention(name: str): str
+    + {static} default(): T | None
+    + {static} aliases(): dict[str, str]
+    }
+
+    class GenericParameter {
+    + {static} from_dict(data: dict[str, Any]): T
+    + update_from_dict(data: Mapping[str, Any]): T
+    - _convert_value(target_type: Any, value: Any): Any
+    + to_dict(target_format: str | None): dict[str, Any]
+    + set_default_value(field_name: str, default_value: Any): None
+    + {static} aliases(): dict[str, str]
+    + copy(): T
+    }
+
+    class GenericSuiteParameter {
+    + parameter_cls: type[ParameterType]
+    + fixed_values: dict[str, Any]
+    + suite_values: dict[str, List[Any]]
+    + __init__(parameter_cls: type[ParameterType], fixed_values: Mapping[str, Any], suite_values: Mapping[str, Sequence[Any]]): None
+    + {static} from_dict(parameter_cls: type[ParameterType], src: Mapping[str, Any], suite_prefix: str, treat_plain_lists_as_suite: bool): GenericSuiteParameter[ParameterType] | ParameterType
+    + to_dict(target_format: str | None): dict[str, Any]
+    + length(): int
+    + individual_parameters(): Iterator[ParameterType]
+    + individual_parameter(): Iterator[ParameterType]
+    }
+
+}
+
+package "utilizing.mapping.square_map" {
+
+    enum SquareMapDirection {
+    + {property} delta: tuple[int, int]
+    + opposite(): SquareMapDirection
+    }
+
+    class SquareMapCoordinate {
+    + x: int
+    + y: int
+    + {static} from_tuple(value: tuple[int, int]): SquareMapCoordinate
+    + up(): SquareMapCoordinate
+    + down(): SquareMapCoordinate
+    + left(): SquareMapCoordinate
+    + right(): SquareMapCoordinate
+    + moved(direction: SquareMapDirection): SquareMapCoordinate
+    + from_direction(direction: SquareMapDirection): SquareMapCoordinate
+    + manhattan_distance(other: SquareMapCoordinate): int
+    + as_tuple(): tuple[int, int]
+    + __iter__(): Iterator[int]
+    + __len__(): int
+    + __getitem__(index: int): int
+    + neighbors(): Iterator[tuple[SquareMapDirection, SquareMapCoordinate]]
+    }
+
+    class SquareMap {
+    + __init__(smap: Iterable[Iterable[T]]): None
+    + __str__(): str
+    + pretty_text(): str
+    + size(): tuple[int, int]
+    + n_rows(): int
+    + n_cols(): int
+    + __len__(): int
+    + __iter__(): Iterator[List[T]]
+    + __getitem__(index: SquareMapCoordinate): T
+    + __setitem__(index: SquareMapCoordinate, value: T): None
+    + in_bounds(coord: SquareMapCoordinate): bool
+    + require_in_bounds(coord: SquareMapCoordinate, name: str): None
+    + get(coord: SquareMapCoordinate, default: T | None): T | None
+    + possible_direction_neighbors(coord: SquareMapCoordinate): Iterator[tuple[SquareMapDirection, SquareMapCoordinate]]
+    + possible_directions(coord: SquareMapCoordinate): Iterator[SquareMapDirection]
+    + possible_neighbors(coord: SquareMapCoordinate): Iterator[SquareMapCoordinate]
+    + iter_coordinates(): Iterator[SquareMapCoordinate]
+    + iter_values(): Iterator[T]
+    + check(allow_zero: bool, skip_coordinate_validation: Iterable[SquareMapCoordinate] | None): None
+    + {static} full(n_rows: int, n_cols: int, value: T): SquareMap[T]
+    + {static} zeros(n_rows: int, n_cols: int): SquareMap[float]
+    + {static} zeros_like(smap: SquareMap[object]): SquareMap[float]
+    + {static} from_numpy(array: np.ndarray): SquareMap[float]
+    + to_numpy(dtype: Any): np.ndarray
+    + copy(): SquareMap[T]
+    + compass_direction(from_coord: SquareMapCoordinate, to_coord: SquareMapCoordinate): SquareMapDirection
+    + min(): float
+    + max(): float
+    + sum(): float
+    }
+
+}
+
+package "utilizing.mapping.square_map.generators" {
+
+    abstract class AbstractMapGenerator {
+    + {abstract} {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    - {static} _validate_dims(n: int, m: int): None
+    - {static} _validate_coordinate(n: int, m: int, coordinate: SquareMapCoordinate, label: str): None
+    - {static} _validate_probability(p: float): None
+    - {static} _uniform01(rng: RandomGenerator): float
+    - {static} _uniform(rng: RandomGenerator, low: float, high: float): float
+    - {static} _exponential(rng: RandomGenerator, scale: float): float
+    - {static} _has_path_4neigh(grid: np.ndarray, start: SquareMapCoordinate, target: SquareMapCoordinate): bool
+    - {static} _carve_manhattan_path(grid: np.ndarray, start: SquareMapCoordinate, target: SquareMapCoordinate): None
+    - {static} _set_random_high_tiles(grid: np.ndarray, rng: RandomGenerator, p: float, high_cost: float, avoid: Iterable[SquareMapCoordinate] | None): None
+    }
+
+    class EmptyMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class UniformMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class BimodelMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class ColumnMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class ExponentialMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class JumpingMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class PerlinMap {
+    + {static} generate(n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, **kwargs: Any): np.ndarray
+    }
+
+    class MapFactory {
+    + {static} register(name: str, generator: type[AbstractMapGenerator]): None
+    + {static} unregister(name: str): None
+    + {static} generate(name: str, n: int, m: int, start: SquareMapCoordinate, target: SquareMapCoordinate, rng: RandomGenerator, integer: bool, **kwargs: Any): np.ndarray
+    + {static} available_generation_methods(): List[str]
+    }
+
+}
+
+package "gaming" {
+
+    abstract class Movement {
+        ...
+    }
+
+    abstract class Position {
+    + {abstract} next_player(): PlayerIndex
+    + {abstract} get_rules(): Rules
+    }
+
+    abstract class Configuration {
+        ...
+    }
+
+    abstract class ConfigurationSuite {
+    + {static} from_dict(parameter_cls: type[Configuration], src: Mapping[str, Any], suite_prefix: str, treat_plain_lists_as_suite: bool): ConfigurationSuite | Configuration
+    + {abstract} generate_configurations(): Iterator[Configuration]
+    + {abstract} length(): int
+    }
+
+    abstract class Rules {
+    + {abstract} n_players(): int
+    + {abstract} first_position(): Position
+    + {abstract} next_position(pos: Position, mov: Movement): Position
+    + {abstract} possible_movements(pos: Position): Iterator[Movement]
+    + {abstract} is_finished(pos: Position): bool
+    + {abstract} get_score(pos: Position): ScoreBoard
+    }
+
+    class Oracle {
+    + {static} reckon_solution_score(rules: Rules): ScoreBoardPair
+    }
+
+    class Game {
+    + get_configurations(requirements: Callable[[Any], bool]): set[type[Configuration]]
+    + get_rules(requirements: Callable[[Any], bool]): set[type[Rules]]
+    + get_oracles(requirements: Callable[[Any], bool]): set[type[Oracle]]
+    + get_players(requirements: Callable[[Any], bool]): set[type[Player]]
+    + get_renderers(requirements: Callable[[Any], bool]): set[type[View]]
+    + generate_rules(conf: Configuration): Rules
+    }
+
+    class GameGovernor {
+    + {static} find_game(name: str, requirement: Callable[[Any], bool], throw: bool): Game | None
+    }
+
+}
+
+package "playing" {
+
+    class PlayerIndex {
+        ...
+    }
+
+    abstract class Player {
+    + {abstract} play(pos: Position): Movement
+    + {abstract} starting_game(rules: Rules, player_index: PlayerIndex): None
+    }
+
+    abstract class HumanPlayer {
+    + render: View
+    }
+
+    class PolyvalentTerminalPlayer {
+        ...
+    }
+
+    class PolyvalentRandomPlayer {
+    + rng: RandomGenerator
+    }
+
+}
+
+package "scoring" {
+
+    class Score {
+        ...
+    }
+
+    class ScoreBoard {
+    + get_score(index: PlayerIndex): Score
+    }
+
+}
+
+package "arening" {
+
+    abstract class Arena {
+    + {abstract} play(rules: Rules, players: List[Player], view: View): ScoreBoard
+    }
+
+    class ArenaFactory {
+    + {static} create_arena(rules: Rules, view: View, players: Sequence[Player], max_turns: int, max_turn_time_s: float, max_total_time_s: float, score_limits: Tuple[Score, Score], store_logs: bool): Arena
+    }
+
+    abstract class GenericArena {
+    - {abstract} _execute_turn(): None
+    - {abstract} _check_timeout(): bool
+    - {abstract} _check_score_limit(): bool
+    - {abstract} _check_max_turns(): bool
+    - {abstract} _store_logs(last_movement: Movement): None
+    - _game_loop(): ScoreBoard
+    }
+
+}
+
+package "visualizing" {
+
+    abstract class Canvas {
+        ...
+    }
+
+    abstract class View {
+    + players: List[Player]
+    + {abstract} render_info(rules: Rules, canvas: Canvas): None
+    + {abstract} render_state(pos: Position, canvas: Canvas): None
+    + {abstract} capture_input(*args: Any): Movement
+    }
+
+    class EmptyView {
+    + render_info(rules: Rules, canvas: Canvas): None
+    + render_state(pos: Position, canvas: Canvas): None
+    + capture_input(*args: Any): Movement
+    }
+
+}
+
+package "visualizing.terminal_frontend" {
+
+    abstract class TerminalView {
+    + input_fnc: Any
+    + output_fnc: Any
+    + render_info(rules: Rules, canvas: Canvas): None
+    + render_state(pos: Position, canvas: Canvas): None
+    + {abstract} get_str_info(rules: Rules): str
+    + {abstract} get_str_state(position: Position): str
+    + {abstract} capture_input(input: str): Movement
+    }
+
+}
+
+package "visualizing.streamlit_frontend" {
+
+    class StreamlitContainer {
+        ...
+    }
+
+    class StreamlitSession {
+        ...
+    }
+
+    abstract class StreamlitView {
+    + {abstract} render_info(rules: Rules, canvas: Canvas): None
+    + render_state(pos: Position, canvas: Canvas): None
+    + {abstract} render_position(position: Position, canvas: StreamlitContainer): None
+    + {abstract} render_movements(position: Position, canvas: StreamlitContainer): None
+    + {abstract} render_score(position: Position, canvas: StreamlitContainer): None
+    + {abstract} capture_input(state: StreamlitSession): Movement
+    }
+
+}
+
+package "grading" {
+
+    enum DebugLevel {
+    NONE
+    ERROR
+    WARNING
+    USER
+    INFO
+    DEBUG
+    }
+
+    class MatchConfiguration {
+    + move_timeout_s: float
+    + total_timeout_s: float
+    + max_turns: int
+    + score_limits: Tuple[Score, Score]
+    }
+
+    class TrialConfiguration {
+    + match_configuration: MatchConfiguration
+    + trialing_player_index: PlayerIndex
+    + rules: Rules
+    + players: List[Player]
+    + repetitions: int
+    + allow_fails: int
+    }
+
+    class MatchReport {
+    + moves: int
+    + total_time_s: float
+    + score: Score
+    + messages: Map
+    }
+
+    class Trial {
+    + configuration: TrialConfiguration
+    + match_reports: List[MatchReport]
+    + trial(debug_level: DebugLevel): List[MatchReport]
+    + score(): float
+    }
+
+    class Exam {
+    + game: Game
+    + player: Player
+    + suite_configuration: ConfigurationSuite
+    + trials: List[Trial]
+    + trial_value: List[float]
+    + grade(debug_level: DebugLevel): List[List[MatchReport]]
+    + score(): float
+    }
+
+    class AutoGrader {
+    + grader: Exam
+    + configuration_file: str
+    + player_file: str
+    + grade(): List[List[MatchReport]]
+    + score(): float
+    }
+
+}
+
+package "apps.terminal" {
+
+    class TerminalApp {
+    + arena: Arena
+    + view: TerminalView
+    + ask_for_game(): Game
+    + ask_for_configuration(): Configuration
+    + ask_for_player(): Player
+    + run(): None
+    + main(): None
+    }
+
+}
+
+package "apps.streamlit" {
+
+    class ConfigurationPanel {
+    + controls: Any
+    + ask_for_player(): Player
+    + ask_for_configuration(): Configuration
+    }
+
+    class MovementPanel {
+        ...
+    }
+
+    class StatePanel {
+        ...
+    }
+
+    class MainApp {
+    + left_column: ConfigurationPanel
+    + right_column: MovementPanel
+    + central: StatePanel
+    }
+
+    class StreamlitApp {
+    + main_app: MainApp
+    + view: StreamlitView
+    + ask_for_game(): Configuration
+    + main(): None
+    }
+
+}
+
+package "gaming.Hanoi" {
+
+    class HanoiPosition {
+    + n_pegs: int
+    + disks: List[int]
+    + steps: int
+    }
+
+    class HanoiMovement {
+    + from_peg: int
+    + to_peg: int
+    }
+
+    class HanoiConfiguration {
+    + n_pegs: int
+    + disks: List[int]
+    }
+
+    class HanoiRules {
+        ...
+    }
+
+    class HanoiGame {
+        ...
+    }
+
+    class HanoiOracle {
+        ...
+    }
+
+    class HanoiPerfectPlayer {
+        ...
+    }
+
+    class HanoiTerminalView {
+        ...
+    }
+
+    class HanoiStreamlitView {
+        ...
+    }
+
+}
+
+' Inheritance
+GenericRegistry <|-- GenericFactory
+AbstractMapGenerator <|-- EmptyMap
+AbstractMapGenerator <|-- UniformMap
+AbstractMapGenerator <|-- BimodelMap
+AbstractMapGenerator <|-- ColumnMap
+AbstractMapGenerator <|-- ExponentialMap
+AbstractMapGenerator <|-- JumpingMap
+AbstractMapGenerator <|-- PerlinMap
+Hashable <|-- Position
+GenericParameter <|-- Configuration
+GenericSuiteParameter <|-- ConfigurationSuite
+Recognizable <|-- Game
+Recognizable <|-- Player
+Player <|-- HumanPlayer
+HumanPlayer <|-- PolyvalentTerminalPlayer
+Player <|-- PolyvalentRandomPlayer
+Arena <|-- GenericArena
+View <|-- EmptyView
+View <|-- TerminalView
+View <|-- StreamlitView
+Position <|-- HanoiPosition
+Movement <|-- HanoiMovement
+Configuration <|-- HanoiConfiguration
+Rules <|-- HanoiRules
+Game <|-- HanoiGame
+Oracle <|-- HanoiOracle
+Player <|-- HanoiPerfectPlayer
+TerminalView <|-- HanoiTerminalView
+StreamlitView <|-- HanoiStreamlitView
+
+@enduml
