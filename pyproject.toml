@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
   "PyYAML>=6.0",
-
+  "streamlit>=1.40.0",
 ]
 
 [project.urls]

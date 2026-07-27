@@ -2,5 +2,7 @@
 
 from iarena.interface.Interface import Interface
 from iarena.interface.NullInterface import NullInterface
+from iarena.interface.StreamlitInterface import StreamlitInterface
+from iarena.interface.TerminalInterface import TerminalInterface
 
-__all__ = ["Interface", "NullInterface"]
+__all__ = ["Interface", "NullInterface", "StreamlitInterface", "TerminalInterface"]

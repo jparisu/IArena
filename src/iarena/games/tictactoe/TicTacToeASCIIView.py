@@ -50,10 +50,10 @@ class TicTacToeASCIIView(View):
         interface.render(f"Player {player_name}'s turn.")
 
     def ask(self, interface: Interface) -> GameMove:
-        """Prompt the user for a move and return a TicTacToeMove.
+        """Prompt the user until a syntactically valid move string is entered.
 
-        Prompts with ``"Enter move as row,col (e.g. 1,2): "`` and
-        parses the response into a TicTacToeMove.
+        Loops until the raw input satisfies TicTacToeMove.is_valid_string.
+        Semantic validity (cell not occupied) is enforced by the engine.
 
         Parameters
         ----------
@@ -64,11 +64,9 @@ class TicTacToeASCIIView(View):
         -------
         TicTacToeMove
             The parsed move.
-
-        Raises
-        ------
-        ValueError
-            If the raw input is not a valid move string.
         """
-        raw = interface.ask("Enter move as row,col (e.g. 1,2): ")
-        return TicTacToeMove.from_string(raw)
+        while True:
+            raw = interface.ask("Enter move as row,col (e.g. 1,2): ")
+            if TicTacToeMove.is_valid_string(raw):
+                return TicTacToeMove.from_string(raw)
+            interface.render("Invalid input — expected row,col with values 0–2 (e.g. 1,2).")
