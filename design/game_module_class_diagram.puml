@@ -1,0 +1,73 @@
+@startuml
+title Game Module Class Diagram
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "game" {
+    abstract class GameConfig
+
+    abstract class GameMove
+    abstract class ParseableGameMove {
+        +{static} is_valid_string(s: str): bool
+        +{static} from_string(s: str): ParseableGameMove
+    }
+    abstract class StringifiableGameMove {
+        +to_string(): str
+        +__str__(): str
+    }
+    abstract class ParseableStringifiableGameMove
+
+    GameMove <|-- ParseableGameMove
+    GameMove <|-- StringifiableGameMove
+    ParseableGameMove <|-- ParseableStringifiableGameMove
+    StringifiableGameMove <|-- ParseableStringifiableGameMove
+
+    abstract class GameState {
+        +current_player_id(): int
+    }
+
+    abstract class GameRules {
+        +number_of_players(): int
+        +first_position(): GameState
+        +apply_move(state: GameState, move: GameMove): GameState
+        +is_terminal(state: GameState): bool
+        +result(state: GameState): Any
+        +is_legal(state: GameState, move: GameMove): bool
+    }
+
+    abstract class FullGameRules {
+        +legal_moves(state: GameState): Iterator<GameMove>
+    }
+
+    GameRules <|-- FullGameRules
+
+    abstract class GameGovernance {
+        +create_rules(config: GameConfig): GameRules
+        +supported_configs(): list<GameConfig>
+    }
+
+    GameGovernance ..> GameConfig : accepts
+    GameGovernance ..> GameRules : creates
+    GameRules ..> GameState : uses
+    GameRules ..> GameMove : uses
+}
+
+note bottom of GameGovernance
+Registry and factory per concrete game.
+Player types and interface types TBD.
+end note
+
+note right of FullGameRules
+Use when legal-move enumeration
+is needed (search, human interfaces).
+end note
+
+note right of ParseableStringifiableGameMove
+Supports full string round-trip:
+from_string(move.to_string()) == move
+end note
+
+@enduml

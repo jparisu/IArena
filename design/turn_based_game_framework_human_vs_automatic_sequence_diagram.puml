@@ -1,0 +1,67 @@
+@startuml
+title Turn-Based Game Flow: Human Player vs Automatic Player
+
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor Human as HumanUser
+participant Engine
+participant GameRules
+participant GameState
+participant HumanPlayer
+participant Interface
+participant AutomaticPlayer
+
+Engine -> Interface: on_game_start(state)
+
+loop Until terminal state
+    Engine -> GameRules: is_terminal(state)
+    GameRules --> Engine: false
+
+    Engine -> GameState: current_player_id()
+    GameState --> Engine: active player id
+
+    alt Active player is HumanPlayer
+        Engine -> Interface: on_turn_start(state, HumanPlayer)
+        Engine -> HumanPlayer: choose_move(state)
+        HumanPlayer -> Interface: render(content)
+        HumanPlayer -> GameRules: legal_moves(state)
+        note right: requires FullGameRules
+        GameRules --> HumanPlayer: legal moves iterator
+        HumanPlayer -> Interface: render(content)
+        HumanPlayer -> Interface: ask("Choose a move")
+        ' Interface -> HumanUser: prompt for move
+        HumanUser --> Interface: wait input
+        Interface --> HumanPlayer: input
+        HumanPlayer --> HumanPlayer: parse input
+        HumanPlayer --> Engine: move
+    else Active player is AutomaticPlayer
+        Engine -> Interface: on_turn_start(state, AutomaticPlayer)
+        Engine -> AutomaticPlayer: choose_move(state)
+        AutomaticPlayer --> Engine: move
+    end
+
+    alt Engine uses FullGameRules
+        Engine -> GameRules: legal_moves(state)
+        GameRules --> Engine: legal moves iterator
+    else Engine uses is_legal
+        Engine -> GameRules: is_legal(state, move)
+        GameRules --> Engine: bool
+    end
+
+    alt GameMove is invalid
+        Engine -> Interface: on_invalid_move(state, current player, move)
+    else GameMove is valid
+        Engine -> GameRules: apply_move(state, move)
+        GameRules --> Engine: new state
+        Engine -> GameState: replace current state
+        Engine -> Interface: on_turn_end(state, current player, move)
+    end
+end
+
+Engine -> GameRules: result(state)
+GameRules --> Engine: result
+Engine -> Interface: on_game_end(state, result)
+
+@enduml

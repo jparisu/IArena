@@ -1,0 +1,36 @@
+# Copier keeps this file in generated projects to remember the chosen answers.
+# Commit this file so `copier update` can safely reapply the template later.
+
+# Record the template source so Copier knows which template to reuse on updates.
+_src_path: "git+https://github.com/jparisu/my-templates.git"
+
+# Record the template revision when the source comes from git so updates stay reproducible.
+_commit: "1bd0095"
+
+
+# Persist the human-readable project title that feeds generated metadata and docs.
+project_name: "IArena"
+
+# Persist the repository slug that names the generated project directory and package distribution.
+project_slug: "iarena"
+
+# Persist the Python import name that becomes the package directory under `src/`.
+package_name: "iarena"
+
+# Persist the minimum supported Python version used across tooling and metadata.
+python_version: "3.12"
+
+# Persist the author name used in project metadata and documentation.
+author_name: "jparisu"
+
+# Persist the author email used in project metadata and documentation.
+author_email: "javier.paris.u@gmail.com"
+
+# Persist the canonical repository URL used in generated links and package metadata.
+repo_url: "https://github.com/jparisu/iarena"
+
+# Persist whether the generated project keeps the shared utils dependency placeholder.
+include_utils: false
+
+# Persist whether the generated project exposes the optional CLI entrypoint.
+include_cli: false

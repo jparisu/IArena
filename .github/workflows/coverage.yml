@@ -1,0 +1,35 @@
+name: Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          # Upgrade pip first to keep dependency resolution stable.
+          python -m pip install --upgrade pip
+          # Install the project with the dependencies needed for coverage runs.
+          python -m pip install -e ".[test]"
+
+      - name: Run coverage
+        run: |
+          # Execute the test suite and emit both terminal and XML coverage reports.
+          pytest --cov=iarena --cov-report=term --cov-report=xml tests

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          # Upgrade pip first to avoid installer issues on stale runner images.
+          python -m pip install --upgrade pip
+          # Install the project with the dependencies needed for tests.
+          python -m pip install -e ".[test]"
+
+      - name: Run tests
+        run: |
+          # Run the test suite with verbose output for easier debugging.
+          pytest tests -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        run: |
+          # Upgrade pip first to keep the build environment predictable.
+          python -m pip install --upgrade pip
+          # Install the packaging tools used to build and validate distributions.
+          python -m pip install build twine
+
+      - name: Build package
+        run: |
+          # Build source and wheel distributions.
+          python -m build
+
+      - name: Check package
+        run: |
+          # Verify that the generated package metadata is valid.
+          twine check dist/*
